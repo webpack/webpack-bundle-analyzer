@@ -4,14 +4,14 @@
   "description": "Webpack plugin and CLI utility that represents bundle content as convenient interactive zoomable treemap",
   "author": "Yury Grunin <grunin.ya@ya.ru>",
   "license": "MIT",
-  "homepage": "https://github.com/webpack-contrib/webpack-bundle-analyzer",
-  "changelog": "https://github.com/webpack-contrib/webpack-bundle-analyzer/blob/master/CHANGELOG.md",
+  "homepage": "https://github.com/webpack/webpack-bundle-analyzer",
+  "changelog": "https://github.com/webpack/webpack-bundle-analyzer/blob/main/CHANGELOG.md",
   "bugs": {
-    "url": "https://github.com/webpack-contrib/webpack-bundle-analyzer/issues"
+    "url": "https://github.com/webpack/webpack-bundle-analyzer/issues"
   },
   "repository": {
     "type": "git",
-    "url": "git+https://github.com/webpack-contrib/webpack-bundle-analyzer.git"
+    "url": "git+https://github.com/webpack/webpack-bundle-analyzer.git"
   },
   "main": "lib/index.js",
   "bin": "lib/bin/analyzer.js",

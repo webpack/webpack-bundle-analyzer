@@ -81,7 +81,7 @@ command:
 webpack --profile --json > stats.json
 ```
 
-If you're on Windows and using PowerShell, you can generate the stats file with this command to [avoid BOM issues](https://github.com/webpack-contrib/webpack-bundle-analyzer/issues/47):
+If you're on Windows and using PowerShell, you can generate the stats file with this command to [avoid BOM issues](https://github.com/webpack/webpack-bundle-analyzer/issues/47):
 
 ```
 webpack --profile --json | Out-file 'stats.json' -Encoding OEM
@@ -183,7 +183,7 @@ It happens when `webpack-bundle-analyzer` analyzes files that don't actually exi
 Error parsing bundle asset "your_bundle_name.bundle.js": no such file
 No bundles were parsed. Analyzer will show only original module sizes from stats file.
 ```
-To get more information about it you can read [issue #147](https://github.com/webpack-contrib/webpack-bundle-analyzer/issues/147).
+To get more information about it you can read [issue #147](https://github.com/webpack/webpack-bundle-analyzer/issues/147).
 
 <h2 align="center">Other tools</h2>
 
@@ -217,8 +217,8 @@ To get more information about it you can read [issue #147](https://github.com/we
 [node]: https://img.shields.io/node/v/webpack-bundle-analyzer.svg
 [node-url]: https://nodejs.org
 
-[tests]: https://github.com/webpack-contrib/webpack-bundle-analyzer/actions/workflows/main.yml/badge.svg
-[tests-url]: https://github.com/webpack-contrib/webpack-bundle-analyzer/actions/workflows/main.yml
+[tests]: https://github.com/webpack/webpack-bundle-analyzer/actions/workflows/main.yml/badge.svg
+[tests-url]: https://github.com/webpack/webpack-bundle-analyzer/actions/workflows/main.yml
 
 [downloads]: https://img.shields.io/npm/dt/webpack-bundle-analyzer.svg
 [downloads-url]: https://npmjs.com/package/webpack-bundle-analyzer

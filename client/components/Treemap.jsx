@@ -101,7 +101,7 @@ export default class Treemap extends Component {
         } else if (highlightGroups && highlightGroups.size > 0) {
           // this means a search (e.g.) is active, but this module
           // does not match; gray it out
-          // https://github.com/webpack-contrib/webpack-bundle-analyzer/issues/553
+          // https://github.com/webpack/webpack-bundle-analyzer/issues/553
           variables.groupColor.s = 10;
         }
       },

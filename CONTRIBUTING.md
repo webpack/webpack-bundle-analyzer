@@ -48,11 +48,11 @@ If your own project's Webpack config has `BundleAnalyzerPlugin` configured with 
 
 We'd love for you to contribute your changes back to `webpack-bundle-analyzer`! To do that, it would be ace if you could commit your changes to a separate feature branch and open a Pull Request for those changes.
 
-Point your feature branch to use the `master` branch as the base of this PR. The exact commands used depends on how you've setup your local git copy, but the flow could look like this:
+Point your feature branch to use the `main` branch as the base of this PR. The exact commands used depends on how you've setup your local git copy, but the flow could look like this:
 
 ```sh
 # Inside your own copy of `webpack-bundle-analyzer` package...
-git checkout --branch feature-branch-name-here upstream/master
+git checkout --branch feature-branch-name-here upstream/main
 # Then hack away, and commit your changes:
 git add -A
 git commit -m "Few words about the changes I did"

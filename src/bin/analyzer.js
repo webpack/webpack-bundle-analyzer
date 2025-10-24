@@ -35,7 +35,7 @@ const program = commander
   )
   .option(
     // Had to make `host` parameter optional in order to let `-h` flag output help message
-    // Fixes https://github.com/webpack-contrib/webpack-bundle-analyzer/issues/239
+    // Fixes https://github.com/webpack/webpack-bundle-analyzer/issues/239
     '-h, --host [host]',
     'Host that will be used in `server` mode to start HTTP server.',
     '127.0.0.1'
