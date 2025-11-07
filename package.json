@@ -33,17 +33,17 @@
     "lib"
   ],
   "dependencies": {
-    "@discoveryjs/json-ext": "0.5.7",
-    "acorn": "^8.0.4",
-    "acorn-walk": "^8.0.0",
-    "commander": "^7.2.0",
-    "debounce": "^1.2.1",
+    "@discoveryjs/json-ext": "0.6.3",
+    "acorn": "^8.15.0",
+    "acorn-walk": "^8.3.4",
+    "commander": "^14.0.0",
+    "debounce": "^2.0.0",
     "escape-string-regexp": "^4.0.0",
     "html-escaper": "^2.0.2",
     "opener": "^1.5.2",
     "picocolors": "^1.0.0",
-    "sirv": "^2.0.3",
-    "ws": "^7.3.1"
+    "sirv": "^3.0.2",
+    "ws": "^8.18.3"
   },
   "devDependencies": {
     "@babel/core": "7.26.9",
