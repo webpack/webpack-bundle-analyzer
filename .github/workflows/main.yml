@@ -10,21 +10,20 @@ jobs:
       fail-fast: false
       matrix:
         node:
-          - version: 16.x
-          # - version: 18.x
-          #   env: NODE_OPTIONS=--openssl-legacy-provider
           - version: 20.x
             env: NODE_OPTIONS=--openssl-legacy-provider
           - version: 22.x
+            env: NODE_OPTIONS=--openssl-legacy-provider
+          - version: 24.x
             env: NODE_OPTIONS=--openssl-legacy-provider
     runs-on: ubuntu-22.04
     name: Tests on Node.js v${{ matrix.node.version }}
     steps:
       - name: Checkout repo
-        uses: actions/checkout@v3
+        uses: actions/checkout@v5
 
       - name: Setup node
-        uses: actions/setup-node@v3
+        uses: actions/setup-node@v6
         with:
           node-version: ${{ matrix.node.version }}
 
@@ -41,10 +40,10 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - name: Checkout repo
-        uses: actions/checkout@v3
+        uses: actions/checkout@v5
 
       - name: Setup node
-        uses: actions/setup-node@v3
+        uses: actions/setup-node@v6
         with:
           node-version: "22.x"
 

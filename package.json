@@ -16,7 +16,7 @@
   "main": "lib/index.js",
   "bin": "lib/bin/analyzer.js",
   "engines": {
-    "node": ">= 16.20.2"
+    "node": ">= 20.9.0"
   },
   "packageManager": "npm@6.14.8",
   "scripts": {
