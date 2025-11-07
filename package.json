@@ -40,7 +40,7 @@
     "debounce": "^2.0.0",
     "escape-string-regexp": "^4.0.0",
     "html-escaper": "^2.0.2",
-    "opener": "^1.5.2",
+    "open": "^8.4.2",
     "picocolors": "^1.0.0",
     "sirv": "^3.0.2",
     "ws": "^8.18.3"

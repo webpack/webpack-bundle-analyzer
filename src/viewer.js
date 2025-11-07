@@ -95,6 +95,8 @@ async function startServer(bundleStats, opts) {
       );
 
       if (openBrowser) {
+        // We don't await here as the server is already running and
+        // we don't want to stop the process even if browser fails to open.
         open(url, logger);
       }
     });
@@ -169,7 +171,7 @@ async function generateReport(bundleStats, opts) {
   logger.info(`${bold('Webpack Bundle Analyzer')} saved report to ${bold(reportFilepath)}`);
 
   if (openBrowser) {
-    open(`file://${reportFilepath}`, logger);
+    await open(`file://${reportFilepath}`, logger);
   }
 }
 

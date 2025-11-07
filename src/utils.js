@@ -1,5 +1,5 @@
 const {inspect, types} = require('util');
-const opener = require('opener');
+const open = require('open');
 
 const MONTHS = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'];
 
@@ -56,12 +56,12 @@ exports.defaultAnalyzerUrl = function (options) {
 };
 
 /**
- * Calls opener on a URI, but silently try / catches it.
+ * Calls open on a URI, but silently try / catches it.
  */
-exports.open = function (uri, logger) {
+exports.open = async function (uri, logger) {
   try {
-    opener(uri);
+    await open(uri);
   } catch (err) {
-    logger.debug(`Opener failed to open "${uri}":\n${err}`);
+    logger.debug(`Open failed to open "${uri}":\n${err}`);
   }
 };
