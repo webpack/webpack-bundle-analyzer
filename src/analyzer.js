@@ -52,7 +52,7 @@ function getViewerData(bundleStats, bundleDir, opts) {
   }
 
   // Picking only `*.js, *.cjs or *.mjs` assets from bundle that has non-empty `chunks` array
-  bundleStats.assets = bundleStats.assets.filter(asset => {
+  bundleStats.assets = (bundleStats.assets || []).filter(asset => {
     // Filter out non 'asset' type asset if type is provided (Webpack 5 add a type to indicate asset types)
     if (asset.type && asset.type !== 'asset') {
       return false;
@@ -116,7 +116,7 @@ function getViewerData(bundleStats, bundleDir, opts) {
     }
 
     // Picking modules from current bundle script
-    let assetModules = modules.filter(statModule => assetHasModule(statAsset, statModule));
+    let assetModules = (modules || []).filter(statModule => assetHasModule(statAsset, statModule));
 
     // Adding parsed sources
     if (parsedModules) {
@@ -140,7 +140,7 @@ function getViewerData(bundleStats, bundleDir, opts) {
           unparsedEntryModules[0].parsedSrc = assetSources.runtimeSrc;
         } else {
           // If there are multiple entry points we move all of them under synthetic concatenated module.
-          assetModules = assetModules.filter(mod => !unparsedEntryModules.includes(mod));
+          assetModules = (assetModules || []).filter(mod => !unparsedEntryModules.includes(mod));
           assetModules.unshift({
             identifier: './entry modules',
             name: './entry modules',
