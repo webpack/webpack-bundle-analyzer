@@ -18,8 +18,7 @@ _Note: Gaps between patch versions are faulty, broken or test releases._
 
 
 * **Breaking Change**
-  * Remove explicit support for Node versions below 16.20.2 ([#650](https://github.com/webpack-contrib/webpack-bundle-analyzer/pull/650) by [@valscion](https://github.com/valscion))
-    * **NOTE:** `webpack-bundle-analyzer` might still support older Node versions but they are no longer tested against.
+  * Remove explicit support for Node versions below 20.9.0 ([#676](https://github.com/webpack-contrib/webpack-bundle-analyzer/pull/676) by [@valscion](https://github.com/valscion))
 
 * **Improvement**
   * Parse bundles as ES modules based on stats JSON information ([#649](https://github.com/webpack-contrib/webpack-bundle-analyzer/pull/649) by [@eamodio](https://github.com/eamodio))
