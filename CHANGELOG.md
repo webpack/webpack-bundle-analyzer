@@ -12,6 +12,11 @@ _Note: Gaps between patch versions are faulty, broken or test releases._
 
 ## UNRELEASED
 
+* **Bug Fix**
+  * Prevent `TypeError` when `assets` or `modules` are undefined in `analyzer.js`
+    ([#679](https://github.com/webpack-contrib/webpack-bundle-analyzer/pull/679) by [@Srushti-33](https://github.com/Srushti-33))
+
+
 * **Breaking Change**
   * Remove explicit support for Node versions below 16.20.2 ([#650](https://github.com/webpack-contrib/webpack-bundle-analyzer/pull/650) by [@valscion](https://github.com/valscion))
     * **NOTE:** `webpack-bundle-analyzer` might still support older Node versions but they are no longer tested against.
