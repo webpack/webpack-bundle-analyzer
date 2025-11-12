@@ -94,6 +94,11 @@ describe('Analyzer', function () {
     );
   });
 
+  it('should handle stats with minimal configuration', async function () {
+    generateReportFrom('with-invalid-dynamic-require.json');
+    await expectValidReport();
+  });
+
   it.skip("should not filter out modules that we couldn't find during parsing", async function () {
     generateReportFrom('with-missing-parsed-module/stats.json');
     const chartData = await getChartData();
