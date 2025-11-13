@@ -95,7 +95,7 @@ describe('Analyzer', function () {
   });
 
   it('should handle stats with minimal configuration', async function () {
-    generateReportFrom('with-invalid-dynamic-require.json');
+    generateReportFrom('minimal-stats/stats.json');
     await expectValidReport();
   });
 
