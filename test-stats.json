@@ -1,0 +1,20 @@
+{
+  "chunks": [
+    {
+      "id": 1,
+      "files": ["main.js"],
+      "modules": [],
+      "sizes": {}
+    }
+  ],
+  "entrypoints": {},
+  "errors": [],
+  "errorsCount": 0,
+  "hash": "abc",
+  "namedChunkGroups": {},
+  "outputPath": "/dist",
+  "publicPath": "/",
+  "version": "5.x",
+  "warnings": [],
+  "warningsCount": 0
+}
