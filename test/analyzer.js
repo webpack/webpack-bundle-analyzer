@@ -96,8 +96,11 @@ describe('Analyzer', function () {
 
   it('should handle stats with minimal configuration', async function () {
     generateReportFrom('minimal-stats/stats.json');
-    await expectValidReport();
+    await expectValidReport({
+      bundleLabel: 'viewer.js',
+      statSize: 0
   });
+});
 
   it.skip("should not filter out modules that we couldn't find during parsing", async function () {
     generateReportFrom('with-missing-parsed-module/stats.json');
