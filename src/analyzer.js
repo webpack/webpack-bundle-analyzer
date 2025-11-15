@@ -43,10 +43,10 @@ function getViewerData(bundleStats, bundleDir, opts) {
   }
 
   // Sometimes all the information is located in `children` array (e.g. problem in #10)
-  if ((bundleStats.assets == null || bundleStats.assets.length === 0) &&
+  if ((bundleStats.assets == null || bundleStats.assets.length === 0) && 
     bundleStats.children && bundleStats.children.length > 0) {
-    const {children} = bundleStats;
-    bundleStats = bundleStats.children[0];
+  const {children} = bundleStats;
+  bundleStats = bundleStats.children[0];
     // Sometimes if there are additional child chunks produced add them as child assets,
     // leave the 1st one as that is considered the 'root' asset.
     for (let i = 1; i < children.length; i++) {
@@ -299,3 +299,4 @@ function flatten(arr) {
   }
   return res;
 }
+// Trigger CI tests
