@@ -26,13 +26,27 @@ function getViewerData(bundleStats, bundleDir, opts) {
 
   const isAssetIncluded = createAssetsFilter(excludeAssets);
 
+  // Handle minimal stats format that only has assetsByChunkName but no assets array
+  if ((bundleStats.assets == null || bundleStats.assets.length === 0) && bundleStats.assetsByChunkName) {
+    // Convert assetsByChunkName to assets array for minimal stats
+    bundleStats.assets = [];
+    Object.entries(bundleStats.assetsByChunkName).forEach(([chunkName, assetNames]) => {
+      assetNames.forEach(assetName => {
+        bundleStats.assets.push({
+          name: assetName,
+          chunks: [chunkName],
+          // Default size for minimal stats
+          size: 0
+        });
+      });
+    });
+  }
+
   // Sometimes all the information is located in `children` array (e.g. problem in #10)
-  if (
-    (bundleStats.assets == null || bundleStats.assets.length === 0)
-    && bundleStats.children && bundleStats.children.length > 0
-  ) {
-    const {children} = bundleStats;
-    bundleStats = bundleStats.children[0];
+  if ((bundleStats.assets == null || bundleStats.assets.length === 0) && 
+    bundleStats.children && bundleStats.children.length > 0) {
+  const {children} = bundleStats;
+  bundleStats = bundleStats.children[0];
     // Sometimes if there are additional child chunks produced add them as child assets,
     // leave the 1st one as that is considered the 'root' asset.
     for (let i = 1; i < children.length; i++) {
@@ -52,7 +66,7 @@ function getViewerData(bundleStats, bundleDir, opts) {
   }
 
   // Picking only `*.js, *.cjs or *.mjs` assets from bundle that has non-empty `chunks` array
-  bundleStats.assets = bundleStats.assets.filter(asset => {
+  bundleStats.assets = (bundleStats.assets || []).filter(asset => {
     // Filter out non 'asset' type asset if type is provided (Webpack 5 add a type to indicate asset types)
     if (asset.type && asset.type !== 'asset') {
       return false;
@@ -106,7 +120,8 @@ function getViewerData(bundleStats, bundleDir, opts) {
     const asset = result[statAsset.name] = {
       size: statAsset.size
     };
-    const assetSources = bundlesSources && Object.prototype.hasOwnProperty.call(bundlesSources, statAsset.name) ?
+    const assetSources = bundlesSources &&
+      Object.prototype.hasOwnProperty.call(bundlesSources, statAsset.name) ?
       bundlesSources[statAsset.name] : null;
 
     if (assetSources) {
@@ -116,7 +131,7 @@ function getViewerData(bundleStats, bundleDir, opts) {
     }
 
     // Picking modules from current bundle script
-    let assetModules = modules.filter(statModule => assetHasModule(statAsset, statModule));
+    let assetModules = (modules || []).filter(statModule => assetHasModule(statAsset, statModule));
 
     // Adding parsed sources
     if (parsedModules) {
@@ -140,7 +155,7 @@ function getViewerData(bundleStats, bundleDir, opts) {
           unparsedEntryModules[0].parsedSrc = assetSources.runtimeSrc;
         } else {
           // If there are multiple entry points we move all of them under synthetic concatenated module.
-          assetModules = assetModules.filter(mod => !unparsedEntryModules.includes(mod));
+          assetModules = (assetModules || []).filter(mod => !unparsedEntryModules.includes(mod));
           assetModules.unshift({
             identifier: './entry modules',
             name: './entry modules',
@@ -153,7 +168,7 @@ function getViewerData(bundleStats, bundleDir, opts) {
     }
 
     asset.modules = assetModules;
-    asset.tree = createModulesTree(asset.modules, {compressionAlgorithm});
+    asset.tree = createModulesTree(asset.modules, {compressionAlgorithm});
     return result;
   }, {});
 
@@ -189,13 +204,21 @@ function getChildAssetBundles(bundleStats, assetName) {
 }
 
 function getBundleModules(bundleStats) {
+  // Handle case where bundleStats is undefined or has no modules/chunks
+  if (!bundleStats) {
+    return [];
+  }
+
   const seenIds = new Set();
 
-  return flatten(
-    ((bundleStats.chunks?.map(chunk => chunk.modules)) || [])
-      .concat(bundleStats.modules)
-      .filter(Boolean)
-  ).filter(mod => {
+  // Safely handle chunks and modules that might be undefined
+  const chunksModules = bundleStats.chunks ?
+    bundleStats.chunks.map(chunk => chunk.modules || []) :
+    [];
+
+  const statsModules = bundleStats.modules || [];
+
+  return flatten(chunksModules.concat(statsModules).filter(Boolean)).filter(mod => {
     // Filtering out Webpack's runtime modules as they don't have ids and can't be parsed (introduced in Webpack 5)
     if (isRuntimeModule(mod)) {
       return false;
@@ -276,3 +299,4 @@ function flatten(arr) {
   }
   return res;
 }
+// Trigger CI tests
