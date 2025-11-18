@@ -25,8 +25,8 @@
     "npm-publish": "npm run lint && npm run build && npm test && npm publish",
     "lint": "eslint --ext js,jsx .",
     "install-test-webpack-versions": "./bin/install-test-webpack-versions.sh",
-    "test": "npm run install-test-webpack-versions && jest --runInBand",
-    "test-dev": "npm run install-test-webpack-versions && jest --watch --runInBand"
+    "test": "npm run install-test-webpack-versions && NODE_OPTIONS=--openssl-legacy-provider jest --runInBand",
+    "test-dev": "npm run install-test-webpack-versions && NODE_OPTIONS=--openssl-legacy-provider jest --watch --runInBand"
   },
   "files": [
     "public",
