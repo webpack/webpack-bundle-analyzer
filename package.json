@@ -72,7 +72,7 @@
     "globby": "11.0.3",
     "gulp": "4.0.2",
     "gulp-babel": "8.0.0",
-    "jest": "29.7.0",
+    "jest": "^30.2.0",
     "lodash.memoize": "^4.1.2",
     "lodash.merge": "^4.6.2",
     "lodash.partial": "^4.2.1",
