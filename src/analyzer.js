@@ -26,23 +26,23 @@ function getViewerData(bundleStats, bundleDir, opts) {
 
   const isAssetIncluded = createAssetsFilter(excludeAssets);
 
-// Handle minimal stats format that only has assetsByChunkName but no assets array
-if ((bundleStats.assets == null || bundleStats.assets.length === 0) && bundleStats.assetsByChunkName) {
+  // Handle minimal stats format that only has assetsByChunkName but no assets array
+  if ((bundleStats.assets == null || bundleStats.assets.length === 0) && bundleStats.assetsByChunkName) {
   // Convert assetsByChunkName to assets array for minimal stats
-  bundleStats.assets = [];
-  Object.entries(bundleStats.assetsByChunkName).forEach(([chunkName, assetNames]) => {
-    assetNames.forEach(assetName => {
-      bundleStats.assets.push({
-        name: assetName,
-        chunks: [chunkName],
-        size: 0 // Default size for minimal stats
+    bundleStats.assets = [];
+    Object.entries(bundleStats.assetsByChunkName).forEach(([chunkName, assetNames]) => {
+      assetNames.forEach(assetName => {
+        bundleStats.assets.push({
+          name: assetName,
+          chunks: [chunkName],
+          size: 0 // Default size for minimal stats
+        });
       });
     });
-  });
-}
+  }
 
-// Sometimes all the information is located in `children` array (e.g. problem in #10)
-if ((bundleStats.assets == null || bundleStats.assets.length === 0) && bundleStats.children && bundleStats.children.length > 0) {
+  // Sometimes all the information is located in `children` array (e.g. problem in #10)
+  if ((bundleStats.assets == null || bundleStats.assets.length === 0) && bundleStats.children && bundleStats.children.length > 0) {
     const {children} = bundleStats;
     bundleStats = bundleStats.children[0];
     // Sometimes if there are additional child chunks produced add them as child assets,
@@ -205,16 +205,16 @@ function getBundleModules(bundleStats) {
   if (!bundleStats) {
     return [];
   }
-  
+
   const seenIds = new Set();
-  
+
   // Safely handle chunks and modules that might be undefined
-  const chunksModules = bundleStats.chunks ? 
-    bundleStats.chunks.map(chunk => chunk.modules || []) : 
+  const chunksModules = bundleStats.chunks ?
+    bundleStats.chunks.map(chunk => chunk.modules || []) :
     [];
-  
+
   const statsModules = bundleStats.modules || [];
-  
+
   return flatten(chunksModules.concat(statsModules).filter(Boolean)).filter(mod => {
     // Filtering out Webpack's runtime modules as they don't have ids and can't be parsed (introduced in Webpack 5)
     if (isRuntimeModule(mod)) {

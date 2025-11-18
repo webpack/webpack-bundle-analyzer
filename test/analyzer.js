@@ -99,8 +99,8 @@ describe('Analyzer', function () {
     await expectValidReport({
       bundleLabel: 'viewer.js',
       statSize: 0
+    });
   });
-});
 
   it.skip("should not filter out modules that we couldn't find during parsing", async function () {
     generateReportFrom('with-missing-parsed-module/stats.json');
