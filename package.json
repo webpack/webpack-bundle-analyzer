@@ -82,7 +82,7 @@
     "postcss-icss-values": "2.0.2",
     "postcss-loader": "5.3.0",
     "preact": "10.5.13",
-    "puppeteer": "24.2.1",
+    "puppeteer": "^24.30.0",
     "stream-combiner2": "1.1.1",
     "style-loader": "2.0.0",
     "terser-webpack-plugin": "5.1.2",
