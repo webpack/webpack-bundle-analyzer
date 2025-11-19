@@ -77,6 +77,7 @@ module.exports = opts => {
             plugins: [
               'lodash',
               ['@babel/plugin-proposal-decorators', {legacy: true}],
+              ['@babel/plugin-transform-class-properties', {loose: true}],
               ['@babel/plugin-transform-runtime', {
                 useESModules: true
               }]
