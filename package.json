@@ -1,6 +1,6 @@
 {
   "name": "webpack-bundle-analyzer",
-  "version": "4.10.2",
+  "version": "5.0.1",
   "description": "Webpack plugin and CLI utility that represents bundle content as convenient interactive zoomable treemap",
   "author": "Yury Grunin <grunin.ya@ya.ru>",
   "license": "MIT",
@@ -25,8 +25,8 @@
     "npm-publish": "npm run lint && npm run build && npm test && npm publish",
     "lint": "eslint --ext js,jsx .",
     "install-test-webpack-versions": "./bin/install-test-webpack-versions.sh",
-    "test": "npm run install-test-webpack-versions && jest --runInBand",
-    "test-dev": "npm run install-test-webpack-versions && jest --watch --runInBand"
+    "test": "npm run install-test-webpack-versions && NODE_OPTIONS=--openssl-legacy-provider jest --runInBand",
+    "test-dev": "npm run install-test-webpack-versions && NODE_OPTIONS=--openssl-legacy-provider jest --watch --runInBand"
   },
   "files": [
     "public",
@@ -48,6 +48,7 @@
   "devDependencies": {
     "@babel/core": "7.26.9",
     "@babel/plugin-proposal-decorators": "7.25.9",
+    "@babel/plugin-transform-class-properties": "^7.27.1",
     "@babel/plugin-transform-runtime": "7.26.9",
     "@babel/preset-env": "7.26.9",
     "@babel/preset-react": "7.26.3",
@@ -72,7 +73,7 @@
     "globby": "11.0.3",
     "gulp": "4.0.2",
     "gulp-babel": "8.0.0",
-    "jest": "29.7.0",
+    "jest": "^30.2.0",
     "lodash.memoize": "^4.1.2",
     "lodash.merge": "^4.6.2",
     "lodash.partial": "^4.2.1",
@@ -82,7 +83,7 @@
     "postcss-icss-values": "2.0.2",
     "postcss-loader": "5.3.0",
     "preact": "10.5.13",
-    "puppeteer": "24.2.1",
+    "puppeteer": "^24.30.0",
     "stream-combiner2": "1.1.1",
     "style-loader": "2.0.0",
     "terser-webpack-plugin": "5.1.2",

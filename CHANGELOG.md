@@ -16,6 +16,12 @@ _Note: Gaps between patch versions are faulty, broken or test releases._
   * Prevent `TypeError` when `assets` or `modules` are undefined in `analyzer.js`
     ([#679](https://github.com/webpack-contrib/webpack-bundle-analyzer/pull/679) by [@Srushti-33](https://github.com/Srushti-33))
 
+## 5.0.1
+
+* **Bug Fix**
+  * Restore `@babel/plugin-transform-class-properties` to fix HTML report ([#682](https://github.com/webpack-contrib/webpack-bundle-analyzer/pull/682) by [@valscion](https://github.com/valscion))
+
+## 5.0.0
 
 * **Breaking Change**
   * Remove explicit support for Node versions below 20.9.0 ([#676](https://github.com/webpack-contrib/webpack-bundle-analyzer/pull/676) by [@valscion](https://github.com/valscion))
