@@ -12,8 +12,7 @@ export default class ThemeToggle extends Component {
     const {darkMode} = store;
 
     return (
-      <Button
-        type="button"
+      <Button type="button"
         title={darkMode ? 'Switch to Light Mode' : 'Switch to Dark Mode'}
         className={s.themeToggle}
         onClick={this.handleToggle}>
