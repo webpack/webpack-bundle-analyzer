@@ -4,6 +4,7 @@ import cls from 'classnames';
 import s from './Sidebar.css';
 import Button from './Button';
 import Icon from './Icon';
+import ThemeToggle from './ThemeToggle';
 
 const toggleTime = parseInt(s.toggleTime);
 
@@ -48,6 +49,7 @@ export default class Sidebar extends Component {
         className={className}
         onClick={this.handleClick}
         onMouseLeave={this.handleMouseLeave}>
+        <ThemeToggle/>
         {visible &&
           <Button type="button"
             title="Pin"

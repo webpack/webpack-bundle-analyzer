@@ -1,13 +1,14 @@
 @value toggleTime: 200ms;
 
 .container {
-  background: #fff;
+  background: var(--bg-primary);
   border: none;
-  border-right: 1px solid #aaa;
+  border-right: 1px solid var(--border-color);
   box-sizing: border-box;
   max-width: calc(50% - 10px);
   opacity: 0.95;
   z-index: 1;
+  transition: background-color 0.3s ease, border-color 0.3s ease;
 }
 
 .container:not(.hidden) {
@@ -42,6 +43,16 @@
 }
 
 .empty.pinned .content {
+  padding: 0;
+}
+
+.container :global(.themeToggle) {
+  position: absolute;
+  top: 10px;
+  left: 15px;
+  z-index: 10;
+  height: 26px;
+  width: 27px;
   padding: 0;
 }
 
