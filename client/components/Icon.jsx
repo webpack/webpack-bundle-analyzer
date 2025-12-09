@@ -4,6 +4,8 @@ import PureComponent from '../lib/PureComponent';
 
 import iconArrowRight from '../assets/icon-arrow-right.svg';
 import iconPin from '../assets/icon-pin.svg';
+import iconMoon from '../assets/icon-moon.svg';
+import iconSun from '../assets/icon-sun.svg';
 
 const ICONS = {
   'arrow-right': {
@@ -13,6 +15,14 @@ const ICONS = {
   'pin': {
     src: iconPin,
     size: [12, 18]
+  },
+  'moon': {
+    src: iconMoon,
+    size: [24, 24]
+  },
+  'sun': {
+    src: iconSun,
+    size: [24, 24]
   }
 };
 

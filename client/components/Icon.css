@@ -1,4 +1,9 @@
 .icon {
   background: no-repeat center/contain;
   display: inline-block;
+  filter: invert(0);
+}
+
+[data-theme="dark"] .icon {
+  filter: invert(1);
 }
