@@ -12,6 +12,7 @@ export class Store {
   @observable defaultSize;
   @observable selectedSize;
   @observable showConcatenatedModulesContent = (localStorage.getItem('showConcatenatedModulesContent') === true);
+  @observable darkMode = (localStorage.getItem('darkMode') === true);
 
   setModules(modules) {
     walkModules(modules, module => {
@@ -178,6 +179,20 @@ export class Store {
 
       return filteredModules;
     }, []);
+  }
+
+  toggleDarkMode() {
+    this.darkMode = !this.darkMode;
+    localStorage.setItem('darkMode', this.darkMode);
+    this.updateTheme();
+  }
+
+  updateTheme() {
+    if (this.darkMode) {
+      document.documentElement.setAttribute('data-theme', 'dark');
+    } else {
+      document.documentElement.removeAttribute('data-theme');
+    }
   }
 }
 

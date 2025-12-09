@@ -1,5 +1,24 @@
 :root {
   --main-font: normal 11px Verdana, sans-serif;
+  --bg-primary: #fff;
+  --bg-secondary: #f5f5f5;
+  --text-primary: #000;
+  --text-secondary: #666;
+  --border-color: #aaa;
+  --border-light: #ddd;
+  --shadow: rgba(0, 0, 0, 0.1);
+  --hover-bg: rgba(0, 0, 0, 0.05);
+}
+
+[data-theme="dark"] {
+  --bg-primary: #1e1e1e;
+  --bg-secondary: #252525;
+  --text-primary: #e0e0e0;
+  --text-secondary: #a0a0a0;
+  --border-color: #404040;
+  --border-light: #333;
+  --shadow: rgba(0, 0, 0, 0.3);
+  --hover-bg: rgba(255, 255, 255, 0.05);
 }
 
 :global html,
@@ -10,6 +29,9 @@
   overflow: hidden;
   padding: 0;
   width: 100%;
+  background: var(--bg-primary);
+  color: var(--text-primary);
+  transition: background-color 0.3s ease, color 0.3s ease;
 }
 
 :global body.resizing {
