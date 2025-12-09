@@ -16,6 +16,10 @@ _Note: Gaps between patch versions are faulty, broken or test releases._
   * Prevent `TypeError` when `assets` or `modules` are undefined in `analyzer.js`
     ([#679](https://github.com/webpack-contrib/webpack-bundle-analyzer/pull/679) by [@Srushti-33](https://github.com/Srushti-33))
 
+* **New Feature**
+  * Add optional dark/light mode toggle ([#683](https://github.com/webpack/webpack-bundle-analyzer/pull/683) by [@theEquinoxDev](https://github.com/theEquinoxDev))
+
+
 ## 5.0.1
 
 * **Bug Fix**

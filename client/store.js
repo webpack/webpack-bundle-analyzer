@@ -12,7 +12,17 @@ export class Store {
   @observable defaultSize;
   @observable selectedSize;
   @observable showConcatenatedModulesContent = (localStorage.getItem('showConcatenatedModulesContent') === true);
-  @observable darkMode = (localStorage.getItem('darkMode') === true);
+  @observable darkMode = (() => {
+    const systemPrefersDark = window.matchMedia('(prefers-color-scheme: dark)').matches;
+  
+    try {
+      const saved = localStorage.getItem('darkMode');
+      if (saved !== null) return saved === 'true';
+    } catch (e) {}
+  
+    return systemPrefersDark;
+  })();
+  
 
   setModules(modules) {
     walkModules(modules, module => {
@@ -183,7 +193,10 @@ export class Store {
 
   toggleDarkMode() {
     this.darkMode = !this.darkMode;
-    localStorage.setItem('darkMode', this.darkMode);
+    try {
+      localStorage.setItem('darkMode', this.darkMode);
+    } catch (e) {
+    }
     this.updateTheme();
   }
 
