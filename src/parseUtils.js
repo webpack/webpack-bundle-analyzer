@@ -53,7 +53,7 @@ function parseBundle(bundlePath, opts) {
 
             if (firstVariableDeclaration) {
               for (const declaration of firstVariableDeclaration.declarations) {
-                if (declaration.init) {
+                if (declaration.init && isModulesList(declaration.init)) {
                   state.locations = getModulesLocations(declaration.init);
 
                   if (state.locations) {
