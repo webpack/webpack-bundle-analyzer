@@ -12,6 +12,10 @@ _Note: Gaps between patch versions are faulty, broken or test releases._
 
 ## UNRELEASED
 
+* **Bug Fix**
+  * Fix tooltip styling in dark mode when using CSS Modules ([#688](https://github.com/webpack/webpack-bundle-analyzer/pull/688) by [@theEquinoxDev](https://github.com/theEquinoxDev))
+
+
 ## 5.1.0
 
 * **Bug Fix**
