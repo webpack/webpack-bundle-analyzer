@@ -16,8 +16,8 @@
   visibility: hidden;
 }
 
-:global(html[data-theme='dark']) .container { 
-  background: #1f2937; 
-  color: #fff; 
-  border: 1px solid #374151; 
+:global(html[data-theme='dark']) .container {
+  background: var(--bg-primary);
+  color: var(--text-primary);
+  border: 1px solid var(--border-color);
 }
