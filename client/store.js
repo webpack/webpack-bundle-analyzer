@@ -14,15 +14,17 @@ export class Store {
   @observable showConcatenatedModulesContent = (localStorage.getItem('showConcatenatedModulesContent') === true);
   @observable darkMode = (() => {
     const systemPrefersDark = window.matchMedia('(prefers-color-scheme: dark)').matches;
-  
+
     try {
       const saved = localStorage.getItem('darkMode');
       if (saved !== null) return saved === 'true';
-    } catch (e) {}
-  
+    } catch (e) {
+      // Some browsers might not have localStorage available and we can fail silently
+    }
+
     return systemPrefersDark;
   })();
-  
+
 
   setModules(modules) {
     walkModules(modules, module => {
@@ -196,6 +198,7 @@ export class Store {
     try {
       localStorage.setItem('darkMode', this.darkMode);
     } catch (e) {
+      // Some browsers might not have localStorage available and we can fail silently
     }
     this.updateTheme();
   }
