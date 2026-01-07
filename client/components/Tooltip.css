@@ -15,3 +15,9 @@
   opacity: 0;
   visibility: hidden;
 }
+
+:global(html[data-theme='dark']) .container { 
+  background: #1f2937; 
+  color: #fff; 
+  border: 1px solid #374151; 
+}
