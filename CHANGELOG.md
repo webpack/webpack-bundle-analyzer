@@ -12,9 +12,11 @@ _Note: Gaps between patch versions are faulty, broken or test releases._
 
 ## UNRELEASED
 
+## 5.1.1
+
 * **Bug Fix**
   * Fix tooltip styling in dark mode when using CSS Modules ([#688](https://github.com/webpack/webpack-bundle-analyzer/pull/688) by [@theEquinoxDev](https://github.com/theEquinoxDev))
-
+  * Avoid parse failures for bundles with IIFE ([#685](https://github.com/webpack/webpack-bundle-analyzer/pull/685) by [@hai-x](https://github.com/hai-x))
 
 ## 5.1.0
 
