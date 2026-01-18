@@ -100,7 +100,7 @@ async function startServer(bundleStats, opts) {
     });
   });
 
-  const wss = new WebSocket.WebSocketServer({server});
+  const wss = new WebSocket.Server({server});
 
   wss.on('connection', ws => {
     ws.on('error', err => {
