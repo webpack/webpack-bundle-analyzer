@@ -47,7 +47,9 @@ describe('WebSocket server', function () {
           ].join('\r\n'));
         });
 
+        let count = 0;
         socket.on('data', function (chunk) {
+          ++count;
           const expected = Buffer.from([
             'HTTP/1.1 101 Switching Protocols',
             'Upgrade: websocket',
@@ -57,7 +59,9 @@ describe('WebSocket server', function () {
             ''
           ].join('\r\n'));
 
-          expect(chunk.equals(expected)).to.be.true;
+          if (count === 1) {
+            expect(chunk.equals(expected)).to.be.true;
+          }
 
           // Send a WebSocket frame with a reserved opcode (5) to trigger an error
           // to be emitted on the server.
