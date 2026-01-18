@@ -47,6 +47,10 @@ describe('WebSocket server', function () {
           ].join('\r\n'));
         });
 
+        socket.on('close', function () {
+          server.close(done);
+        });
+
         let count = 0;
         socket.on('data', function (chunk) {
           ++count;
@@ -59,6 +63,7 @@ describe('WebSocket server', function () {
             ''
           ].join('\r\n'));
 
+          // Because data may be received in multiple chunks, only check the first one
           if (count === 1) {
             expect(chunk.equals(expected)).to.be.true;
           }
@@ -66,9 +71,6 @@ describe('WebSocket server', function () {
           // Send a WebSocket frame with a reserved opcode (5) to trigger an error
           // to be emitted on the server.
           socket.write(Buffer.from([0x85, 0x00]));
-          socket.on('close', function () {
-            server.close(done);
-          });
         });
       })
       .catch(done);
