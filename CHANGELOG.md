@@ -12,6 +12,9 @@ _Note: Gaps between patch versions are faulty, broken or test releases._
 
 ## UNRELEASED
 
+* **Internal**
+  * Update `ws` dependency ([#691](https://github.com/webpack-contrib/webpack-bundle-analyzer/pull/691) by [@bjohansebas](https://github.com/bjohansebas))
+
 ## 5.1.1
 
 * **Bug Fix**
