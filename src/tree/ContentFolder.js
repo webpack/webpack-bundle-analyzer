@@ -19,6 +19,10 @@ export default class ContentFolder extends BaseFolder {
     return this.getSize('brotliSize');
   }
 
+  get zstdSize() {
+    return this.getSize('zstdSize');
+  }
+
   getSize(sizeType) {
     const ownerModuleSize = this.ownerModule[sizeType];
 
@@ -33,6 +37,7 @@ export default class ContentFolder extends BaseFolder {
       parsedSize: this.parsedSize,
       gzipSize: this.gzipSize,
       brotliSize: this.brotliSize,
+      zstdSize: this.zstdSize,
       inaccurateSizes: true
     };
   }

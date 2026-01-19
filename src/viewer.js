@@ -22,7 +22,7 @@ function resolveTitle(reportTitle) {
 }
 
 function resolveDefaultSizes(defaultSizes, compressionAlgorithm) {
-  if (['gzip', 'brotli'].includes(defaultSizes)) return compressionAlgorithm;
+  if (['gzip', 'brotli', 'zstd'].includes(defaultSizes)) return compressionAlgorithm;
   return defaultSizes;
 }
 

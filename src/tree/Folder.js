@@ -23,6 +23,10 @@ export default class Folder extends BaseFolder {
     return this.opts.compressionAlgorithm === 'brotli' ? this.getCompressedSize('brotli') : undefined;
   }
 
+  get zstdSize() {
+    return this.opts.compressionAlgorithm === 'zstd' ? this.getCompressedSize('zstd') : undefined;
+  }
+
   getCompressedSize(compressionAlgorithm) {
     const key = `_${compressionAlgorithm}Size`;
 
@@ -71,7 +75,8 @@ export default class Folder extends BaseFolder {
       ...super.toChartData(),
       parsedSize: this.parsedSize,
       gzipSize: this.gzipSize,
-      brotliSize: this.brotliSize
+      brotliSize: this.brotliSize,
+      zstdSize: this.zstdSize
     };
   }
 

@@ -19,6 +19,10 @@ export default class ContentModule extends Module {
     return this.getSize('brotliSize');
   }
 
+  get zstdSize() {
+    return this.getSize('zstdSize');
+  }
+
   getSize(sizeType) {
     const ownerModuleSize = this.ownerModule[sizeType];
 

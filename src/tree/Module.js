@@ -17,6 +17,7 @@ export default class Module extends Node {
     this.data.parsedSrc = value;
     delete this._gzipSize;
     delete this._brotliSize;
+    delete this._zstdSize;
   }
 
   get size() {
@@ -39,6 +40,10 @@ export default class Module extends Node {
     return this.getBrotliSize();
   }
 
+  get zstdSize() {
+    return this.getZstdSize();
+  }
+
   getParsedSize() {
     return this.src ? this.src.length : undefined;
   }
@@ -49,6 +54,10 @@ export default class Module extends Node {
 
   getBrotliSize() {
     return this.opts.compressionAlgorithm === 'brotli' ? this.getCompressedSize('brotli') : undefined;
+  }
+
+  getZstdSize() {
+    return this.opts.compressionAlgorithm === 'zstd' ? this.getCompressedSize('zstd') : undefined;
   }
 
   getCompressedSize(compressionAlgorithm) {
@@ -78,7 +87,8 @@ export default class Module extends Node {
       statSize: this.size,
       parsedSize: this.parsedSize,
       gzipSize: this.gzipSize,
-      brotliSize: this.brotliSize
+      brotliSize: this.brotliSize,
+      zstdSize: this.zstdSize
     };
   }
 

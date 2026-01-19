@@ -24,6 +24,10 @@ export default class ConcatenatedModule extends Module {
     return this.getBrotliSize() ?? this.getEstimatedSize('brotliSize');
   }
 
+  get zstdSize() {
+    return this.getZstdSize() ?? this.getEstimatedSize('zstdSize');
+  }
+
   getEstimatedSize(sizeType) {
     const parentModuleSize = this.parent[sizeType];
 

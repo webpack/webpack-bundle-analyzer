@@ -11,7 +11,7 @@ const Logger = require('../Logger');
 const utils = require('../utils');
 
 const SIZES = new Set(['stat', 'parsed', 'gzip']);
-const COMPRESSION_ALGORITHMS = new Set(['gzip', 'brotli']);
+const COMPRESSION_ALGORITHMS = new Set(['gzip', 'brotli', 'zstd']);
 
 const program = commander
   .version(require('../../package.json').version)

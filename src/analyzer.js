@@ -113,6 +113,7 @@ function getViewerData(bundleStats, bundleDir, opts) {
       asset.parsedSize = Buffer.byteLength(assetSources.src);
       if (compressionAlgorithm === 'gzip') asset.gzipSize = getCompressedSize('gzip', assetSources.src);
       if (compressionAlgorithm === 'brotli') asset.brotliSize = getCompressedSize('brotli', assetSources.src);
+      if (compressionAlgorithm === 'zstd') asset.zstdSize = getCompressedSize('zstd', assetSources.src);
     }
 
     // Picking modules from current bundle script
@@ -169,6 +170,7 @@ function getViewerData(bundleStats, bundleDir, opts) {
     parsedSize: asset.parsedSize,
     gzipSize: asset.gzipSize,
     brotliSize: asset.brotliSize,
+    zstdSize: asset.zstdSize,
     groups: Object.values(asset.tree.children).map(i => i.toChartData()),
     isInitialByEntrypoint: chunkToInitialByEntrypoint[filename] ?? {}
   }));

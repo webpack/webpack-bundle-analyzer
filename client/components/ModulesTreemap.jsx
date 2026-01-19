@@ -29,6 +29,8 @@ function getSizeSwitchItems() {
 
   if (window.compressionAlgorithm === 'brotli') items.push({label: 'Brotli', prop: 'brotliSize'});
 
+  if (window.compressionAlgorithm === 'zstd') items.push({label: 'Zstandard', prop: 'zstdSize'});
+
   return items;
 };
 

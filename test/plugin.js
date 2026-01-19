@@ -188,6 +188,12 @@ describe('Plugin', function () {
         await webpackCompile(config, '4.44.2');
         await expectValidReport({parsedSize: 1311, gzipSize: undefined, brotliSize: 302});
       });
+
+      it('should support zstd', async function () {
+        const config = makeWebpackConfig({analyzerOpts: {compressionAlgorithm: 'zstd'}});
+        await webpackCompile(config, '4.44.2');
+        await expectValidReport({parsedSize: 1311, gzipSize: undefined, brotliSize: undefined, zstdSize: 345});
+      });
     });
   });
 
@@ -208,7 +214,9 @@ describe('Plugin', function () {
       label: bundleLabel,
       statSize,
       parsedSize,
-      gzipSize
+      gzipSize,
+      brotliSize: opts.brotliSize,
+      zstdSize: opts.zstdSize
     });
   }
 
