@@ -15,6 +15,8 @@ _Note: Gaps between patch versions are faulty, broken or test releases._
 * **New Feature**
   * Add support for Zstandard compression ([#693](https://github.com/webpack-contrib/webpack-bundle-analyzer/pull/693) by [@bjohansebas](https://github.com/bjohansebas))
 
+* **Internal**
+  * Update `ws` dependency ([#691](https://github.com/webpack-contrib/webpack-bundle-analyzer/pull/691) by [@bjohansebas](https://github.com/bjohansebas))
 
 ## 5.1.1
 
