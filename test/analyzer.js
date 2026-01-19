@@ -6,6 +6,7 @@ const path = require('path');
 const del = require('del');
 const childProcess = require('child_process');
 const puppeteer = require('puppeteer');
+const {isZstdSupported} = require('../src/sizeUtils');
 
 let browser;
 
@@ -270,10 +271,12 @@ describe('Analyzer', function () {
         expect(await getCompressionAlgorithm()).to.equal('gzip');
       });
 
-      it('should accept --compression-algorithm zstd', async function () {
-        generateReportFrom('with-modules-chunk.json', '--compression-algorithm zstd');
-        expect(await getCompressionAlgorithm()).to.equal('zstd');
-      });
+      if (isZstdSupported) {
+        it('should accept --compression-algorithm zstd', async function () {
+          generateReportFrom('with-modules-chunk.json', '--compression-algorithm zstd');
+          expect(await getCompressionAlgorithm()).to.equal('zstd');
+        });
+      }
 
       it('should default to gzip', async function () {
         generateReportFrom('with-modules-chunk.json');

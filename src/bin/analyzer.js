@@ -9,9 +9,10 @@ const analyzer = require('../analyzer');
 const viewer = require('../viewer');
 const Logger = require('../Logger');
 const utils = require('../utils');
+const {isZstdSupported} = require('../sizeUtils');
 
 const SIZES = new Set(['stat', 'parsed', 'gzip']);
-const COMPRESSION_ALGORITHMS = new Set(['gzip', 'brotli', 'zstd']);
+const COMPRESSION_ALGORITHMS = new Set(isZstdSupported ? ['gzip', 'brotli', 'zstd'] : ['gzip', 'brotli']);
 
 const program = commander
   .version(require('../../package.json').version)

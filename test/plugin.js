@@ -6,6 +6,7 @@ const del = require('del');
 const path = require('path');
 const puppeteer = require('puppeteer');
 const BundleAnalyzerPlugin = require('../lib/BundleAnalyzerPlugin');
+const {isZstdSupported} = require('../src/sizeUtils');
 
 describe('Plugin', function () {
   describe('options', function () {
@@ -188,12 +189,13 @@ describe('Plugin', function () {
         await webpackCompile(config, '4.44.2');
         await expectValidReport({parsedSize: 1311, gzipSize: undefined, brotliSize: 302});
       });
-
-      it('should support zstd', async function () {
-        const config = makeWebpackConfig({analyzerOpts: {compressionAlgorithm: 'zstd'}});
-        await webpackCompile(config, '4.44.2');
-        await expectValidReport({parsedSize: 1311, gzipSize: undefined, brotliSize: undefined, zstdSize: 345});
-      });
+      if (isZstdSupported) {
+        it('should support zstd', async function () {
+          const config = makeWebpackConfig({analyzerOpts: {compressionAlgorithm: 'zstd'}});
+          await webpackCompile(config, '4.44.2');
+          await expectValidReport({parsedSize: 1311, gzipSize: undefined, brotliSize: undefined, zstdSize: 345});
+        });
+      }
     });
   });
 
