@@ -8,20 +8,20 @@
 }
 
 .container.module {
-  background-image: url('../assets/icon-module.svg');
+  background-image: url("../assets/icon-module.svg");
   background-position-x: 1px;
 }
 
 .container.folder {
-  background-image: url('../assets/icon-folder.svg');
+  background-image: url("../assets/icon-folder.svg");
 }
 
 .container.chunk {
-  background-image: url('../assets/icon-chunk.svg');
+  background-image: url("../assets/icon-chunk.svg");
 }
 
 .container.invisible:hover::before {
-  background: url('../assets/icon-invisible.svg') no-repeat left center;
+  background: url("../assets/icon-invisible.svg") no-repeat left center;
   content: "";
   height: 100%;
   left: 0;

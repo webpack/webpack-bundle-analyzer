@@ -1,3 +1,3 @@
-require('./a');
-require('./b');
-require('./a-clone');
+require("./a");
+require("./b");
+require("./a-clone");
