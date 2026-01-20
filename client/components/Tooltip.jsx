@@ -1,25 +1,24 @@
-import {Component} from 'preact';
-import cls from 'classnames';
+import { Component } from "preact";
+import cls from "classnames";
 
-import s from './Tooltip.css';
+import s from "./Tooltip.css";
 
 export default class Tooltip extends Component {
-
   static marginX = 10;
   static marginY = 30;
 
   mouseCoords = {
     x: 0,
-    y: 0
+    y: 0,
   };
 
   state = {
     left: 0,
-    top: 0
+    top: 0,
   };
 
   componentDidMount() {
-    document.addEventListener('mousemove', this.handleMouseMove, true);
+    document.addEventListener("mousemove", this.handleMouseMove, true);
   }
 
   shouldComponentUpdate(nextProps) {
@@ -27,29 +26,27 @@ export default class Tooltip extends Component {
   }
 
   componentWillUnmount() {
-    document.removeEventListener('mousemove', this.handleMouseMove, true);
+    document.removeEventListener("mousemove", this.handleMouseMove, true);
   }
 
   render() {
-    const {children, visible} = this.props;
+    const { children, visible } = this.props;
     const className = cls({
       [s.container]: true,
-      [s.hidden]: !visible
+      [s.hidden]: !visible,
     });
 
     return (
-      <div ref={this.saveNode}
-        className={className}
-        style={this.getStyle()}>
+      <div ref={this.saveNode} className={className} style={this.getStyle()}>
         {children}
       </div>
     );
   }
 
-  handleMouseMove = event => {
+  handleMouseMove = (event) => {
     Object.assign(this.mouseCoords, {
       x: event.pageX,
-      y: event.pageY
+      y: event.pageY,
     });
 
     if (this.props.visible) {
@@ -57,12 +54,12 @@ export default class Tooltip extends Component {
     }
   };
 
-  saveNode = node => (this.node = node);
+  saveNode = (node) => (this.node = node);
 
   getStyle() {
     return {
       left: this.state.left,
-      top: this.state.top
+      top: this.state.top,
     };
   }
 
@@ -71,7 +68,7 @@ export default class Tooltip extends Component {
 
     const pos = {
       left: this.mouseCoords.x + Tooltip.marginX,
-      top: this.mouseCoords.y + Tooltip.marginY
+      top: this.mouseCoords.y + Tooltip.marginY,
     };
 
     const boundingRect = this.node.getBoundingClientRect();
@@ -88,5 +85,4 @@ export default class Tooltip extends Component {
 
     this.setState(pos);
   }
-
 }

@@ -1,8 +1,8 @@
-import Button from './Button';
-import PureComponent from '../lib/PureComponent';
+import Button from "./Button";
+import PureComponent from "../lib/PureComponent";
 
 export default class SwitcherItem extends PureComponent {
-  render({item, ...props}) {
+  render({ item, ...props }) {
     return (
       <Button {...props} onClick={this.handleClick}>
         {item.label}
@@ -12,5 +12,5 @@ export default class SwitcherItem extends PureComponent {
 
   handleClick = () => {
     this.props.onClick(this.props.item);
-  }
+  };
 }

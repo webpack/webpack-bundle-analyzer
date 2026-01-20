@@ -8,7 +8,9 @@
   opacity: 0.9;
   white-space: nowrap;
   visibility: visible;
-  transition: opacity .2s ease, visibility .2s ease;
+  transition:
+    opacity 0.2s ease,
+    visibility 0.2s ease;
 }
 
 .hidden {
@@ -16,7 +18,7 @@
   visibility: hidden;
 }
 
-:global(html[data-theme='dark']) .container {
+:global(html[data-theme="dark"]) .container {
   background: var(--bg-primary);
   color: var(--text-primary);
   border: 1px solid var(--border-color);

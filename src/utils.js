@@ -1,25 +1,40 @@
-const {inspect, types} = require('util');
-const opener = require('opener');
+const { inspect, types } = require("util");
+const opener = require("opener");
 
-const MONTHS = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'];
+const MONTHS = [
+  "Jan",
+  "Feb",
+  "Mar",
+  "Apr",
+  "May",
+  "Jun",
+  "Jul",
+  "Aug",
+  "Sep",
+  "Oct",
+  "Nov",
+  "Dec",
+];
 
 exports.createAssetsFilter = createAssetsFilter;
 
 function createAssetsFilter(excludePatterns) {
-  const excludeFunctions = (Array.isArray(excludePatterns) ? excludePatterns : [excludePatterns])
+  const excludeFunctions = (
+    Array.isArray(excludePatterns) ? excludePatterns : [excludePatterns]
+  )
     .filter(Boolean)
-    .map(pattern => {
-      if (typeof pattern === 'string') {
-        pattern = new RegExp(pattern, 'u');
+    .map((pattern) => {
+      if (typeof pattern === "string") {
+        pattern = new RegExp(pattern, "u");
       }
 
       if (types.isRegExp(pattern)) {
         return (asset) => pattern.test(asset);
       }
 
-      if (typeof pattern !== 'function') {
+      if (typeof pattern !== "function") {
         throw new TypeError(
-          `Pattern should be either string, RegExp or a function, but "${inspect(pattern, {depth: 0})}" got.`
+          `Pattern should be either string, RegExp or a function, but "${inspect(pattern, { depth: 0 })}" got.`,
         );
       }
 
@@ -27,7 +42,7 @@ function createAssetsFilter(excludePatterns) {
     });
 
   if (excludeFunctions.length) {
-    return (asset) => excludeFunctions.every(fn => fn(asset) !== true);
+    return (asset) => excludeFunctions.every((fn) => fn(asset) !== true);
   } else {
     return () => true;
   }
@@ -47,11 +62,11 @@ exports.defaultTitle = function () {
 
   const currentTime = `${day} ${month} ${year} at ${hour}:${minute}`;
 
-  return `${process.env.npm_package_name || 'Webpack Bundle Analyzer'} [${currentTime}]`;
+  return `${process.env.npm_package_name || "Webpack Bundle Analyzer"} [${currentTime}]`;
 };
 
 exports.defaultAnalyzerUrl = function (options) {
-  const {listenHost, boundAddress} = options;
+  const { listenHost, boundAddress } = options;
   return `http://${listenHost}:${boundAddress.port}`;
 };
 

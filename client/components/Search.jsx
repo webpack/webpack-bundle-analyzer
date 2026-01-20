@@ -1,12 +1,11 @@
 // TODO: switch to a more modern debounce package once we drop Node.js 10 support
-import debounce from 'debounce';
+import debounce from "debounce";
 
-import s from './Search.css';
-import Button from './Button';
-import PureComponent from '../lib/PureComponent';
+import s from "./Search.css";
+import Button from "./Button";
+import PureComponent from "../lib/PureComponent";
 
 export default class Search extends PureComponent {
-
   componentDidMount() {
     if (this.props.autofocus) {
       this.focus();
@@ -18,23 +17,25 @@ export default class Search extends PureComponent {
   }
 
   render() {
-    const {label, query} = this.props;
+    const { label, query } = this.props;
 
     return (
       <div className={s.container}>
-        <div className={s.label}>
-          {label}:
-        </div>
+        <div className={s.label}>{label}:</div>
         <div className={s.row}>
-          <input ref={this.saveInputNode}
+          <input
+            ref={this.saveInputNode}
             className={s.input}
             type="text"
             value={query}
             placeholder="Enter regexp"
             onInput={this.handleValueChange}
             onBlur={this.handleInputBlur}
-            onKeyDown={this.handleKeyDown}/>
-          <Button className={s.clear} onClick={this.handleClearClick}>x</Button>
+            onKeyDown={this.handleKeyDown}
+          />
+          <Button className={s.clear} onClick={this.handleClearClick}>
+            x
+          </Button>
         </div>
       </div>
     );
@@ -42,25 +43,25 @@ export default class Search extends PureComponent {
 
   handleValueChange = debounce((event) => {
     this.informChange(event.target.value);
-  }, 400)
+  }, 400);
 
   handleInputBlur = () => {
     this.handleValueChange.flush();
-  }
+  };
 
   handleClearClick = () => {
     this.clear();
     this.focus();
-  }
+  };
 
-  handleKeyDown = event => {
+  handleKeyDown = (event) => {
     let handled = true;
 
     switch (event.key) {
-      case 'Escape':
+      case "Escape":
         this.clear();
         break;
-      case 'Enter':
+      case "Enter":
         this.handleValueChange.flush();
         break;
       default:
@@ -70,7 +71,7 @@ export default class Search extends PureComponent {
     if (handled) {
       event.stopPropagation();
     }
-  }
+  };
 
   focus() {
     if (this.input) {
@@ -80,13 +81,13 @@ export default class Search extends PureComponent {
 
   clear() {
     this.handleValueChange.clear();
-    this.informChange('');
-    this.input.value = '';
+    this.informChange("");
+    this.input.value = "";
   }
 
   informChange(value) {
     this.props.onQueryChange(value);
   }
 
-  saveInputNode = node => this.input = node;
+  saveInputNode = (node) => (this.input = node);
 }

@@ -1,17 +1,17 @@
-import {Component} from 'preact';
-import cls from 'classnames';
+import { Component } from "preact";
+import cls from "classnames";
 
-import s from './Sidebar.css';
-import Button from './Button';
-import Icon from './Icon';
-import ThemeToggle from './ThemeToggle';
+import s from "./Sidebar.css";
+import Button from "./Button";
+import Icon from "./Icon";
+import ThemeToggle from "./ThemeToggle";
 
 const toggleTime = parseInt(s.toggleTime);
 
 export default class Sidebar extends Component {
   static defaultProps = {
     pinned: false,
-    position: 'left'
+    position: "left",
   };
 
   allowHide = true;
@@ -20,7 +20,7 @@ export default class Sidebar extends Component {
   width = null;
   state = {
     visible: true,
-    renderContent: true
+    renderContent: true,
   };
 
   componentDidMount() {
@@ -33,45 +33,53 @@ export default class Sidebar extends Component {
   }
 
   render() {
-    const {position, pinned, children} = this.props;
-    const {visible, renderContent} = this.state;
+    const { position, pinned, children } = this.props;
+    const { visible, renderContent } = this.state;
 
     const className = cls({
       [s.container]: true,
       [s.pinned]: pinned,
-      [s.left]: (position === 'left'),
+      [s.left]: position === "left",
       [s.hidden]: !visible,
-      [s.empty]: !renderContent
+      [s.empty]: !renderContent,
     });
 
     return (
-      <div ref={this.saveNode}
+      <div
+        ref={this.saveNode}
         className={className}
         onClick={this.handleClick}
-        onMouseLeave={this.handleMouseLeave}>
-        <ThemeToggle/>
-        {visible &&
-          <Button type="button"
+        onMouseLeave={this.handleMouseLeave}
+      >
+        <ThemeToggle />
+        {visible && (
+          <Button
+            type="button"
             title="Pin"
             className={s.pinButton}
             active={pinned}
             toggle
-            onClick={this.handlePinButtonClick}>
-            <Icon name="pin" size={13}/>
+            onClick={this.handlePinButtonClick}
+          >
+            <Icon name="pin" size={13} />
           </Button>
-        }
-        <Button type="button"
-          title={visible ? 'Hide' : 'Show sidebar'}
+        )}
+        <Button
+          type="button"
+          title={visible ? "Hide" : "Show sidebar"}
           className={s.toggleButton}
-          onClick={this.handleToggleButtonClick}>
-          <Icon name="arrow-right" size={10} rotate={visible ? 180 : 0}/>
+          onClick={this.handleToggleButtonClick}
+        >
+          <Icon name="arrow-right" size={10} rotate={visible ? 180 : 0} />
         </Button>
-        {pinned && visible &&
-          <div className={s.resizer} onMouseDown={this.handleResizeStart}/>
-        }
-        <div className={s.content}
+        {pinned && visible && (
+          <div className={s.resizer} onMouseDown={this.handleResizeStart} />
+        )}
+        <div
+          className={s.content}
           onMouseEnter={this.handleMouseEnter}
-          onMouseMove={this.handleMouseMove}>
+          onMouseMove={this.handleMouseMove}
+        >
           {renderContent ? children : null}
         </div>
       </div>
@@ -80,7 +88,7 @@ export default class Sidebar extends Component {
 
   handleClick = () => {
     this.allowHide = false;
-  }
+  };
 
   handleMouseEnter = () => {
     if (!this.toggling && !this.props.pinned) {
@@ -91,52 +99,53 @@ export default class Sidebar extends Component {
 
   handleMouseMove = () => {
     this.allowHide = true;
-  }
+  };
 
   handleMouseLeave = () => {
     if (this.allowHide && !this.toggling && !this.props.pinned) {
       this.toggleVisibility(false);
     }
-  }
+  };
 
   handleToggleButtonClick = () => {
     this.toggleVisibility();
-  }
+  };
 
   handlePinButtonClick = () => {
     const pinned = !this.props.pinned;
     this.width = pinned ? this.node.getBoundingClientRect().width : null;
     this.updateNodeWidth();
     this.props.onPinStateChange(pinned);
-  }
+  };
 
-  handleResizeStart = event => {
+  handleResizeStart = (event) => {
     this.resizeInfo = {
       startPageX: event.pageX,
-      initialWidth: this.width
+      initialWidth: this.width,
     };
-    document.body.classList.add('resizing', 'col');
-    document.addEventListener('mousemove', this.handleResize, true);
-    document.addEventListener('mouseup', this.handleResizeEnd, true);
-  }
+    document.body.classList.add("resizing", "col");
+    document.addEventListener("mousemove", this.handleResize, true);
+    document.addEventListener("mouseup", this.handleResizeEnd, true);
+  };
 
-  handleResize = event => {
-    this.width = this.resizeInfo.initialWidth + (event.pageX - this.resizeInfo.startPageX);
+  handleResize = (event) => {
+    this.width =
+      this.resizeInfo.initialWidth + (event.pageX - this.resizeInfo.startPageX);
     this.updateNodeWidth();
-  }
+  };
 
   handleResizeEnd = () => {
-    document.body.classList.remove('resizing', 'col');
-    document.removeEventListener('mousemove', this.handleResize, true);
-    document.removeEventListener('mouseup', this.handleResizeEnd, true);
+    document.body.classList.remove("resizing", "col");
+    document.removeEventListener("mousemove", this.handleResize, true);
+    document.removeEventListener("mouseup", this.handleResizeEnd, true);
     this.props.onResize();
-  }
+  };
 
   toggleVisibility(flag) {
     clearTimeout(this.hideContentTimeout);
 
-    const {visible} = this.state;
-    const {onToggle, pinned} = this.props;
+    const { visible } = this.state;
+    const { onToggle, pinned } = this.props;
 
     if (flag === undefined) {
       flag = !visible;
@@ -144,7 +153,7 @@ export default class Sidebar extends Component {
       return;
     }
 
-    this.setState({visible: flag});
+    this.setState({ visible: flag });
     this.toggling = true;
     setTimeout(() => {
       this.toggling = false;
@@ -155,22 +164,21 @@ export default class Sidebar extends Component {
     }
 
     if (flag || pinned) {
-      this.setState({renderContent: flag});
+      this.setState({ renderContent: flag });
       onToggle(flag);
     } else if (!flag) {
       // Waiting for the CSS animation to finish and hiding content
       this.hideContentTimeout = setTimeout(() => {
         this.hideContentTimeout = null;
-        this.setState({renderContent: false});
+        this.setState({ renderContent: false });
         onToggle(false);
       }, toggleTime);
     }
   }
 
-  saveNode = node => this.node = node;
+  saveNode = (node) => (this.node = node);
 
   updateNodeWidth(width = this.width) {
-    this.node.style.width = width ? `${width}px` : '';
+    this.node.style.width = width ? `${width}px` : "";
   }
-
 }

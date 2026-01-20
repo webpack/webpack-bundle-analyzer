@@ -1,7 +1,7 @@
-const chai = require('chai');
-chai.use(require('chai-subset'));
-const {expect} = chai;
-const Logger = require('../lib/Logger');
+const chai = require("chai");
+chai.use(require("chai-subset"));
+const { expect } = chai;
+const Logger = require("../lib/Logger");
 
 class TestLogger extends Logger {
   constructor(level) {
@@ -20,23 +20,27 @@ class TestLogger extends Logger {
 
 let logger;
 
-describe('Logger', function () {
-  describe('level', function () {
+describe("Logger", function () {
+  describe("level", function () {
     for (const testingLevel of Logger.levels) {
       describe(`"${testingLevel}"`, function () {
         beforeEach(function () {
           logger = new TestLogger(testingLevel);
         });
 
-        for (const level of Logger.levels.filter(level => level !== 'silent')) {
-          if (Logger.levels.indexOf(level) >= Logger.levels.indexOf(testingLevel)) {
+        for (const level of Logger.levels.filter(
+          (level) => level !== "silent",
+        )) {
+          if (
+            Logger.levels.indexOf(level) >= Logger.levels.indexOf(testingLevel)
+          ) {
             it(`should log "${level}" message`, function () {
-              logger[level]('msg1', 'msg2');
-              expect(logger.logs).to.deep.equal([[level, 'msg1', 'msg2']]);
+              logger[level]("msg1", "msg2");
+              expect(logger.logs).to.deep.equal([[level, "msg1", "msg2"]]);
             });
           } else {
             it(`should not log "${level}" message`, function () {
-              logger[level]('msg1', 'msg2');
+              logger[level]("msg1", "msg2");
               expect(logger.logs).to.be.empty;
             });
           }
@@ -46,24 +50,28 @@ describe('Logger', function () {
 
     it('should be set to "info" by default', function () {
       logger = new TestLogger();
-      expectLoggerLevel(logger, 'info');
+      expectLoggerLevel(logger, "info");
     });
 
-    it('should allow to change level', function () {
-      logger = new TestLogger('warn');
-      expectLoggerLevel(logger, 'warn');
-      logger.setLogLevel('info');
-      expectLoggerLevel(logger, 'info');
-      logger.setLogLevel('silent');
-      expectLoggerLevel(logger, 'silent');
+    it("should allow to change level", function () {
+      logger = new TestLogger("warn");
+      expectLoggerLevel(logger, "warn");
+      logger.setLogLevel("info");
+      expectLoggerLevel(logger, "info");
+      logger.setLogLevel("silent");
+      expectLoggerLevel(logger, "silent");
     });
 
-    it('should throw if level is invalid on instance creation', function () {
-      expect(() => new TestLogger('invalid')).to.throw(invalidLogLevelMessage('invalid'));
+    it("should throw if level is invalid on instance creation", function () {
+      expect(() => new TestLogger("invalid")).to.throw(
+        invalidLogLevelMessage("invalid"),
+      );
     });
 
-    it('should throw if level is invalid on `setLogLevel`', function () {
-      expect(() => new TestLogger().setLogLevel('invalid')).to.throw(invalidLogLevelMessage('invalid'));
+    it("should throw if level is invalid on `setLogLevel`", function () {
+      expect(() => new TestLogger().setLogLevel("invalid")).to.throw(
+        invalidLogLevelMessage("invalid"),
+      );
     });
   });
 });
@@ -71,19 +79,22 @@ describe('Logger', function () {
 function expectLoggerLevel(logger, level) {
   logger.clear();
 
-  const levels = Logger.levels.filter(level => level !== 'silent');
+  const levels = Logger.levels.filter((level) => level !== "silent");
 
   for (const level of levels) {
-    logger[level]('msg1', 'msg2');
+    logger[level]("msg1", "msg2");
   }
 
   const expectedLogs = levels
-    .filter(testLevel => Logger.levels.indexOf(testLevel) >= Logger.levels.indexOf(level))
-    .map(testLevel => [testLevel, 'msg1', 'msg2']);
+    .filter(
+      (testLevel) =>
+        Logger.levels.indexOf(testLevel) >= Logger.levels.indexOf(level),
+    )
+    .map((testLevel) => [testLevel, "msg1", "msg2"]);
 
   expect(logger.logs).to.deep.equal(expectedLogs);
 }
 
 function invalidLogLevelMessage(level) {
-  return `Invalid log level "${level}". Use one of these: ${Logger.levels.join(', ')}`;
+  return `Invalid log level "${level}". Use one of these: ${Logger.levels.join(", ")}`;
 }

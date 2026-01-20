@@ -1,8 +1,7 @@
-import Node from './Node';
-import {getCompressedSize} from '../sizeUtils';
+import Node from "./Node";
+import { getCompressedSize } from "../sizeUtils";
 
 export default class Module extends Node {
-
   constructor(name, data, parent, opts) {
     super(name, parent);
     this.data = data;
@@ -49,21 +48,29 @@ export default class Module extends Node {
   }
 
   getGzipSize() {
-    return this.opts.compressionAlgorithm === 'gzip' ? this.getCompressedSize('gzip') : undefined;
+    return this.opts.compressionAlgorithm === "gzip"
+      ? this.getCompressedSize("gzip")
+      : undefined;
   }
 
   getBrotliSize() {
-    return this.opts.compressionAlgorithm === 'brotli' ? this.getCompressedSize('brotli') : undefined;
+    return this.opts.compressionAlgorithm === "brotli"
+      ? this.getCompressedSize("brotli")
+      : undefined;
   }
 
   getZstdSize() {
-    return this.opts.compressionAlgorithm === 'zstd' ? this.getCompressedSize('zstd') : undefined;
+    return this.opts.compressionAlgorithm === "zstd"
+      ? this.getCompressedSize("zstd")
+      : undefined;
   }
 
   getCompressedSize(compressionAlgorithm) {
     const key = `_${compressionAlgorithm}Size`;
     if (!(key in this)) {
-      this[key] = this.src ? getCompressedSize(compressionAlgorithm, this.src) : undefined;
+      this[key] = this.src
+        ? getCompressedSize(compressionAlgorithm, this.src)
+        : undefined;
     }
 
     return this[key];
@@ -75,7 +82,7 @@ export default class Module extends Node {
     }
 
     if (data.parsedSrc) {
-      this.src = (this.src || '') + data.parsedSrc;
+      this.src = (this.src || "") + data.parsedSrc;
     }
   }
 
@@ -88,8 +95,7 @@ export default class Module extends Node {
       parsedSize: this.parsedSize,
       gzipSize: this.gzipSize,
       brotliSize: this.brotliSize,
-      zstdSize: this.zstdSize
+      zstdSize: this.zstdSize,
     };
   }
-
-};
+}

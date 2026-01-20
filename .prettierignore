@@ -1,0 +1,5 @@
+test/bundles/**
+test/stats/**
+test/output/**
+samples/**
+CHANGELOG.md

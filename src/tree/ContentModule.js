@@ -1,26 +1,25 @@
-import Module from './Module';
+import Module from "./Module";
 
 export default class ContentModule extends Module {
-
   constructor(name, data, ownerModule, parent) {
     super(name, data, parent);
     this.ownerModule = ownerModule;
   }
 
   get parsedSize() {
-    return this.getSize('parsedSize');
+    return this.getSize("parsedSize");
   }
 
   get gzipSize() {
-    return this.getSize('gzipSize');
+    return this.getSize("gzipSize");
   }
 
   get brotliSize() {
-    return this.getSize('brotliSize');
+    return this.getSize("brotliSize");
   }
 
   get zstdSize() {
-    return this.getSize('zstdSize');
+    return this.getSize("zstdSize");
   }
 
   getSize(sizeType) {
@@ -34,8 +33,7 @@ export default class ContentModule extends Module {
   toChartData() {
     return {
       ...super.toChartData(),
-      inaccurateSizes: true
+      inaccurateSizes: true,
     };
   }
-
-};
+}

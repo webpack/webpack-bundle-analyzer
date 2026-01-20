@@ -8,7 +8,9 @@
   max-width: calc(50% - 10px);
   opacity: 0.95;
   z-index: 1;
-  transition: background-color 0.3s ease, border-color 0.3s ease;
+  transition:
+    background-color 0.3s ease,
+    border-color 0.3s ease;
 }
 
 .container:not(.hidden) {
@@ -77,7 +79,7 @@
 
 .hidden .toggleButton {
   right: -35px;
-  transition: transform .2s ease;
+  transition: transform 0.2s ease;
 }
 
 .hidden .toggleButton:hover {

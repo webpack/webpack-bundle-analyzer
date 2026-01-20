@@ -1,10 +1,10 @@
-import cls from 'classnames';
-import ContextMenuItem from './ContextMenuItem';
-import PureComponent from '../lib/PureComponent';
-import {store} from '../store';
-import {elementIsOutside} from '../utils';
+import cls from "classnames";
+import ContextMenuItem from "./ContextMenuItem";
+import PureComponent from "../lib/PureComponent";
+import { store } from "../store";
+import { elementIsOutside } from "../utils";
 
-import s from './ContextMenu.css';
+import s from "./ContextMenu.css";
 
 export default class ContextMenu extends PureComponent {
   componentDidMount() {
@@ -13,32 +13,50 @@ export default class ContextMenu extends PureComponent {
 
   componentDidUpdate(prevProps) {
     if (this.props.visible && !prevProps.visible) {
-      document.addEventListener('mousedown', this.handleDocumentMousedown, true);
+      document.addEventListener(
+        "mousedown",
+        this.handleDocumentMousedown,
+        true,
+      );
     } else if (prevProps.visible && !this.props.visible) {
-      document.removeEventListener('mousedown', this.handleDocumentMousedown, true);
+      document.removeEventListener(
+        "mousedown",
+        this.handleDocumentMousedown,
+        true,
+      );
     }
   }
 
   render() {
-    const {visible} = this.props;
+    const { visible } = this.props;
     const containerClassName = cls({
       [s.container]: true,
-      [s.hidden]: !visible
+      [s.hidden]: !visible,
     });
     const multipleChunksSelected = store.selectedChunks.length > 1;
     return (
-      <ul ref={this.saveNode} className={containerClassName} style={this.getStyle()}>
-        <ContextMenuItem disabled={!multipleChunksSelected}
-          onClick={this.handleClickHideChunk}>
+      <ul
+        ref={this.saveNode}
+        className={containerClassName}
+        style={this.getStyle()}
+      >
+        <ContextMenuItem
+          disabled={!multipleChunksSelected}
+          onClick={this.handleClickHideChunk}
+        >
           Hide chunk
         </ContextMenuItem>
-        <ContextMenuItem disabled={!multipleChunksSelected}
-          onClick={this.handleClickFilterToChunk}>
+        <ContextMenuItem
+          disabled={!multipleChunksSelected}
+          onClick={this.handleClickFilterToChunk}
+        >
           Hide all other chunks
         </ContextMenuItem>
-        <hr/>
-        <ContextMenuItem disabled={store.allChunksSelected}
-          onClick={this.handleClickShowAllChunks}>
+        <hr />
+        <ContextMenuItem
+          disabled={store.allChunksSelected}
+          onClick={this.handleClickShowAllChunks}
+        >
           Show all chunks
         </ContextMenuItem>
       </ul>
@@ -46,27 +64,31 @@ export default class ContextMenu extends PureComponent {
   }
 
   handleClickHideChunk = () => {
-    const {chunk: selectedChunk} = this.props;
+    const { chunk: selectedChunk } = this.props;
     if (selectedChunk && selectedChunk.label) {
-      const filteredChunks = store.selectedChunks.filter(chunk => chunk.label !== selectedChunk.label);
+      const filteredChunks = store.selectedChunks.filter(
+        (chunk) => chunk.label !== selectedChunk.label,
+      );
       store.selectedChunks = filteredChunks;
     }
     this.hide();
-  }
+  };
 
   handleClickFilterToChunk = () => {
-    const {chunk: selectedChunk} = this.props;
+    const { chunk: selectedChunk } = this.props;
     if (selectedChunk && selectedChunk.label) {
-      const filteredChunks = store.allChunks.filter(chunk => chunk.label === selectedChunk.label);
+      const filteredChunks = store.allChunks.filter(
+        (chunk) => chunk.label === selectedChunk.label,
+      );
       store.selectedChunks = filteredChunks;
     }
     this.hide();
-  }
+  };
 
   handleClickShowAllChunks = () => {
     store.selectedChunks = store.allChunks;
     this.hide();
-  }
+  };
 
   /**
    * Handle document-wide `mousedown` events to detect clicks
@@ -81,7 +103,7 @@ export default class ContextMenu extends PureComponent {
       e.stopPropagation();
       this.hide();
     }
-  }
+  };
 
   hide() {
     if (this.props.onHide) {
@@ -89,20 +111,20 @@ export default class ContextMenu extends PureComponent {
     }
   }
 
-  saveNode = node => (this.node = node);
+  saveNode = (node) => (this.node = node);
 
   getStyle() {
-    const {boundingRect} = this;
+    const { boundingRect } = this;
 
     // Upon the first render of this component, we don't yet know
     // its dimensions, so can't position it yet
     if (!boundingRect) return;
 
-    const {coords} = this.props;
+    const { coords } = this.props;
 
     const pos = {
       left: coords.x,
-      top: coords.y
+      top: coords.y,
     };
 
     if (pos.left + boundingRect.width > window.innerWidth) {
