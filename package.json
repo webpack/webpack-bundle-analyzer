@@ -18,7 +18,7 @@
   "engines": {
     "node": ">= 20.9.0"
   },
-  "packageManager": "npm@6.14.8",
+  "packageManager": "npm@10.1.0",
   "scripts": {
     "clean:analyzer": "del-cli lib",
     "clean:viewer": "del-cli public",
@@ -44,7 +44,7 @@
     "lib"
   ],
   "dependencies": {
-    "@discoveryjs/json-ext": "0.5.7",
+    "@discoveryjs/json-ext": "^0.5.7",
     "acorn": "^8.0.4",
     "acorn-walk": "^8.0.0",
     "commander": "^7.2.0",
