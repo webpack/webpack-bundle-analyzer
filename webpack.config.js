@@ -110,7 +110,7 @@ module.exports = {
       },
       {
         test: /\.(png|jpg|gif|svg|eot|ttf|woff|woff2)$/u,
-        loader: "url-loader",
+        type: "asset/inline",
       },
     ],
   },
