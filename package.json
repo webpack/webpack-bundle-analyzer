@@ -25,7 +25,7 @@
     "clean": "npm run clean:analyzer && npm run clean:viewer",
     "build:analyzer": "npm run clean:analyzer && babel src -d lib --copy-files",
     "build:viewer": "npm run clean:viewer && webpack-cli --node-env=production",
-    "build": "npm run build:analyzer && build:viewer",
+    "build": "npm run build:analyzer && npm run build:viewer",
     "watch:analyzer": "npm run build:analyzer -- --watch",
     "watch:viewer": "npm run build:viewer -- --node-env=development --watch",
     "npm-publish": "npm run lint && npm run build && npm test && npm publish",
