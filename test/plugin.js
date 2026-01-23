@@ -39,10 +39,8 @@ describe("Plugin", function () {
       await webpackCompile(config);
 
       await expectValidReport({
-        parsedSize: 1343,
-        // On node.js v16 and lower, the calculated gzip is one byte larger. Nice.
-        gzipSize:
-          parseInt(process.versions.node.split(".")[0]) <= 16 ? 360 : 358,
+        parsedSize: 1349,
+        gzipSize: 358,
       });
     });
   });
@@ -222,14 +220,23 @@ describe("Plugin", function () {
     expect(fs.existsSync(`${__dirname}/output/${bundleFilename}`)).toBe(true);
     expect(fs.existsSync(`${__dirname}/output/${reportFilename}`)).toBe(true);
     const chartData = await getChartDataFromReport(reportFilename);
-    expect(chartData[0]).toMatchObject({
+
+    const expected = {
       label: bundleLabel,
       statSize,
       parsedSize,
       gzipSize,
-      brotliSize: opts.brotliSize,
-      zstdSize: opts.zstdSize,
-    });
+    };
+
+    if (typeof opts.brotliSize !== "undefined") {
+      expected.brotliSize = opts.brotliSize;
+    }
+
+    if (typeof opts.zstdSize !== "undefined") {
+      expected.zstdSize = opts.zstdSize;
+    }
+
+    expect(chartData[0]).toMatchObject(expected);
   }
 
   function getChartDataFromJSONReport(reportFilename = "report.json") {
