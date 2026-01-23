@@ -111,16 +111,14 @@ describe("getEntrypoints", () => {
 
   it("should handle when bundlestats is null or undefined ", function () {
     expect(JSON.stringify(getEntrypoints(null))).toBe(JSON.stringify([]));
-    expect(JSON.stringify(getEntrypoints(undefined))).toBe(
-      JSON.stringify([]),
-    );
+    expect(JSON.stringify(getEntrypoints(undefined))).toBe(JSON.stringify([]));
   });
 
   it("should handle when bundlestats is empty", function () {
     const bundleStatsWithoutEntryPoints = {};
-    expect(
-      JSON.stringify(getEntrypoints(bundleStatsWithoutEntryPoints)),
-    ).toBe(JSON.stringify([]));
+    expect(JSON.stringify(getEntrypoints(bundleStatsWithoutEntryPoints))).toBe(
+      JSON.stringify([]),
+    );
   });
 
   it("should handle when entrypoints is empty", function () {

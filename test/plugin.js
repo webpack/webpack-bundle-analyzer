@@ -61,7 +61,7 @@ describe("Plugin", function () {
       expect(chartData).toBeDefined();
     });
 
-    it.only("should support webpack config with `multi` module", async function () {
+    it("should support webpack config with `multi` module", async function () {
       const config = makeWebpackConfig();
 
       config.entry.bundle = ["./src/a.js", "./src/b.js"];
@@ -181,7 +181,7 @@ describe("Plugin", function () {
         await expectValidReport({ parsedSize: 1311, gzipSize: 341 });
       });
 
-      it.only("should support brotli", async function () {
+      it("should support brotli", async function () {
         const config = makeWebpackConfig({
           analyzerOpts: { compressionAlgorithm: "brotli" },
         });
@@ -219,12 +219,8 @@ describe("Plugin", function () {
       gzipSize,
     } = { gzipSize: 770, ...opts };
 
-    expect(
-      fs.existsSync(`${__dirname}/output/${bundleFilename}`),
-    ).toBe(true);
-    expect(
-      fs.existsSync(`${__dirname}/output/${reportFilename}`),
-    ).toBe(true);
+    expect(fs.existsSync(`${__dirname}/output/${bundleFilename}`)).toBe(true);
+    expect(fs.existsSync(`${__dirname}/output/${reportFilename}`)).toBe(true);
     const chartData = await getChartDataFromReport(reportFilename);
     expect(chartData[0]).toMatchObject({
       label: bundleLabel,

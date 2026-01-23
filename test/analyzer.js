@@ -7,10 +7,6 @@ const { isZstdSupported } = require("../src/sizeUtils");
 
 let browser;
 
-// On node.js v16 and lower, the calculated gzip is slightly different
-const itFailsOnNode16 =
-  parseInt(process.versions.node.split(".")[0]) <= 16 ? it.failing : it;
-
 describe("Analyzer", function () {
   jest.setTimeout(15000);
 
@@ -179,27 +175,21 @@ describe("Analyzer", function () {
     );
   });
 
-  itFailsOnNode16(
-    "should properly parse webpack 5 bundle with single entry",
-    async function () {
-      generateReportFrom("webpack-5-bundle-with-single-entry/stats.json");
-      const chartData = await getChartData();
-      expect(chartData).toMatchObject(
-        require("./stats/webpack-5-bundle-with-single-entry/expected-chart-data"),
-      );
-    },
-  );
+  it("should properly parse webpack 5 bundle with single entry", async function () {
+    generateReportFrom("webpack-5-bundle-with-single-entry/stats.json");
+    const chartData = await getChartData();
+    expect(chartData).toMatchObject(
+      require("./stats/webpack-5-bundle-with-single-entry/expected-chart-data"),
+    );
+  });
 
-  itFailsOnNode16(
-    "should properly parse webpack 5 bundle with multiple entries",
-    async function () {
-      generateReportFrom("webpack-5-bundle-with-multiple-entries/stats.json");
-      const chartData = await getChartData();
-      expect(chartData).toMatchObject(
-        require("./stats/webpack-5-bundle-with-multiple-entries/expected-chart-data"),
-      );
-    },
-  );
+  it("should properly parse webpack 5 bundle with multiple entries", async function () {
+    generateReportFrom("webpack-5-bundle-with-multiple-entries/stats.json");
+    const chartData = await getChartData();
+    expect(chartData).toMatchObject(
+      require("./stats/webpack-5-bundle-with-multiple-entries/expected-chart-data"),
+    );
+  });
 
   it("should properly parse webpack 5 bundle with an entry module that is a concatenated module", async function () {
     generateReportFrom(
@@ -236,7 +226,7 @@ describe("Analyzer", function () {
   it("should return empty chartData if there are no entrypoints", async function () {
     generateReportFrom("with-no-entrypoints/stats.json");
     const chartData = await getChartData();
-    expect(chartData).to.be.empty;
+    expect(chartData).toHaveLength(0);
   });
 
   describe("options", function () {
@@ -266,7 +256,7 @@ describe("Analyzer", function () {
 
         const generatedReportTitle = await getTitleFromReport();
 
-        expect(generatedReportTitle).to.match(
+        expect(generatedReportTitle).toMatch(
           /^webpack-bundle-analyzer \[.* at \d{2}:\d{2}\]/u,
         );
       });
