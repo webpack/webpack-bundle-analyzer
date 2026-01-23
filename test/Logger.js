@@ -33,12 +33,12 @@ describe("Logger", function () {
           ) {
             it(`should log "${level}" message`, function () {
               logger[level]("msg1", "msg2");
-              expect(logger.logs).to.deep.equal([[level, "msg1", "msg2"]]);
+              expect(logger.logs).toEqual([[level, "msg1", "msg2"]]);
             });
           } else {
             it(`should not log "${level}" message`, function () {
               logger[level]("msg1", "msg2");
-              expect(logger.logs).to.be.empty;
+              expect(logger.logs).toHaveLength(0);
             });
           }
         }
@@ -60,13 +60,13 @@ describe("Logger", function () {
     });
 
     it("should throw if level is invalid on instance creation", function () {
-      expect(() => new TestLogger("invalid")).to.throw(
+      expect(() => new TestLogger("invalid")).toThrow(
         invalidLogLevelMessage("invalid"),
       );
     });
 
     it("should throw if level is invalid on `setLogLevel`", function () {
-      expect(() => new TestLogger().setLogLevel("invalid")).to.throw(
+      expect(() => new TestLogger().setLogLevel("invalid")).toThrow(
         invalidLogLevelMessage("invalid"),
       );
     });
@@ -89,7 +89,7 @@ function expectLoggerLevel(logger, level) {
     )
     .map((testLevel) => [testLevel, "msg1", "msg2"]);
 
-  expect(logger.logs).to.deep.equal(expectedLogs);
+  expect(logger.logs).toEqual(expectedLogs);
 }
 
 function invalidLogLevelMessage(level) {

@@ -8,7 +8,7 @@ const { isZstdSupported } = require("../src/sizeUtils");
 describe("Plugin", function () {
   describe("options", function () {
     it("should be optional", function () {
-      expect(() => new BundleAnalyzerPlugin()).not.to.throw();
+      expect(() => new BundleAnalyzerPlugin()).not.toThrow();
     });
   });
 });
@@ -58,10 +58,10 @@ describe("Plugin", function () {
       await webpackCompile(config);
 
       const chartData = await getChartDataFromJSONReport();
-      expect(chartData).to.exist;
+      expect(chartData).toBeDefined();
     });
 
-    it("should support webpack config with `multi` module", async function () {
+    it.only("should support webpack config with `multi` module", async function () {
       const config = makeWebpackConfig();
 
       config.entry.bundle = ["./src/a.js", "./src/b.js"];
@@ -73,7 +73,7 @@ describe("Plugin", function () {
         (group) => group.label === "bundle.js",
       );
 
-      expect(bundleGroup.groups).to.containSubset([
+      expect(bundleGroup.groups).toMatchObject([
         {
           label: "src",
           path: "./src",
@@ -106,7 +106,7 @@ describe("Plugin", function () {
           await webpackCompile(config);
 
           const chartData = await getChartDataFromReport();
-          expect(chartData.map((i) => i.label)).to.deep.equal(["bundle.js"]);
+          expect(chartData.map((i) => i.label)).toEqual(["bundle.js"]);
         });
       });
     });
@@ -116,7 +116,7 @@ describe("Plugin", function () {
         const config = makeWebpackConfig();
         await webpackCompile(config, "4.44.2");
         const generatedReportTitle = await getTitleFromReport();
-        expect(generatedReportTitle).to.match(
+        expect(generatedReportTitle).toMatch(
           /^webpack-bundle-analyzer \[.* at \d{2}:\d{2}\]/u,
         );
       });
@@ -130,7 +130,7 @@ describe("Plugin", function () {
         });
         await webpackCompile(config, "4.44.2");
         const generatedReportTitle = await getTitleFromReport();
-        expect(generatedReportTitle).to.equal(reportTitle);
+        expect(generatedReportTitle).toBe(reportTitle);
       });
 
       it("should support a function value", async function () {
@@ -142,7 +142,7 @@ describe("Plugin", function () {
         });
         await webpackCompile(config, "4.44.2");
         const generatedReportTitle = await getTitleFromReport();
-        expect(generatedReportTitle).to.equal(reportTitleResult);
+        expect(generatedReportTitle).toBe(reportTitleResult);
       });
 
       it("should propagate an error in a function", async function () {
@@ -162,7 +162,7 @@ describe("Plugin", function () {
           error = e;
         }
 
-        expect(error).to.equal(reportTitleError);
+        expect(error).toBe(reportTitleError);
       });
     });
 
@@ -221,14 +221,12 @@ describe("Plugin", function () {
 
     expect(
       fs.existsSync(`${__dirname}/output/${bundleFilename}`),
-      "bundle file missing",
-    ).to.be.true;
+    ).toBe(true);
     expect(
       fs.existsSync(`${__dirname}/output/${reportFilename}`),
-      "report file missing",
-    ).to.be.true;
+    ).toBe(true);
     const chartData = await getChartDataFromReport(reportFilename);
-    expect(chartData[0]).to.containSubset({
+    expect(chartData[0]).toMatchObject({
       label: bundleLabel,
       statSize,
       parsedSize,

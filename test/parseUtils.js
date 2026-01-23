@@ -20,15 +20,15 @@ describe("parseBundle", function () {
           fs.readFileSync(`${BUNDLES_DIR}/${bundleName}.modules.json`),
         );
 
-        expect(bundle.src).to.equal(fs.readFileSync(bundleFile, "utf8"));
-        expect(bundle.modules).to.deep.equal(expectedModules.modules);
+        expect(bundle.src).toBe(fs.readFileSync(bundleFile, "utf8"));
+        expect(bundle.modules).toEqual(expectedModules.modules);
       });
     });
 
   it("should parse invalid bundle and return it's content and empty modules hash", function () {
     const bundleFile = `${BUNDLES_DIR}/invalidBundle.js`;
     const bundle = parseBundle(bundleFile);
-    expect(bundle.src).to.equal(fs.readFileSync(bundleFile, "utf8"));
-    expect(bundle.modules).to.deep.equal({});
+    expect(bundle.src).toBe(fs.readFileSync(bundleFile, "utf8"));
+    expect(bundle.modules).toEqual({});
   });
 });
