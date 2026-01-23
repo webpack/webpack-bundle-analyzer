@@ -1,6 +1,3 @@
-const chai = require("chai");
-chai.use(require("chai-subset"));
-const { expect } = chai;
 const fs = require("fs");
 const del = require("del");
 const path = require("path");

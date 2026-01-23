@@ -1,6 +1,3 @@
-const chai = require("chai");
-chai.use(require("chai-subset"));
-const { expect } = chai;
 const Logger = require("../lib/Logger");
 
 class TestLogger extends Logger {
