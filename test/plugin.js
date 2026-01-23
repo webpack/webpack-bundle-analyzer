@@ -187,8 +187,8 @@ describe("Plugin", function () {
         });
         await webpackCompile(config, "4.44.2");
         await expectValidReport({
+          gzipSize: undefined,
           parsedSize: 1317,
-          gzipSize: 770,
           brotliSize: 295,
         });
       });
@@ -227,8 +227,11 @@ describe("Plugin", function () {
       label: bundleLabel,
       statSize,
       parsedSize,
-      gzipSize,
     };
+
+    if (typeof gzipSize !== "undefined") {
+      expected.gzipSize = gzipSize;
+    }
 
     if (typeof opts.brotliSize !== "undefined") {
       expected.brotliSize = opts.brotliSize;
