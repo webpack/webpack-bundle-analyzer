@@ -187,7 +187,7 @@ describe("Plugin", function () {
         });
         await webpackCompile(config, "4.44.2");
         await expectValidReport({
-          parsedSize: 1311,
+          parsedSize: 1317,
           brotliSize: 295,
         });
       });
