@@ -122,7 +122,7 @@ async function webpackCompile(config, version) {
   await wait(1);
 }
 
-function makeWebpackConfig(opts) {
+function makeWebpackConfig(opts = {}) {
   opts = {
     ...opts,
     minify: false,
