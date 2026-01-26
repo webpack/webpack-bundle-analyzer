@@ -1,6 +1,5 @@
 const { readdirSync } = require("fs");
 const webpack = require("webpack");
-const partial = require("lodash.partial");
 
 global.webpackCompile = webpackCompile;
 global.makeWebpackConfig = makeWebpackConfig;
@@ -78,7 +77,7 @@ function forEachWebpackVersion(versions, cb) {
     cb({
       it: itFn,
       version,
-      webpackCompile: partial(webpackCompile, partial.placeholder, version),
+      webpackCompile: (config) => webpackCompile(config, version),
     });
   }
 }
