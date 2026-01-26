@@ -1,5 +1,3 @@
-@value toggleTime: 200ms;
-
 .container {
   background: var(--bg-primary);
   border: none;
@@ -21,7 +19,7 @@
   bottom: 0;
   position: absolute;
   top: 0;
-  transition: transform toggleTime ease;
+  transition: transform 200ms ease;
 }
 
 .container.pinned {

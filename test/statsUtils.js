@@ -1,6 +1,6 @@
 const path = require("path");
 const { readFileSync } = require("fs");
-const globby = require("globby");
+const { globSync } = require("tinyglobby");
 
 const { StatsSerializeStream } = require("../lib/statsUtils");
 
@@ -56,7 +56,7 @@ describe("StatsSerializeStream", () => {
     });
   });
 
-  globby.sync("stats/**/*.json", { cwd: __dirname }).forEach((filepath) => {
+  globSync("stats/**/*.json", { cwd: __dirname }).forEach((filepath) => {
     it(`should properly stringify JSON from "${filepath}"`, function () {
       const content = readFileSync(path.resolve(__dirname, filepath), "utf8");
       const json = JSON.parse(content);
