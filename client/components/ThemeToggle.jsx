@@ -1,7 +1,7 @@
 import { Component } from "preact";
 import { observer } from "mobx-react";
 
-import s from "./ThemeToggle.css";
+import * as s from "./ThemeToggle.css";
 import Button from "./Button";
 import Icon from "./Icon";
 import { store } from "../store";

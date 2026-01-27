@@ -4,7 +4,7 @@ import PureComponent from "../lib/PureComponent";
 import { store } from "../store";
 import { elementIsOutside } from "../utils";
 
-import s from "./ContextMenu.css";
+import * as s from "./ContextMenu.css";
 
 export default class ContextMenu extends PureComponent {
   componentDidMount() {

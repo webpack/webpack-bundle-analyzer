@@ -13,7 +13,7 @@ import Checkbox from "./Checkbox";
 import CheckboxList from "./CheckboxList";
 import ContextMenu from "./ContextMenu";
 
-import s from "./ModulesTreemap.css";
+import * as s from "./ModulesTreemap.css";
 import Search from "./Search";
 import { store } from "../store";
 import ModulesList from "./ModulesList";

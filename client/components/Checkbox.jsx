@@ -1,7 +1,7 @@
 import { Component } from "preact";
 import cls from "classnames";
 
-import s from "./Checkbox.css";
+import * as s from "./Checkbox.css";
 
 export default class Checkbox extends Component {
   render() {

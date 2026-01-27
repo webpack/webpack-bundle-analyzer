@@ -1,7 +1,7 @@
 import { Component } from "preact";
 import cls from "classnames";
 
-import s from "./Tooltip.css";
+import * as s from "./Tooltip.css";
 
 export default class Tooltip extends Component {
   static marginX = 10;

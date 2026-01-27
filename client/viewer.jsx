@@ -2,8 +2,7 @@ import { render } from "preact";
 
 import { store } from "./store";
 import ModulesTreemap from "./components/ModulesTreemap";
-/* eslint no-unused-vars: "off" */
-import styles from "./viewer.css";
+import "./viewer.css";
 
 // Initializing WebSocket for live treemap updates
 let ws;

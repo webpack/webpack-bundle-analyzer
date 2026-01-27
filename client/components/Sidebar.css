@@ -92,3 +92,7 @@
   top: 0;
   width: 7px;
 }
+
+:export {
+  toggleTime: 200ms;
+}

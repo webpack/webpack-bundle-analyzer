@@ -1,7 +1,7 @@
 import { createRef } from "preact";
 import PureComponent from "../lib/PureComponent";
 
-import s from "./Dropdown.css";
+import * as s from "./Dropdown.css";
 
 export default class Dropdown extends PureComponent {
   input = createRef();
@@ -41,7 +41,7 @@ export default class Dropdown extends PureComponent {
             onFocus={this.handleFocus}
           />
           {this.state.showOptions ? (
-            <div className={s.options}>
+            <div>
               {filteredOptions.map((option) => (
                 <div
                   key={option}

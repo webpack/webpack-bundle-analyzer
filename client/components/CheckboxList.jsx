@@ -1,5 +1,5 @@
 import CheckboxListItem from "./CheckboxListItem";
-import s from "./CheckboxList.css";
+import * as s from "./CheckboxList.css";
 import PureComponent from "../lib/PureComponent";
 
 const ALL_ITEM = Symbol("ALL_ITEM");

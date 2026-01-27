@@ -4,7 +4,7 @@ import filesize from "filesize";
 import cls from "classnames";
 
 import PureComponent from "../lib/PureComponent";
-import s from "./ModuleItem.css";
+import * as s from "./ModuleItem.css";
 
 export default class ModuleItem extends PureComponent {
   state = {
