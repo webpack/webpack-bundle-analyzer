@@ -1,6 +1,5 @@
 const fs = require("fs");
 const path = require("path");
-const del = require("del");
 const childProcess = require("child_process");
 const puppeteer = require("puppeteer");
 const { isZstdSupported } = require("../src/sizeUtils");
@@ -12,15 +11,15 @@ describe("Analyzer", function () {
 
   beforeAll(async function () {
     browser = await puppeteer.launch();
-    del.sync(`${__dirname}/output`);
+    await fs.promises.rm(`${__dirname}/output`, { force: true, recursive: true });
   });
 
   beforeEach(async function () {
     jest.setTimeout(15000);
   });
 
-  afterEach(function () {
-    del.sync(`${__dirname}/output`);
+  afterEach(async function () {
+    await fs.promises.rm(`${__dirname}/output`, { force: true, recursive: true });
   });
 
   afterAll(async function () {

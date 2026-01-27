@@ -2,7 +2,7 @@
 
 const { resolve, dirname } = require("path");
 
-const commander = require("commander");
+const { program: commanderProgram } = require("commander");
 const { magenta } = require("picocolors");
 
 const analyzer = require("../analyzer");
@@ -16,17 +16,13 @@ const COMPRESSION_ALGORITHMS = new Set(
   isZstdSupported ? ["gzip", "brotli", "zstd"] : ["gzip", "brotli"],
 );
 
-const program = commander
+const program = commanderProgram
   .version(require("../../package.json").version)
-  .usage(
-    `<bundleStatsFile> [bundleDir] [options]
-
-  Arguments:
-
-    bundleStatsFile  Path to Webpack Stats JSON file.
-    bundleDir        Directory containing all generated bundles.
-                     You should provided it if you want analyzer to show you the real parsed module sizes.
-                     By default a directory of stats file is used.`,
+  .argument("<bundleStatsFile>", "Path to Webpack Stats JSON file.")
+  .argument(
+    "[bundleDir]",
+    // eslint-disable-next-line max-len
+    "Directory containing all generated bundles. You should provided it if you want analyzer to show you the real parsed module sizes. By default a directory of stats file is used.",
   )
   .option(
     "-m, --mode <mode>",
@@ -89,7 +85,9 @@ const program = commander
     "Log level." + br(`Possible values: ${[...Logger.levels].join(", ")}`),
     Logger.defaultLevel,
   )
-  .parse(process.argv);
+  .parse();
+
+console.log(program.args);
 
 let [bundleStatsFile, bundleDir] = program.args;
 let {

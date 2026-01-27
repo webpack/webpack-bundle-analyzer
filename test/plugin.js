@@ -1,5 +1,4 @@
 const fs = require("fs");
-const del = require("del");
 const path = require("path");
 const puppeteer = require("puppeteer");
 const BundleAnalyzerPlugin = require("../lib/BundleAnalyzerPlugin");
@@ -19,12 +18,12 @@ describe("Plugin", function () {
 
   beforeEach(async function () {
     browser = await puppeteer.launch();
-    del.sync(`${__dirname}/output`);
+    await fs.promises.rm(`${__dirname}/output`, { force: true, recursive: true });
   });
 
   afterEach(async function () {
-    del.sync(`${__dirname}/output`);
     await browser.close();
+    await fs.promises.rm(`${__dirname}/output`, { force: true, recursive: true });
   });
 
   forEachWebpackVersion(["4.44.2"], ({ it, webpackCompile }) => {

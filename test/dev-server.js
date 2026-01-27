@@ -1,8 +1,6 @@
 const fs = require("fs");
 const { spawn } = require("child_process");
 
-const del = require("del");
-
 const ROOT = `${__dirname}/dev-server`;
 const WEBPACK_CONFIG_PATH = `${ROOT}/webpack.config.js`;
 const webpackConfig = require(WEBPACK_CONFIG_PATH);
@@ -43,6 +41,6 @@ describe("Webpack Dev Server", function () {
   });
 });
 
-function deleteOutputDirectory() {
-  del.sync(webpackConfig.output.path);
+async function deleteOutputDirectory() {
+  await fs.promises.rm(webpackConfig.output.path, { force: true, recursive: true });
 }
