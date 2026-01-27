@@ -1,4 +1,4 @@
-import { observable, computed } from "mobx";
+import { observable, computed, makeObservable } from "mobx";
 import { isChunkParsed, walkModules } from "./utils";
 import localStorage from "./localStorage";
 
@@ -12,14 +12,14 @@ export class Store {
     "zstdSize",
   ]);
 
-  @observable.ref allChunks;
-  @observable.shallow selectedChunks;
-  @observable searchQuery = "";
-  @observable defaultSize;
-  @observable selectedSize;
-  @observable showConcatenatedModulesContent =
+  allChunks;
+  selectedChunks;
+  searchQuery = "";
+  defaultSize;
+  selectedSize;
+  showConcatenatedModulesContent =
     localStorage.getItem("showConcatenatedModulesContent") === true;
-  @observable darkMode = (() => {
+  darkMode = (() => {
     const systemPrefersDark = window.matchMedia(
       "(prefers-color-scheme: dark)",
     ).matches;
@@ -34,6 +34,31 @@ export class Store {
     return systemPrefersDark;
   })();
 
+  constructor() {
+    makeObservable(this, {
+      allChunks: observable.ref,
+      selectedChunks: observable.shallow,
+      searchQuery: observable,
+      defaultSize: observable,
+      selectedSize: observable,
+      showConcatenatedModulesContent: observable,
+      darkMode: observable,
+
+      hasParsedSizes: computed,
+      activeSize: computed,
+      visibleChunks: computed,
+      allChunksSelected: computed,
+      totalChunksSize: computed,
+      searchQueryRegexp: computed,
+      isSearching: computed,
+      foundModulesByChunk: computed,
+      foundModules: computed,
+      hasFoundModules: computed,
+      hasConcatenatedModules: computed,
+      foundModulesSize: computed,
+    });
+  }
+
   setModules(modules) {
     walkModules(modules, (module) => {
       module.cid = this.cid++;
@@ -47,11 +72,11 @@ export class Store {
     this.entrypoints = entrypoints;
   }
 
-  @computed get hasParsedSizes() {
+  get hasParsedSizes() {
     return this.allChunks.some(isChunkParsed);
   }
 
-  @computed get activeSize() {
+  get activeSize() {
     const activeSize = this.selectedSize || this.defaultSize;
 
     if (!this.hasParsedSizes || !this.sizes.has(activeSize)) {
@@ -61,7 +86,7 @@ export class Store {
     return activeSize;
   }
 
-  @computed get visibleChunks() {
+  get visibleChunks() {
     const visibleChunks = this.allChunks.filter((chunk) =>
       this.selectedChunks.includes(chunk),
     );
@@ -69,18 +94,18 @@ export class Store {
     return this.filterModulesForSize(visibleChunks, this.activeSize);
   }
 
-  @computed get allChunksSelected() {
+  get allChunksSelected() {
     return this.visibleChunks.length === this.allChunks.length;
   }
 
-  @computed get totalChunksSize() {
+  get totalChunksSize() {
     return this.allChunks.reduce(
       (totalSize, chunk) => totalSize + (chunk[this.activeSize] || 0),
       0,
     );
   }
 
-  @computed get searchQueryRegexp() {
+  get searchQueryRegexp() {
     const query = this.searchQuery.trim();
 
     if (!query) {
@@ -94,11 +119,11 @@ export class Store {
     }
   }
 
-  @computed get isSearching() {
+  get isSearching() {
     return !!this.searchQueryRegexp;
   }
 
-  @computed get foundModulesByChunk() {
+  get foundModulesByChunk() {
     if (!this.isSearching) {
       return [];
     }
@@ -155,18 +180,18 @@ export class Store {
       .sort((c1, c2) => c1.modules.length - c2.modules.length);
   }
 
-  @computed get foundModules() {
+  get foundModules() {
     return this.foundModulesByChunk.reduce(
       (arr, chunk) => arr.concat(chunk.modules),
       [],
     );
   }
 
-  @computed get hasFoundModules() {
+  get hasFoundModules() {
     return this.foundModules.length > 0;
   }
 
-  @computed get hasConcatenatedModules() {
+  get hasConcatenatedModules() {
     let result = false;
 
     walkModules(this.visibleChunks, (module) => {
@@ -179,7 +204,7 @@ export class Store {
     return result;
   }
 
-  @computed get foundModulesSize() {
+  get foundModulesSize() {
     return this.foundModules.reduce(
       (summ, module) => summ + module[this.activeSize],
       0,
