@@ -87,8 +87,6 @@ const program = commanderProgram
   )
   .parse();
 
-console.log(program.args);
-
 let [bundleStatsFile, bundleDir] = program.args;
 let {
   mode,
