@@ -79,7 +79,7 @@
     "eslint-config-th0r": "^2.0.0",
     "eslint-config-th0r-react": "^2.0.1",
     "eslint-plugin-react": "^7.23.2",
-    "filesize": "^6.3.0",
+    "filesize": "^11.0.13",
     "jest": "^30.2.0",
     "mobx": "^5.15.7",
     "mobx-react": "^6.3.1",
