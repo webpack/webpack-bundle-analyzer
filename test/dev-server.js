@@ -42,5 +42,8 @@ describe("Webpack Dev Server", function () {
 });
 
 async function deleteOutputDirectory() {
-  await fs.promises.rm(webpackConfig.output.path, { force: true, recursive: true });
+  await fs.promises.rm(webpackConfig.output.path, {
+    force: true,
+    recursive: true,
+  });
 }

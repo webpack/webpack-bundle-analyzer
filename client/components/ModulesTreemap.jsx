@@ -60,7 +60,7 @@ class ModulesTreemap extends Component {
       activeSizeItem: computed,
       chunkItems: computed,
       highlightedModules: computed,
-      foundModulesInfo: computed
+      foundModulesInfo: computed,
     });
   }
 

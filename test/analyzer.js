@@ -11,7 +11,10 @@ describe("Analyzer", function () {
 
   beforeAll(async function () {
     browser = await puppeteer.launch();
-    await fs.promises.rm(`${__dirname}/output`, { force: true, recursive: true });
+    await fs.promises.rm(`${__dirname}/output`, {
+      force: true,
+      recursive: true,
+    });
   });
 
   beforeEach(async function () {
@@ -19,7 +22,10 @@ describe("Analyzer", function () {
   });
 
   afterEach(async function () {
-    await fs.promises.rm(`${__dirname}/output`, { force: true, recursive: true });
+    await fs.promises.rm(`${__dirname}/output`, {
+      force: true,
+      recursive: true,
+    });
   });
 
   afterAll(async function () {
