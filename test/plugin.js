@@ -1,32 +1,33 @@
-const fs = require("fs");
-const path = require("path");
+const fs = require("node:fs");
+const path = require("node:path");
 const puppeteer = require("puppeteer");
 const BundleAnalyzerPlugin = require("../lib/BundleAnalyzerPlugin");
 const { isZstdSupported } = require("../src/sizeUtils");
 
-describe("Plugin", function () {
-  describe("options", function () {
-    it("should be optional", function () {
+jest.setTimeout(15000);
+
+describe("Plugin", () => {
+  describe("options", () => {
+    it("should be optional", () => {
       expect(() => new BundleAnalyzerPlugin()).not.toThrow();
     });
   });
 });
 
-describe("Plugin", function () {
+describe("Plugin", () => {
   let browser;
-  jest.setTimeout(15000);
 
-  beforeEach(async function () {
+  beforeEach(async () => {
     browser = await puppeteer.launch();
-    await fs.promises.rm(`${__dirname}/output`, {
+    await fs.promises.rm(path.resolve(__dirname, "./output"), {
       force: true,
       recursive: true,
     });
   });
 
-  afterEach(async function () {
+  afterEach(async () => {
     await browser.close();
-    await fs.promises.rm(`${__dirname}/output`, {
+    await fs.promises.rm(path.resolve(__dirname, "./output"), {
       force: true,
       recursive: true,
     });
@@ -34,7 +35,7 @@ describe("Plugin", function () {
 
   forEachWebpackVersion(["4.44.2"], ({ it, webpackCompile }) => {
     // Webpack 5 doesn't support `jsonpFunction` option
-    it("should support webpack config with custom `jsonpFunction` name", async function () {
+    it("should support webpack config with custom `jsonpFunction` name", async () => {
       const config = makeWebpackConfig({
         multipleChunks: true,
       });
@@ -51,7 +52,7 @@ describe("Plugin", function () {
   });
 
   forEachWebpackVersion(({ it, webpackCompile }) => {
-    it("should allow to generate json report", async function () {
+    it("should allow to generate json report", async () => {
       const config = makeWebpackConfig({
         analyzerOpts: {
           analyzerMode: "json",
@@ -64,7 +65,7 @@ describe("Plugin", function () {
       expect(chartData).toBeDefined();
     });
 
-    it("should support webpack config with `multi` module", async function () {
+    it("should support webpack config with `multi` module", async () => {
       const config = makeWebpackConfig();
 
       config.entry.bundle = ["./src/a.js", "./src/b.js"];
@@ -97,10 +98,10 @@ describe("Plugin", function () {
     });
   });
 
-  describe("options", function () {
-    describe("excludeAssets", function () {
+  describe("options", () => {
+    describe("excludeAssets", () => {
       forEachWebpackVersion(({ it, webpackCompile }) => {
-        it("should filter out assets from the report", async function () {
+        it("should filter out assets from the report", async () => {
           const config = makeWebpackConfig({
             multipleChunks: true,
             analyzerOpts: {
@@ -116,8 +117,8 @@ describe("Plugin", function () {
       });
     });
 
-    describe("reportTitle", function () {
-      it("should have a sensible default", async function () {
+    describe("reportTitle", () => {
+      it("should have a sensible default", async () => {
         const config = makeWebpackConfig();
         await webpackCompile(config, "4.44.2");
         const generatedReportTitle = await getTitleFromReport();
@@ -126,7 +127,7 @@ describe("Plugin", function () {
         );
       });
 
-      it("should support a string value", async function () {
+      it("should support a string value", async () => {
         const reportTitle = "A string report title";
         const config = makeWebpackConfig({
           analyzerOpts: {
@@ -138,7 +139,7 @@ describe("Plugin", function () {
         expect(generatedReportTitle).toBe(reportTitle);
       });
 
-      it("should support a function value", async function () {
+      it("should support a function value", async () => {
         const reportTitleResult = "A string report title";
         const config = makeWebpackConfig({
           analyzerOpts: {
@@ -150,7 +151,7 @@ describe("Plugin", function () {
         expect(generatedReportTitle).toBe(reportTitleResult);
       });
 
-      it("should propagate an error in a function", async function () {
+      it("should propagate an error in a function", async () => {
         const reportTitleError = new Error();
         const config = makeWebpackConfig({
           analyzerOpts: {
@@ -163,22 +164,22 @@ describe("Plugin", function () {
         let error = null;
         try {
           await webpackCompile(config, "4.44.2");
-        } catch (e) {
-          error = e;
+        } catch (err) {
+          error = err;
         }
 
         expect(error).toBe(reportTitleError);
       });
     });
 
-    describe("compressionAlgorithm", function () {
-      it("should default to gzip", async function () {
+    describe("compressionAlgorithm", () => {
+      it("should default to gzip", async () => {
         const config = makeWebpackConfig({ analyzerOpts: {} });
         await webpackCompile(config, "4.44.2");
         await expectValidReport({ parsedSize: 1317, gzipSize: 341 });
       });
 
-      it("should support gzip", async function () {
+      it("should support gzip", async () => {
         const config = makeWebpackConfig({
           analyzerOpts: { compressionAlgorithm: "gzip" },
         });
@@ -186,7 +187,7 @@ describe("Plugin", function () {
         await expectValidReport({ parsedSize: 1317, gzipSize: 341 });
       });
 
-      it("should support brotli", async function () {
+      it("should support brotli", async () => {
         const config = makeWebpackConfig({
           analyzerOpts: { compressionAlgorithm: "brotli" },
         });
@@ -197,8 +198,9 @@ describe("Plugin", function () {
           brotliSize: 295,
         });
       });
+
       if (isZstdSupported) {
-        it("should support zstd", async function () {
+        it("should support zstd", async () => {
           const config = makeWebpackConfig({
             analyzerOpts: { compressionAlgorithm: "zstd" },
           });
@@ -224,8 +226,12 @@ describe("Plugin", function () {
       gzipSize,
     } = { gzipSize: 770, ...opts };
 
-    expect(fs.existsSync(`${__dirname}/output/${bundleFilename}`)).toBe(true);
-    expect(fs.existsSync(`${__dirname}/output/${reportFilename}`)).toBe(true);
+    expect(
+      fs.existsSync(path.resolve(__dirname, `/output/${bundleFilename}`)),
+    ).toBe(true);
+    expect(
+      fs.existsSync(path.resolve(__dirname, `/output/${reportFilename}`)),
+    ).toBe(true);
     const chartData = await getChartDataFromReport(reportFilename);
 
     const expected = {

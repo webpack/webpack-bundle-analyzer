@@ -1,5 +1,5 @@
-import { Component } from "preact";
 import FoamTree from "@carrotsearch/foamtree";
+import { Component } from "preact";
 
 export default class Treemap extends Component {
   constructor(props) {
@@ -75,7 +75,7 @@ export default class Treemap extends Component {
         const chunkName = component.getChunkNamePart(root.label);
         const hash = /[^0-9]/u.test(chunkName)
           ? hashCode(chunkName)
-          : (parseInt(chunkName) / 1000) * 360;
+          : (Number.parseInt(chunkName) / 1000) * 360;
         variables.groupColor = {
           model: "hsla",
           h: Math.round(Math.abs(hash) % 360),
@@ -177,7 +177,7 @@ export default class Treemap extends Component {
 
   isGroupRendered(group) {
     const groupState = this.treemap.get("state", group);
-    return !!groupState && groupState.revealed;
+    return Boolean(groupState) && groupState.revealed;
   }
 
   update() {
@@ -256,7 +256,7 @@ function hashCode(str) {
   for (let i = 0; i < str.length; i++) {
     const code = str.charCodeAt(i);
     hash = (hash << 5) - hash + code;
-    hash = hash & hash;
+    hash &= hash;
   }
   return hash;
 }

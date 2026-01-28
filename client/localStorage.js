@@ -4,7 +4,7 @@ export default {
   getItem(key) {
     try {
       return JSON.parse(window.localStorage.getItem(`${KEY_PREFIX}.${key}`));
-    } catch (err) {
+    } catch {
       return null;
     }
   },
@@ -15,7 +15,7 @@ export default {
         `${KEY_PREFIX}.${key}`,
         JSON.stringify(value),
       );
-    } catch (err) {
+    } catch {
       /* ignored */
     }
   },
@@ -23,7 +23,7 @@ export default {
   removeItem(key) {
     try {
       window.localStorage.removeItem(`${KEY_PREFIX}.${key}`);
-    } catch (err) {
+    } catch {
       /* ignored */
     }
   },

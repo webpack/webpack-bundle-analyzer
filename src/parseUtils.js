@@ -1,12 +1,8 @@
-const fs = require("fs");
+const fs = require("node:fs");
 const acorn = require("acorn");
 const walk = require("acorn-walk");
 
-module.exports = {
-  parseBundle,
-};
-
-function parseBundle(bundlePath, opts) {
+module.exports.parseBundle = function parseBundle(bundlePath, opts) {
   const { sourceType = "script" } = opts || {};
 
   const content = fs.readFileSync(bundlePath, "utf8");
@@ -136,7 +132,9 @@ function parseBundle(bundlePath, opts) {
 
       // Walking into arguments because some of plugins (e.g. `DedupePlugin`) or some Webpack
       // features (e.g. `umd` library output) can wrap modules list into additional IIFE.
-      args.forEach((arg) => c(arg, state));
+      for (const arg of args) {
+        c(arg, state);
+      }
     },
   });
 
@@ -153,7 +151,7 @@ function parseBundle(bundlePath, opts) {
     src: content,
     runtimeSrc: getBundleRuntime(content, walkState.locations),
   };
-}
+};
 
 /**
  * Returns bundle source except modules
@@ -171,7 +169,7 @@ function getBundleRuntime(content, modulesLocations) {
     lastIndex = end;
   }
 
-  return result + content.slice(lastIndex, content.length);
+  return result + content.slice(lastIndex);
 }
 
 function isIIFE(node) {
@@ -186,9 +184,8 @@ function isIIFE(node) {
 function getIIFECallExpression(node) {
   if (node.expression.type === "UnaryExpression") {
     return node.expression.argument;
-  } else {
-    return node.expression;
   }
+  return node.expression;
 }
 
 function isModulesList(node) {

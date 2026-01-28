@@ -1,6 +1,6 @@
-import Module from "./Module";
-import ContentModule from "./ContentModule";
 import ContentFolder from "./ContentFolder";
+import ContentModule from "./ContentModule";
+import Module from "./Module";
 import { getModulePathParts } from "./utils";
 
 export default class ConcatenatedModule extends Module {
@@ -36,9 +36,9 @@ export default class ConcatenatedModule extends Module {
   }
 
   fillContentModules() {
-    this.data.modules.forEach((moduleData) =>
-      this.addContentModule(moduleData),
-    );
+    for (const moduleData of this.data.modules) {
+      this.addContentModule(moduleData);
+    }
   }
 
   addContentModule(moduleData) {
@@ -54,7 +54,7 @@ export default class ConcatenatedModule extends Module {
     ];
     let currentFolder = this;
 
-    folders.forEach((folderName) => {
+    for (const folderName of folders) {
       let childFolder = currentFolder.getChild(folderName);
 
       if (!childFolder) {
@@ -64,7 +64,7 @@ export default class ConcatenatedModule extends Module {
       }
 
       currentFolder = childFolder;
-    });
+    }
 
     const ModuleConstructor = moduleData.modules
       ? ConcatenatedModule

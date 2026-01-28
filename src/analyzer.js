@@ -1,13 +1,13 @@
-const fs = require("fs");
-const path = require("path");
+const fs = require("node:fs");
+const path = require("node:path");
 
 const { parseChunked } = require("@discoveryjs/json-ext");
 
 const Logger = require("./Logger");
-const Folder = require("./tree/Folder").default;
 const { parseBundle } = require("./parseUtils");
-const { createAssetsFilter } = require("./utils");
 const { getCompressedSize } = require("./sizeUtils");
+const Folder = require("./tree/Folder").default;
+const { createAssetsFilter } = require("./utils");
 
 const FILENAME_QUERY_REGEXP = /\?.*$/u;
 const FILENAME_EXTENSIONS = /\.(js|mjs|cjs|bundle)$/iu;
@@ -28,7 +28,9 @@ function getViewerData(bundleStats, bundleDir, opts) {
 
   // Sometimes all the information is located in `children` array (e.g. problem in #10)
   if (
-    (bundleStats.assets == null || bundleStats.assets.length === 0) &&
+    (bundleStats.assets === null ||
+      bundleStats.assets === undefined ||
+      bundleStats.assets.length === 0) &&
     bundleStats.children &&
     bundleStats.children.length > 0
   ) {
@@ -37,19 +39,19 @@ function getViewerData(bundleStats, bundleDir, opts) {
     // Sometimes if there are additional child chunks produced add them as child assets,
     // leave the 1st one as that is considered the 'root' asset.
     for (let i = 1; i < children.length; i++) {
-      children[i].assets.forEach((asset) => {
+      for (const asset of children[i].assets) {
         asset.isChild = true;
         bundleStats.assets.push(asset);
-      });
+      }
     }
   } else if (bundleStats.children && bundleStats.children.length > 0) {
     // Sometimes if there are additional child chunks produced add them as child assets
-    bundleStats.children.forEach((child) => {
-      child.assets.forEach((asset) => {
+    for (const child of bundleStats.children) {
+      for (const asset of child.assets) {
         asset.isChild = true;
         bundleStats.assets.push(asset);
-      });
-    });
+      }
+    }
   }
 
   // Picking only `*.js, *.cjs or *.mjs` assets from bundle that has non-empty `chunks` array
@@ -120,19 +122,21 @@ function getViewerData(bundleStats, bundleDir, opts) {
       size: statAsset.size,
     });
     const assetSources =
-      bundlesSources &&
-      Object.prototype.hasOwnProperty.call(bundlesSources, statAsset.name)
+      bundlesSources && Object.hasOwn(bundlesSources, statAsset.name)
         ? bundlesSources[statAsset.name]
         : null;
 
     if (assetSources) {
       asset.parsedSize = Buffer.byteLength(assetSources.src);
-      if (compressionAlgorithm === "gzip")
+      if (compressionAlgorithm === "gzip") {
         asset.gzipSize = getCompressedSize("gzip", assetSources.src);
-      if (compressionAlgorithm === "brotli")
+      }
+      if (compressionAlgorithm === "brotli") {
         asset.brotliSize = getCompressedSize("brotli", assetSources.src);
-      if (compressionAlgorithm === "zstd")
+      }
+      if (compressionAlgorithm === "zstd") {
         asset.zstdSize = getCompressedSize("zstd", assetSources.src);
+      }
     }
 
     // Picking modules from current bundle script
@@ -208,8 +212,8 @@ function readStatsFromFile(filename) {
 
 function getChildAssetBundles(bundleStats, assetName) {
   return flatten(
-    (bundleStats.children || []).find((c) =>
-      Object.values(c.assetsByChunkName),
+    (bundleStats.children || []).find((child) =>
+      Object.values(child.assetsByChunkName),
     ),
   ).includes(assetName);
 }
@@ -252,14 +256,17 @@ function isRuntimeModule(statModule) {
 function createModulesTree(modules, opts) {
   const root = new Folder(".", opts);
 
-  modules.forEach((module) => root.addModule(module));
+  for (const module of modules) {
+    root.addModule(module);
+  }
+
   root.mergeNestedFolders();
 
   return root;
 }
 
 function getChunkToInitialByEntrypoint(bundleStats) {
-  if (bundleStats == null) {
+  if (bundleStats === null || bundleStats === undefined) {
     return {};
   }
   const chunkToEntrypointInititalMap = {};

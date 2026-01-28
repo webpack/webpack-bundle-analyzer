@@ -1,40 +1,33 @@
-const path = require("path");
-const fs = require("fs");
-const http = require("http");
+const fs = require("node:fs");
+const http = require("node:http");
+const path = require("node:path");
 
-const WebSocket = require("ws");
-const sirv = require("sirv");
 const { bold } = require("picocolors");
+const sirv = require("sirv");
+const WebSocket = require("ws");
 
 const Logger = require("./Logger");
 const analyzer = require("./analyzer");
-const { open } = require("./utils");
 const { renderViewer } = require("./template");
+const { open } = require("./utils");
 
 const projectRoot = path.resolve(__dirname, "..");
 
 function resolveTitle(reportTitle) {
   if (typeof reportTitle === "function") {
     return reportTitle();
-  } else {
-    return reportTitle;
   }
+
+  return reportTitle;
 }
 
 function resolveDefaultSizes(defaultSizes, compressionAlgorithm) {
-  if (["gzip", "brotli", "zstd"].includes(defaultSizes))
+  if (["gzip", "brotli", "zstd"].includes(defaultSizes)) {
     return compressionAlgorithm;
+  }
+
   return defaultSizes;
 }
-
-module.exports = {
-  startServer,
-  generateReport,
-  generateJSONReport,
-  getEntrypoints,
-  // deprecated
-  start: startServer,
-};
 
 async function startServer(bundleStats, opts) {
   const {
@@ -112,12 +105,6 @@ async function startServer(bundleStats, opts) {
     });
   });
 
-  return {
-    ws: wss,
-    http: server,
-    updateChartData,
-  };
-
   function updateChartData(bundleStats) {
     const newChartData = getChartData(analyzerOpts, bundleStats, bundleDir);
 
@@ -125,7 +112,7 @@ async function startServer(bundleStats, opts) {
 
     chartData = newChartData;
 
-    wss.clients.forEach((client) => {
+    for (const client of wss.clients) {
       if (client.readyState === WebSocket.OPEN) {
         client.send(
           JSON.stringify({
@@ -134,8 +121,14 @@ async function startServer(bundleStats, opts) {
           }),
         );
       }
-    });
+    }
   }
+
+  return {
+    ws: wss,
+    http: server,
+    updateChartData,
+  };
 }
 
 async function generateReport(bundleStats, opts) {
@@ -247,3 +240,12 @@ function getEntrypoints(bundleStats) {
     (entrypoint) => entrypoint.name,
   );
 }
+
+module.exports = {
+  generateJSONReport,
+  generateReport,
+  getEntrypoints,
+  // deprecated
+  start: startServer,
+  startServer,
+};

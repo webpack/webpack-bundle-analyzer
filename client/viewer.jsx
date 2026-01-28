@@ -1,7 +1,8 @@
 import { render } from "preact";
 
-import { store } from "./store";
-import ModulesTreemap from "./components/ModulesTreemap";
+import ModulesTreemap from "./components/ModulesTreemap.jsx";
+import { store } from "./store.js";
+
 import "./viewer.css";
 
 // Initializing WebSocket for live treemap updates
@@ -10,7 +11,7 @@ try {
   if (window.enableWebSocket) {
     ws = new WebSocket(`ws://${location.host}`);
   }
-} catch (err) {
+} catch {
   console.warn(
     "Couldn't connect to analyzer websocket server so you'll have to reload page manually to see updates in the treemap",
   );

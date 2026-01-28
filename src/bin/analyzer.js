@@ -1,15 +1,15 @@
 #! /usr/bin/env node
 
-const { resolve, dirname } = require("path");
+const { dirname, resolve } = require("node:path");
 
 const { program: commanderProgram } = require("commander");
 const { magenta } = require("picocolors");
 
-const analyzer = require("../analyzer");
-const viewer = require("../viewer");
 const Logger = require("../Logger");
-const utils = require("../utils");
+const analyzer = require("../analyzer");
 const { isZstdSupported } = require("../sizeUtils");
+const utils = require("../utils");
+const viewer = require("../viewer");
 
 const SIZES = new Set(["stat", "parsed", "gzip"]);
 const COMPRESSION_ALGORITHMS = new Set(
@@ -26,16 +26,13 @@ const program = commanderProgram
   )
   .option(
     "-m, --mode <mode>",
-    "Analyzer mode. Should be `server`,`static` or `json`." +
-      br(
-        "In `server` mode analyzer will start HTTP server to show bundle report.",
-      ) +
-      br(
-        "In `static` mode single HTML file with bundle report will be generated.",
-      ) +
-      br(
-        "In `json` mode single JSON file with bundle report will be generated.",
-      ),
+    `Analyzer mode. Should be \`server\`,\`static\` or \`json\`.${br(
+      "In `server` mode analyzer will start HTTP server to show bundle report.",
+    )}${br(
+      "In `static` mode single HTML file with bundle report will be generated.",
+    )}${br(
+      "In `json` mode single JSON file with bundle report will be generated.",
+    )}`,
     "server",
   )
   .option(
@@ -60,14 +57,16 @@ const program = commanderProgram
   )
   .option(
     "-s, --default-sizes <type>",
-    "Module sizes to show in treemap by default." +
-      br(`Possible values: ${[...SIZES].join(", ")}`),
+    `Module sizes to show in treemap by default.${br(
+      `Possible values: ${[...SIZES].join(", ")}`,
+    )}`,
     "parsed",
   )
   .option(
     "--compression-algorithm <type>",
-    "Compression algorithm that will be used to calculate the compressed module sizes." +
-      br(`Possible values: ${[...COMPRESSION_ALGORITHMS].join(", ")}`),
+    `Compression algorithm that will be used to calculate the compressed module sizes.${br(
+      `Possible values: ${[...COMPRESSION_ALGORITHMS].join(", ")}`,
+    )}`,
     "gzip",
   )
   .option(
@@ -76,13 +75,14 @@ const program = commanderProgram
   )
   .option(
     "-e, --exclude <regexp>",
-    "Assets that should be excluded from the report." +
-      br("Can be specified multiple times."),
+    `Assets that should be excluded from the report.${br(
+      "Can be specified multiple times.",
+    )}`,
     array(),
   )
   .option(
     "-l, --log-level <level>",
-    "Log level." + br(`Possible values: ${[...Logger.levels].join(", ")}`),
+    `Log level.${br(`Possible values: ${[...Logger.levels].join(", ")}`)}`,
     Logger.defaultLevel,
   )
   .parse();
@@ -106,8 +106,9 @@ if (typeof reportTitle === "undefined") {
   reportTitle = utils.defaultTitle;
 }
 
-if (!bundleStatsFile)
+if (!bundleStatsFile) {
   showHelp("Provide path to Webpack Stats file as first argument");
+}
 if (mode !== "server" && mode !== "static" && mode !== "json") {
   showHelp("Invalid mode. Should be either `server`, `static` or `json`.");
 }
@@ -122,10 +123,11 @@ if (!COMPRESSION_ALGORITHMS.has(compressionAlgorithm)) {
     `Invalid compression algorithm option. Possible values are: ${[...COMPRESSION_ALGORITHMS].join(", ")}`,
   );
 }
-if (!SIZES.has(defaultSizes))
+if (!SIZES.has(defaultSizes)) {
   showHelp(
     `Invalid default sizes option. Possible values are: ${[...SIZES].join(", ")}`,
   );
+}
 
 bundleStatsFile = resolve(bundleStatsFile);
 

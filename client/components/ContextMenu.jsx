@@ -1,10 +1,10 @@
 import cls from "classnames";
-import ContextMenuItem from "./ContextMenuItem";
-import PureComponent from "../lib/PureComponent";
-import { store } from "../store";
-import { elementIsOutside } from "../utils";
+import PureComponent from "../lib/PureComponent.jsx";
+import { store } from "../store.js";
+import { elementIsOutside } from "../utils.js";
+import ContextMenuItem from "./ContextMenuItem.jsx";
 
-import * as s from "./ContextMenu.css";
+import * as styles from "./ContextMenu.css";
 
 export default class ContextMenu extends PureComponent {
   componentDidMount() {
@@ -30,8 +30,8 @@ export default class ContextMenu extends PureComponent {
   render() {
     const { visible } = this.props;
     const containerClassName = cls({
-      [s.container]: true,
-      [s.hidden]: !visible,
+      [styles.container]: true,
+      [styles.hidden]: !visible,
     });
     const multipleChunksSelected = store.selectedChunks.length > 1;
     return (
@@ -93,14 +93,14 @@ export default class ContextMenu extends PureComponent {
   /**
    * Handle document-wide `mousedown` events to detect clicks
    * outside the context menu.
-   * @param {MouseEvent} e - DOM mouse event object
+   * @param {MouseEvent} event - DOM mouse event object
    * @returns {void}
    */
-  handleDocumentMousedown = (e) => {
-    const isSecondaryClick = e.ctrlKey || e.button === 2;
-    if (!isSecondaryClick && elementIsOutside(e.target, this.node)) {
-      e.preventDefault();
-      e.stopPropagation();
+  handleDocumentMousedown = (event) => {
+    const isSecondaryClick = event.ctrlKey || event.button === 2;
+    if (!isSecondaryClick && elementIsOutside(event.target, this.node)) {
+      event.preventDefault();
+      event.stopPropagation();
       this.hide();
     }
   };

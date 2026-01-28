@@ -8,6 +8,7 @@ const LEVEL_TO_CONSOLE_METHOD = new Map([
 
 class Logger {
   static levels = LEVELS;
+
   static defaultLevel = "info";
 
   constructor(level = Logger.defaultLevel) {
@@ -18,10 +19,11 @@ class Logger {
   setLogLevel(level) {
     const levelIndex = LEVELS.indexOf(level);
 
-    if (levelIndex === -1)
+    if (levelIndex === -1) {
       throw new Error(
         `Invalid log level "${level}". Use one of these: ${LEVELS.join(", ")}`,
       );
+    }
 
     this.activeLevels.clear();
 
@@ -35,12 +37,12 @@ class Logger {
   }
 }
 
-LEVELS.forEach((level) => {
-  if (level === "silent") return;
+for (const level of LEVELS) {
+  if (level === "silent") continue;
 
-  Logger.prototype[level] = function (...args) {
+  Logger.prototype[level] = function log(...args) {
     if (this.activeLevels.has(level)) this._log(level, ...args);
   };
-});
+}
 
 module.exports = Logger;

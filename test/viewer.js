@@ -1,11 +1,11 @@
-const crypto = require("crypto");
-const net = require("net");
+const crypto = require("node:crypto");
+const net = require("node:net");
 
 const Logger = require("../lib/Logger");
-const { getEntrypoints, startServer } = require("../lib/viewer.js");
+const { getEntrypoints, startServer } = require("../lib/viewer");
 
-describe("WebSocket server", function () {
-  it("should not crash when an error is emitted on the websocket", function (done) {
+describe("WebSocket server", () => {
+  it("should not crash when an error is emitted on the websocket", (done) => {
     const bundleStats = {
       assets: [{ name: "bundle.js", chunks: [0] }],
     };
@@ -18,7 +18,7 @@ describe("WebSocket server", function () {
     };
 
     startServer(bundleStats, options)
-      .then(function ({ http: server }) {
+      .then(({ http: server }) => {
         // The GUID constant defined in WebSocket protocol
         // https://tools.ietf.org/html/rfc6455#section-1.3
         const GUID = "258EAFA5-E914-47DA-95CA-C5AB0DC85B11";
@@ -32,7 +32,7 @@ describe("WebSocket server", function () {
           .update(key + GUID)
           .digest("base64");
 
-        const socket = net.createConnection(server.address().port, function () {
+        const socket = net.createConnection(server.address().port, () => {
           socket.write(
             [
               "GET / HTTP/1.1",
@@ -47,12 +47,12 @@ describe("WebSocket server", function () {
           );
         });
 
-        socket.on("close", function () {
+        socket.on("close", () => {
           server.close(done);
         });
 
         let count = 0;
-        socket.on("data", function (chunk) {
+        socket.on("data", (chunk) => {
           ++count;
           const expected = Buffer.from(
             [
@@ -109,19 +109,19 @@ describe("getEntrypoints", () => {
     );
   });
 
-  it("should handle when bundlestats is null or undefined ", function () {
+  it("should handle when bundlestats is null or undefined", () => {
     expect(JSON.stringify(getEntrypoints(null))).toBe(JSON.stringify([]));
     expect(JSON.stringify(getEntrypoints(undefined))).toBe(JSON.stringify([]));
   });
 
-  it("should handle when bundlestats is empty", function () {
+  it("should handle when bundlestats is empty", () => {
     const bundleStatsWithoutEntryPoints = {};
     expect(JSON.stringify(getEntrypoints(bundleStatsWithoutEntryPoints))).toBe(
       JSON.stringify([]),
     );
   });
 
-  it("should handle when entrypoints is empty", function () {
+  it("should handle when entrypoints is empty", () => {
     const bundleStatsEmptyEntryPoint = { entrypoints: {} };
     expect(JSON.stringify(getEntrypoints(bundleStatsEmptyEntryPoint))).toBe(
       JSON.stringify([]),

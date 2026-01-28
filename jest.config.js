@@ -1,3 +1,5 @@
+"use strict";
+
 // Jest configuration
 // Reference: https://jestjs.io/docs/configuration
 

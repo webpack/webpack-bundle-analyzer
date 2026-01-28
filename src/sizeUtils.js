@@ -1,4 +1,4 @@
-const zlib = require("zlib");
+const zlib = require("node:zlib");
 
 export const isZstdSupported = "createZstdCompress" in zlib;
 

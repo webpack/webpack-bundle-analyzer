@@ -1,5 +1,5 @@
-import Button from "./Button";
-import PureComponent from "../lib/PureComponent";
+import PureComponent from "../lib/PureComponent.jsx";
+import Button from "./Button.jsx";
 
 export default class SwitcherItem extends PureComponent {
   render({ item, ...props }) {

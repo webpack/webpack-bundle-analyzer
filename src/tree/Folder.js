@@ -1,8 +1,8 @@
-import Module from "./Module";
+import { getCompressedSize } from "../sizeUtils";
 import BaseFolder from "./BaseFolder";
 import ConcatenatedModule from "./ConcatenatedModule";
+import Module from "./Module";
 import { getModulePathParts } from "./utils";
-import { getCompressedSize } from "../sizeUtils";
 
 export default class Folder extends BaseFolder {
   constructor(name, opts) {
@@ -35,7 +35,7 @@ export default class Folder extends BaseFolder {
   getCompressedSize(compressionAlgorithm) {
     const key = `_${compressionAlgorithm}Size`;
 
-    if (!Object.prototype.hasOwnProperty.call(this, key)) {
+    if (!Object.hasOwn(this, key)) {
       this[key] = this.src
         ? getCompressedSize(compressionAlgorithm, this.src)
         : 0;
@@ -57,7 +57,7 @@ export default class Folder extends BaseFolder {
     ];
     let currentFolder = this;
 
-    folders.forEach((folderName) => {
+    for (const folderName of folders) {
       let childNode = currentFolder.getChild(folderName);
 
       if (
@@ -75,7 +75,7 @@ export default class Folder extends BaseFolder {
       }
 
       currentFolder = childNode;
-    });
+    }
 
     const ModuleConstructor = moduleData.modules ? ConcatenatedModule : Module;
     const module = new ModuleConstructor(fileName, moduleData, this, this.opts);

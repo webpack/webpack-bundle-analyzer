@@ -1,4 +1,4 @@
-const { readdirSync } = require("fs");
+const { readdirSync } = require("node:fs");
 const webpack = require("webpack");
 
 global.webpackCompile = webpackCompile;
@@ -62,11 +62,11 @@ function forEachWebpackVersion(versions, cb) {
   }
 
   for (const version of versions) {
-    const itFn = function (testDescription, ...args) {
+    const itFn = function itFn(testDescription, ...args) {
       return it.call(this, `${testDescription} (Webpack ${version})`, ...args);
     };
 
-    itFn.only = function (testDescription, ...args) {
+    itFn.only = function only(testDescription, ...args) {
       return it.only.call(
         this,
         `${testDescription} (Webpack ${version})`,
@@ -101,6 +101,7 @@ async function webpackCompile(config, version) {
     throw new Error(
       `Error requiring Webpack ${version}:\n${err}\n\n` +
         'Try running "npm run install-test-webpack-versions".',
+      { cause: err },
     );
   }
 
@@ -130,7 +131,7 @@ function makeWebpackConfig(opts = {}) {
       analyzerMode: "static",
       openAnalyzer: false,
       logLevel: "error",
-      ...(opts.analyzerOpts || {}),
+      ...opts.analyzerOpts,
     },
   };
 
@@ -171,5 +172,7 @@ function makeWebpackConfig(opts = {}) {
 }
 
 function wait(ms) {
-  return new Promise((resolve) => setTimeout(resolve, ms));
+  return new Promise((resolve) => {
+    setTimeout(resolve, ms);
+  });
 }

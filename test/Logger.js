@@ -17,11 +17,11 @@ class TestLogger extends Logger {
 
 let logger;
 
-describe("Logger", function () {
-  describe("level", function () {
+describe("Logger", () => {
+  describe("level", () => {
     for (const testingLevel of Logger.levels) {
-      describe(`"${testingLevel}"`, function () {
-        beforeEach(function () {
+      describe(`"${testingLevel}"`, () => {
+        beforeEach(() => {
           logger = new TestLogger(testingLevel);
         });
 
@@ -31,12 +31,12 @@ describe("Logger", function () {
           if (
             Logger.levels.indexOf(level) >= Logger.levels.indexOf(testingLevel)
           ) {
-            it(`should log "${level}" message`, function () {
+            it(`should log "${level}" message`, () => {
               logger[level]("msg1", "msg2");
               expect(logger.logs).toEqual([[level, "msg1", "msg2"]]);
             });
           } else {
-            it(`should not log "${level}" message`, function () {
+            it(`should not log "${level}" message`, () => {
               logger[level]("msg1", "msg2");
               expect(logger.logs).toHaveLength(0);
             });
@@ -45,12 +45,12 @@ describe("Logger", function () {
       });
     }
 
-    it('should be set to "info" by default', function () {
+    it('should be set to "info" by default', () => {
       logger = new TestLogger();
       expectLoggerLevel(logger, "info");
     });
 
-    it("should allow to change level", function () {
+    it("should allow to change level", () => {
       logger = new TestLogger("warn");
       expectLoggerLevel(logger, "warn");
       logger.setLogLevel("info");
@@ -59,13 +59,13 @@ describe("Logger", function () {
       expectLoggerLevel(logger, "silent");
     });
 
-    it("should throw if level is invalid on instance creation", function () {
+    it("should throw if level is invalid on instance creation", () => {
       expect(() => new TestLogger("invalid")).toThrow(
         invalidLogLevelMessage("invalid"),
       );
     });
 
-    it("should throw if level is invalid on `setLogLevel`", function () {
+    it("should throw if level is invalid on `setLogLevel`", () => {
       expect(() => new TestLogger().setLogLevel("invalid")).toThrow(
         invalidLogLevelMessage("invalid"),
       );

@@ -1,10 +1,11 @@
-import { Component } from "preact";
 import cls from "classnames";
+import { Component } from "preact";
 
-import * as s from "./Tooltip.css";
+import * as styles from "./Tooltip.css";
 
 export default class Tooltip extends Component {
   static marginX = 10;
+
   static marginY = 30;
 
   mouseCoords = {
@@ -32,8 +33,8 @@ export default class Tooltip extends Component {
   render() {
     const { children, visible } = this.props;
     const className = cls({
-      [s.container]: true,
-      [s.hidden]: !visible,
+      [styles.container]: true,
+      [styles.hidden]: !visible,
     });
 
     return (

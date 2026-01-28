@@ -7,7 +7,7 @@ export default class BaseFolder extends Node {
   }
 
   get src() {
-    if (!Object.prototype.hasOwnProperty.call(this, "_src")) {
+    if (!Object.hasOwn(this, "_src")) {
       this._src = this.walk((node, src) => (src += node.src || ""), "", false);
     }
 
@@ -15,7 +15,7 @@ export default class BaseFolder extends Node {
   }
 
   get size() {
-    if (!Object.prototype.hasOwnProperty.call(this, "_size")) {
+    if (!Object.hasOwn(this, "_size")) {
       this._size = this.walk((node, size) => size + node.size, 0, false);
     }
 
@@ -59,22 +59,21 @@ export default class BaseFolder extends Node {
   walk(walker, state = {}, deep = true) {
     let stopped = false;
 
+    function stop(finalState) {
+      stopped = true;
+      return finalState;
+    }
+
     Object.values(this.children).forEach((child) => {
-      if (deep && child.walk) {
-        state = child.walk(walker, state, stop);
-      } else {
-        state = walker(child, state, stop);
-      }
+      state =
+        deep && child.walk
+          ? child.walk(walker, state, stop)
+          : walker(child, state, stop);
 
       if (stopped) return false;
     });
 
     return state;
-
-    function stop(finalState) {
-      stopped = true;
-      return finalState;
-    }
   }
 
   mergeNestedFolders() {
@@ -82,7 +81,7 @@ export default class BaseFolder extends Node {
       let childNames;
 
       while ((childNames = Object.keys(this.children)).length === 1) {
-        const childName = childNames[0];
+        const [childName] = childNames;
         const onlyChild = this.children[childName];
 
         if (onlyChild instanceof this.constructor) {

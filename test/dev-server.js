@@ -1,22 +1,26 @@
-const fs = require("fs");
-const { spawn } = require("child_process");
+const { spawn } = require("node:child_process");
+const fs = require("node:fs");
+const path = require("node:path");
 
 const ROOT = `${__dirname}/dev-server`;
 const WEBPACK_CONFIG_PATH = `${ROOT}/webpack.config.js`;
+
 const webpackConfig = require(WEBPACK_CONFIG_PATH);
 
-describe("Webpack Dev Server", function () {
+const timeout = 15000;
+
+jest.setTimeout(timeout);
+
+describe("Webpack Dev Server", () => {
   beforeAll(deleteOutputDirectory);
+
   afterEach(deleteOutputDirectory);
 
-  const timeout = 15000;
-  jest.setTimeout(timeout);
-
-  it("should save report file to the output directory", function (done) {
+  it("should save report file to the output directory", (done) => {
     const startedAt = Date.now();
 
     const devServer = spawn(
-      `${__dirname}/../node_modules/.bin/webpack-dev-server`,
+      path.resolve(__dirname, "../node_modules/.bin/webpack-dev-server"),
       ["--config", WEBPACK_CONFIG_PATH],
       {
         cwd: ROOT,
@@ -24,7 +28,9 @@ describe("Webpack Dev Server", function () {
     );
 
     const reportCheckIntervalId = setInterval(() => {
-      if (fs.existsSync(`${webpackConfig.output.path}/report.html`)) {
+      if (
+        fs.existsSync(path.resolve(webpackConfig.output.path, "./report.html"))
+      ) {
         finish();
       } else if (Date.now() - startedAt > timeout - 1000) {
         finish(
