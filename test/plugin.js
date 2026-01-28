@@ -227,10 +227,10 @@ describe("Plugin", () => {
     } = { gzipSize: 770, ...opts };
 
     expect(
-      fs.existsSync(path.resolve(__dirname, `/output/${bundleFilename}`)),
+      fs.existsSync(path.resolve(__dirname, `./output/${bundleFilename}`)),
     ).toBe(true);
     expect(
-      fs.existsSync(path.resolve(__dirname, `/output/${reportFilename}`)),
+      fs.existsSync(path.resolve(__dirname, `./output/${reportFilename}`)),
     ).toBe(true);
     const chartData = await getChartDataFromReport(reportFilename);
 
