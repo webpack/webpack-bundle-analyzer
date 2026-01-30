@@ -1,23 +1,22 @@
-import Node from './Node';
+import Node from "./Node";
 
 export default class BaseFolder extends Node {
-
   constructor(name, parent) {
     super(name, parent);
     this.children = Object.create(null);
   }
 
   get src() {
-    if (!Object.prototype.hasOwnProperty.call(this, '_src')) {
-      this._src = this.walk((node, src) => (src += node.src || ''), '', false);
+    if (!Object.prototype.hasOwnProperty.call(this, "_src")) {
+      this._src = this.walk((node, src) => (src += node.src || ""), "", false);
     }
 
     return this._src;
   }
 
   get size() {
-    if (!Object.prototype.hasOwnProperty.call(this, '_size')) {
-      this._size = this.walk((node, size) => (size + node.size), 0, false);
+    if (!Object.prototype.hasOwnProperty.call(this, "_size")) {
+      this._size = this.walk((node, size) => size + node.size, 0, false);
     }
 
     return this._size;
@@ -28,7 +27,7 @@ export default class BaseFolder extends Node {
   }
 
   addChildModule(module) {
-    const {name} = module;
+    const { name } = module;
     const currentChild = this.children[name];
 
     // For some reason we already have this node in children and it's a folder.
@@ -60,7 +59,7 @@ export default class BaseFolder extends Node {
   walk(walker, state = {}, deep = true) {
     let stopped = false;
 
-    Object.values(this.children).forEach(child => {
+    Object.values(this.children).forEach((child) => {
       if (deep && child.walk) {
         state = child.walk(walker, state, stop);
       } else {
@@ -95,13 +94,17 @@ export default class BaseFolder extends Node {
       }
     }
 
-    this.walk(child => {
-      child.parent = this;
+    this.walk(
+      (child) => {
+        child.parent = this;
 
-      if (child.mergeNestedFolders) {
-        child.mergeNestedFolders();
-      }
-    }, null, false);
+        if (child.mergeNestedFolders) {
+          child.mergeNestedFolders();
+        }
+      },
+      null,
+      false,
+    );
   }
 
   toChartData() {
@@ -109,8 +112,7 @@ export default class BaseFolder extends Node {
       label: this.name,
       path: this.path,
       statSize: this.size,
-      groups: Object.values(this.children).map(child => child.toChartData())
+      groups: Object.values(this.children).map((child) => child.toChartData()),
     };
   }
-
-};
+}

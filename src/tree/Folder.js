@@ -1,11 +1,10 @@
-import Module from './Module';
-import BaseFolder from './BaseFolder';
-import ConcatenatedModule from './ConcatenatedModule';
-import {getModulePathParts} from './utils';
-import {getCompressedSize} from '../sizeUtils';
+import Module from "./Module";
+import BaseFolder from "./BaseFolder";
+import ConcatenatedModule from "./ConcatenatedModule";
+import { getModulePathParts } from "./utils";
+import { getCompressedSize } from "../sizeUtils";
 
 export default class Folder extends BaseFolder {
-
   constructor(name, opts) {
     super(name);
     this.opts = opts;
@@ -16,18 +15,30 @@ export default class Folder extends BaseFolder {
   }
 
   get gzipSize() {
-    return this.opts.compressionAlgorithm === 'gzip' ? this.getCompressedSize('gzip') : undefined;
+    return this.opts.compressionAlgorithm === "gzip"
+      ? this.getCompressedSize("gzip")
+      : undefined;
   }
 
   get brotliSize() {
-    return this.opts.compressionAlgorithm === 'brotli' ? this.getCompressedSize('brotli') : undefined;
+    return this.opts.compressionAlgorithm === "brotli"
+      ? this.getCompressedSize("brotli")
+      : undefined;
+  }
+
+  get zstdSize() {
+    return this.opts.compressionAlgorithm === "zstd"
+      ? this.getCompressedSize("zstd")
+      : undefined;
   }
 
   getCompressedSize(compressionAlgorithm) {
     const key = `_${compressionAlgorithm}Size`;
 
     if (!Object.prototype.hasOwnProperty.call(this, key)) {
-      this[key] = this.src ? getCompressedSize(compressionAlgorithm, this.src) : 0;
+      this[key] = this.src
+        ? getCompressedSize(compressionAlgorithm, this.src)
+        : 0;
     }
 
     return this[key];
@@ -40,10 +51,13 @@ export default class Folder extends BaseFolder {
       return;
     }
 
-    const [folders, fileName] = [pathParts.slice(0, -1), pathParts[pathParts.length - 1]];
+    const [folders, fileName] = [
+      pathParts.slice(0, -1),
+      pathParts[pathParts.length - 1],
+    ];
     let currentFolder = this;
 
-    folders.forEach(folderName => {
+    folders.forEach((folderName) => {
       let childNode = currentFolder.getChild(folderName);
 
       if (
@@ -55,7 +69,9 @@ export default class Folder extends BaseFolder {
         // See `test/stats/with-invalid-dynamic-require.json` as an example.
         !(childNode instanceof Folder)
       ) {
-        childNode = currentFolder.addChildFolder(new Folder(folderName, this.opts));
+        childNode = currentFolder.addChildFolder(
+          new Folder(folderName, this.opts),
+        );
       }
 
       currentFolder = childNode;
@@ -71,8 +87,8 @@ export default class Folder extends BaseFolder {
       ...super.toChartData(),
       parsedSize: this.parsedSize,
       gzipSize: this.gzipSize,
-      brotliSize: this.brotliSize
+      brotliSize: this.brotliSize,
+      zstdSize: this.zstdSize,
     };
   }
-
-};
+}

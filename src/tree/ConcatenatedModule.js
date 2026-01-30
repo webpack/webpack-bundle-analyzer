@@ -1,27 +1,30 @@
-import Module from './Module';
-import ContentModule from './ContentModule';
-import ContentFolder from './ContentFolder';
-import {getModulePathParts} from './utils';
+import Module from "./Module";
+import ContentModule from "./ContentModule";
+import ContentFolder from "./ContentFolder";
+import { getModulePathParts } from "./utils";
 
 export default class ConcatenatedModule extends Module {
-
   constructor(name, data, parent, opts) {
     super(name, data, parent, opts);
-    this.name += ' (concatenated)';
+    this.name += " (concatenated)";
     this.children = Object.create(null);
     this.fillContentModules();
   }
 
   get parsedSize() {
-    return this.getParsedSize() ?? this.getEstimatedSize('parsedSize');
+    return this.getParsedSize() ?? this.getEstimatedSize("parsedSize");
   }
 
   get gzipSize() {
-    return this.getGzipSize() ?? this.getEstimatedSize('gzipSize');
+    return this.getGzipSize() ?? this.getEstimatedSize("gzipSize");
   }
 
   get brotliSize() {
-    return this.getBrotliSize() ?? this.getEstimatedSize('brotliSize');
+    return this.getBrotliSize() ?? this.getEstimatedSize("brotliSize");
+  }
+
+  get zstdSize() {
+    return this.getZstdSize() ?? this.getEstimatedSize("zstdSize");
   }
 
   getEstimatedSize(sizeType) {
@@ -33,7 +36,9 @@ export default class ConcatenatedModule extends Module {
   }
 
   fillContentModules() {
-    this.data.modules.forEach(moduleData => this.addContentModule(moduleData));
+    this.data.modules.forEach((moduleData) =>
+      this.addContentModule(moduleData),
+    );
   }
 
   addContentModule(moduleData) {
@@ -43,20 +48,27 @@ export default class ConcatenatedModule extends Module {
       return;
     }
 
-    const [folders, fileName] = [pathParts.slice(0, -1), pathParts[pathParts.length - 1]];
+    const [folders, fileName] = [
+      pathParts.slice(0, -1),
+      pathParts[pathParts.length - 1],
+    ];
     let currentFolder = this;
 
-    folders.forEach(folderName => {
+    folders.forEach((folderName) => {
       let childFolder = currentFolder.getChild(folderName);
 
       if (!childFolder) {
-        childFolder = currentFolder.addChildFolder(new ContentFolder(folderName, this));
+        childFolder = currentFolder.addChildFolder(
+          new ContentFolder(folderName, this),
+        );
       }
 
       currentFolder = childFolder;
     });
 
-    const ModuleConstructor = moduleData.modules ? ConcatenatedModule : ContentModule;
+    const ModuleConstructor = moduleData.modules
+      ? ConcatenatedModule
+      : ContentModule;
     const module = new ModuleConstructor(fileName, moduleData, this, this.opts);
     currentFolder.addChildModule(module);
   }
@@ -77,7 +89,7 @@ export default class ConcatenatedModule extends Module {
   }
 
   mergeNestedFolders() {
-    Object.values(this.children).forEach(child => {
+    Object.values(this.children).forEach((child) => {
       if (child.mergeNestedFolders) {
         child.mergeNestedFolders();
       }
@@ -88,8 +100,7 @@ export default class ConcatenatedModule extends Module {
     return {
       ...super.toChartData(),
       concatenated: true,
-      groups: Object.values(this.children).map(child => child.toChartData())
+      groups: Object.values(this.children).map((child) => child.toChartData()),
     };
   }
-
-};
+}

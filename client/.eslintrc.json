@@ -1,8 +1,5 @@
 {
-  "extends": [
-    "th0r-react",
-    "../.eslintrc.json"
-  ],
+  "extends": ["th0r-react", "../.eslintrc.json"],
   "settings": {
     "react": {
       "version": "16.2"

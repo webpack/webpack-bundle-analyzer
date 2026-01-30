@@ -1,8 +1,7 @@
-import Node from './Node';
-import {getCompressedSize} from '../sizeUtils';
+import Node from "./Node";
+import { getCompressedSize } from "../sizeUtils";
 
 export default class Module extends Node {
-
   constructor(name, data, parent, opts) {
     super(name, parent);
     this.data = data;
@@ -17,6 +16,7 @@ export default class Module extends Node {
     this.data.parsedSrc = value;
     delete this._gzipSize;
     delete this._brotliSize;
+    delete this._zstdSize;
   }
 
   get size() {
@@ -39,22 +39,38 @@ export default class Module extends Node {
     return this.getBrotliSize();
   }
 
+  get zstdSize() {
+    return this.getZstdSize();
+  }
+
   getParsedSize() {
     return this.src ? this.src.length : undefined;
   }
 
   getGzipSize() {
-    return this.opts.compressionAlgorithm === 'gzip' ? this.getCompressedSize('gzip') : undefined;
+    return this.opts.compressionAlgorithm === "gzip"
+      ? this.getCompressedSize("gzip")
+      : undefined;
   }
 
   getBrotliSize() {
-    return this.opts.compressionAlgorithm === 'brotli' ? this.getCompressedSize('brotli') : undefined;
+    return this.opts.compressionAlgorithm === "brotli"
+      ? this.getCompressedSize("brotli")
+      : undefined;
+  }
+
+  getZstdSize() {
+    return this.opts.compressionAlgorithm === "zstd"
+      ? this.getCompressedSize("zstd")
+      : undefined;
   }
 
   getCompressedSize(compressionAlgorithm) {
     const key = `_${compressionAlgorithm}Size`;
     if (!(key in this)) {
-      this[key] = this.src ? getCompressedSize(compressionAlgorithm, this.src) : undefined;
+      this[key] = this.src
+        ? getCompressedSize(compressionAlgorithm, this.src)
+        : undefined;
     }
 
     return this[key];
@@ -66,7 +82,7 @@ export default class Module extends Node {
     }
 
     if (data.parsedSrc) {
-      this.src = (this.src || '') + data.parsedSrc;
+      this.src = (this.src || "") + data.parsedSrc;
     }
   }
 
@@ -78,8 +94,8 @@ export default class Module extends Node {
       statSize: this.size,
       parsedSize: this.parsedSize,
       gzipSize: this.gzipSize,
-      brotliSize: this.brotliSize
+      brotliSize: this.brotliSize,
+      zstdSize: this.zstdSize,
     };
   }
-
-};
+}

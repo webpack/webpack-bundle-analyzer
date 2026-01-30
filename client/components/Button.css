@@ -7,7 +7,10 @@
   font: var(--main-font);
   outline: none;
   padding: 5px 7px;
-  transition: background .3s ease, border-color .3s ease, color .3s ease;
+  transition:
+    background 0.3s ease,
+    border-color 0.3s ease,
+    color 0.3s ease;
   white-space: nowrap;
   color: var(--text-primary);
 }

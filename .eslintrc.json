@@ -1,4 +1,16 @@
 {
   "root": true,
+  "rules": {
+    "quotes": "off",
+    "curly": "off",
+    "indent": "off",
+    "comma-dangle": "off",
+    "line-comment-position": "off",
+    "object-curly-spacing": "off",
+    "generator-star-spacing": "off",
+    "nonblock-statement-body-position": "off",
+    "newline-per-chained-call": "off",
+    "lines-between-class-members": "off"
+  },
   "extends": "th0r"
 }

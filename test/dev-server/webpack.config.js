@@ -1,17 +1,17 @@
-const BundleAnalyzerPlugin = require('../../lib/BundleAnalyzerPlugin');
+const BundleAnalyzerPlugin = require("../../lib/BundleAnalyzerPlugin");
 
 module.exports = {
-  mode: 'development',
+  mode: "development",
   entry: `${__dirname}/src.js`,
   output: {
     path: `${__dirname}/output`,
-    filename: 'bundle.js'
+    filename: "bundle.js",
   },
   plugins: [
     new BundleAnalyzerPlugin({
-      analyzerMode: 'static',
-      reportFilename: 'report.html',
-      openAnalyzer: false
-    })
-  ]
+      analyzerMode: "static",
+      reportFilename: "report.html",
+      openAnalyzer: false,
+    }),
+  ],
 };

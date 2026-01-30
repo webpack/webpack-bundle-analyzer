@@ -1,8 +1,7 @@
-import {Component} from 'preact';
-import FoamTree from '@carrotsearch/foamtree';
+import { Component } from "preact";
+import FoamTree from "@carrotsearch/foamtree";
 
 export default class Treemap extends Component {
-
   constructor(props) {
     super(props);
     this.treemap = null;
@@ -12,14 +11,14 @@ export default class Treemap extends Component {
 
   componentDidMount() {
     this.treemap = this.createTreemap();
-    window.addEventListener('resize', this.resize);
+    window.addEventListener("resize", this.resize);
   }
 
   componentWillReceiveProps(nextProps) {
     if (nextProps.data !== this.props.data) {
       this.findChunkNamePartIndex();
       this.treemap.set({
-        dataObject: this.getTreemapDataObject(nextProps.data)
+        dataObject: this.getTreemapDataObject(nextProps.data),
       });
     } else if (nextProps.highlightGroups !== this.props.highlightGroups) {
       setTimeout(() => this.treemap.redraw());
@@ -31,36 +30,34 @@ export default class Treemap extends Component {
   }
 
   componentWillUnmount() {
-    window.removeEventListener('resize', this.resize);
+    window.removeEventListener("resize", this.resize);
     this.treemap.dispose();
   }
 
   render() {
-    return (
-      <div {...this.props} ref={this.saveNodeRef}/>
-    );
+    return <div {...this.props} ref={this.saveNodeRef} />;
   }
 
-  saveNodeRef = node => (this.node = node);
+  saveNodeRef = (node) => (this.node = node);
 
   getTreemapDataObject(data = this.props.data) {
-    return {groups: data};
+    return { groups: data };
   }
 
   createTreemap() {
     const component = this;
-    const {props} = this;
+    const { props } = this;
 
     return new FoamTree({
       element: this.node,
-      layout: 'squarified',
-      stacking: 'flattened',
+      layout: "squarified",
+      stacking: "flattened",
       pixelRatio: window.devicePixelRatio || 1,
       maxGroups: Infinity,
       maxGroupLevelsDrawn: Infinity,
       maxGroupLabelLevelsDrawn: Infinity,
       maxGroupLevelsAttached: Infinity,
-      wireframeLabelDrawing: 'always',
+      wireframeLabelDrawing: "always",
       groupMinDiameter: 0,
       groupLabelVerticalPadding: 0.2,
       rolloutDuration: 0,
@@ -80,23 +77,23 @@ export default class Treemap extends Component {
           ? hashCode(chunkName)
           : (parseInt(chunkName) / 1000) * 360;
         variables.groupColor = {
-          model: 'hsla',
+          model: "hsla",
           h: Math.round(Math.abs(hash) % 360),
           s: 60,
           l: 50,
-          a: 0.9
+          a: 0.9,
         };
 
-        const {highlightGroups} = component.props;
+        const { highlightGroups } = component.props;
         const module = properties.group;
 
         if (highlightGroups && highlightGroups.has(module)) {
           variables.groupColor = {
-            model: 'rgba',
+            model: "rgba",
             r: 255,
             g: 0,
             b: 0,
-            a: 0.8
+            a: 0.8,
           };
         } else if (highlightGroups && highlightGroups.size > 0) {
           // this means a search (e.g.) is active, but this module
@@ -123,7 +120,10 @@ export default class Treemap extends Component {
       onGroupDoubleClick: preventDefault,
       onGroupHover(event) {
         // Ignoring hovering on `FoamTree` branding group and the root group
-        if (event.group && (event.group.attribution || event.group === this.get('dataObject'))) {
+        if (
+          event.group &&
+          (event.group.attribution || event.group === this.get("dataObject"))
+        ) {
           event.preventDefault();
           if (props.onMouseLeave) {
             props.onMouseLeave.call(component, event);
@@ -136,8 +136,8 @@ export default class Treemap extends Component {
         }
       },
       onGroupMouseWheel(event) {
-        const {scale} = this.get('viewport');
-        const isZoomOut = (event.delta < 0);
+        const { scale } = this.get("viewport");
+        const isZoomOut = event.delta < 0;
 
         if (isZoomOut) {
           if (component.zoomOutDisabled) return preventDefault(event);
@@ -148,13 +148,16 @@ export default class Treemap extends Component {
         } else {
           component.zoomOutDisabled = false;
         }
-      }
+      },
     });
   }
 
   getGroupRoot(group) {
     let nextParent;
-    while (!group.isAsset && (nextParent = this.treemap.get('hierarchy', group).parent)) {
+    while (
+      !group.isAsset &&
+      (nextParent = this.treemap.get("hierarchy", group).parent)
+    ) {
       group = nextParent;
     }
     return group;
@@ -163,8 +166,8 @@ export default class Treemap extends Component {
   zoomToGroup(group) {
     this.zoomOutDisabled = false;
 
-    while (group && !this.treemap.get('state', group).revealed) {
-      group = this.treemap.get('hierarchy', group).parent;
+    while (group && !this.treemap.get("state", group).revealed) {
+      group = this.treemap.get("hierarchy", group).parent;
     }
 
     if (group) {
@@ -173,7 +176,7 @@ export default class Treemap extends Component {
   }
 
   isGroupRendered(group) {
-    const groupState = this.treemap.get('state', group);
+    const groupState = this.treemap.get("state", group);
     return !!groupState && groupState.revealed;
   }
 
@@ -182,7 +185,7 @@ export default class Treemap extends Component {
   }
 
   resize = () => {
-    const {props} = this;
+    const { props } = this;
     this.treemap.resize();
 
     if (props.onResize) {
@@ -194,27 +197,35 @@ export default class Treemap extends Component {
    * Finds patterns across all chunk names to identify the unique "name" part.
    */
   findChunkNamePartIndex() {
-    const splitChunkNames = this.props.data.map((chunk) => chunk.label.split(/[^a-z0-9]/iu));
-    const longestSplitName = Math.max(...splitChunkNames.map((parts) => parts.length));
+    const splitChunkNames = this.props.data.map((chunk) =>
+      chunk.label.split(/[^a-z0-9]/iu),
+    );
+    const longestSplitName = Math.max(
+      ...splitChunkNames.map((parts) => parts.length),
+    );
     const namePart = {
       index: 0,
-      votes: 0
+      votes: 0,
     };
     for (let i = longestSplitName - 1; i >= 0; i--) {
       const identifierVotes = {
         name: 0,
         hash: 0,
-        ext: 0
+        ext: 0,
       };
-      let lastChunkPart = '';
+      let lastChunkPart = "";
       for (const splitChunkName of splitChunkNames) {
         const part = splitChunkName[i];
-        if (part === undefined || part === '') {
+        if (part === undefined || part === "") {
           continue;
         }
         if (part === lastChunkPart) {
           identifierVotes.ext++;
-        } else if (/[a-z]/u.test(part) && /[0-9]/u.test(part) && part.length === lastChunkPart.length) {
+        } else if (
+          /[a-z]/u.test(part) &&
+          /[0-9]/u.test(part) &&
+          part.length === lastChunkPart.length
+        ) {
           identifierVotes.hash++;
         } else if (/^[a-z]+$/iu.test(part) || /^[0-9]+$/u.test(part)) {
           identifierVotes.name++;
@@ -230,7 +241,9 @@ export default class Treemap extends Component {
   }
 
   getChunkNamePart(chunkLabel) {
-    return chunkLabel.split(/[^a-z0-9]/iu)[this.chunkNamePartIndex] || chunkLabel;
+    return (
+      chunkLabel.split(/[^a-z0-9]/iu)[this.chunkNamePartIndex] || chunkLabel
+    );
   }
 }
 

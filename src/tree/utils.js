@@ -5,15 +5,15 @@ export function getModulePathParts(moduleData) {
     return [moduleData.identifier];
   }
 
-  const loaders = moduleData.name.split('!');
+  const loaders = moduleData.name.split("!");
   // Removing loaders from module path: they're joined by `!` and the last part is a raw module path
   const parsedPath = loaders[loaders.length - 1]
     // Splitting module path into parts
-    .split('/')
+    .split("/")
     // Removing first `.`
     .slice(1)
     // Replacing `~` with `node_modules`
-    .map(part => (part === '~' ? 'node_modules' : part));
+    .map((part) => (part === "~" ? "node_modules" : part));
 
   return parsedPath.length ? parsedPath : null;
 }

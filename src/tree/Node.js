@@ -1,5 +1,4 @@
 export default class Node {
-
   constructor(name, parent) {
     this.name = name;
     this.parent = parent;
@@ -14,11 +13,10 @@ export default class Node {
       node = node.parent;
     }
 
-    return path.reverse().join('/');
+    return path.reverse().join("/");
   }
 
   get isRoot() {
     return !this.parent;
   }
-
-};
+}

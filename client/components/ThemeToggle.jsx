@@ -1,27 +1,30 @@
-import {Component} from 'preact';
-import {observer} from 'mobx-react';
+import { Component } from "preact";
+import { observer } from "mobx-react";
 
-import s from './ThemeToggle.css';
-import Button from './Button';
-import Icon from './Icon';
-import {store} from '../store';
+import * as s from "./ThemeToggle.css";
+import Button from "./Button";
+import Icon from "./Icon";
+import { store } from "../store";
 
-@observer
-export default class ThemeToggle extends Component {
+class ThemeToggle extends Component {
   render() {
-    const {darkMode} = store;
+    const { darkMode } = store;
 
     return (
-      <Button type="button"
-        title={darkMode ? 'Switch to Light Mode' : 'Switch to Dark Mode'}
+      <Button
+        type="button"
+        title={darkMode ? "Switch to Light Mode" : "Switch to Dark Mode"}
         className={s.themeToggle}
-        onClick={this.handleToggle}>
-        <Icon name={darkMode ? 'sun' : 'moon'} size={16}/>
+        onClick={this.handleToggle}
+      >
+        <Icon name={darkMode ? "sun" : "moon"} size={16} />
       </Button>
     );
   }
 
   handleToggle = () => {
     store.toggleDarkMode();
-  }
+  };
 }
+
+export default observer(ThemeToggle);

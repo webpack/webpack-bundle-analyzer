@@ -1,5 +1,5 @@
-const {createWriteStream} = require('fs');
-const {Readable} = require('stream');
+const { createWriteStream } = require("fs");
+const { Readable } = require("stream");
 
 class StatsSerializeStream extends Readable {
   constructor(stats) {
@@ -9,14 +9,14 @@ class StatsSerializeStream extends Readable {
   }
 
   get _indent() {
-    return '  '.repeat(this._indentLevel);
+    return "  ".repeat(this._indentLevel);
   }
 
   _read() {
     let readMore = true;
 
     while (readMore) {
-      const {value, done} = this._stringifier.next();
+      const { value, done } = this._stringifier.next();
 
       if (done) {
         this.push(null);
@@ -27,11 +27,16 @@ class StatsSerializeStream extends Readable {
     }
   }
 
-  * _stringify(obj) {
-    if (typeof obj === 'string' || typeof obj === 'number' || typeof obj === 'boolean' || obj === null) {
+  *_stringify(obj) {
+    if (
+      typeof obj === "string" ||
+      typeof obj === "number" ||
+      typeof obj === "boolean" ||
+      obj === null
+    ) {
       yield JSON.stringify(obj);
     } else if (Array.isArray(obj)) {
-      yield '[';
+      yield "[";
       this._indentLevel++;
 
       let isFirst = true;
@@ -40,15 +45,15 @@ class StatsSerializeStream extends Readable {
           item = null;
         }
 
-        yield `${isFirst ? '' : ','}\n${this._indent}`;
+        yield `${isFirst ? "" : ","}\n${this._indent}`;
         yield* this._stringify(item);
         isFirst = false;
       }
 
       this._indentLevel--;
-      yield obj.length ? `\n${this._indent}]` : ']';
+      yield obj.length ? `\n${this._indent}]` : "]";
     } else {
-      yield '{';
+      yield "{";
       this._indentLevel++;
 
       let isFirst = true;
@@ -58,13 +63,13 @@ class StatsSerializeStream extends Readable {
           continue;
         }
 
-        yield `${isFirst ? '' : ','}\n${this._indent}${JSON.stringify(itemKey)}: `;
+        yield `${isFirst ? "" : ","}\n${this._indent}${JSON.stringify(itemKey)}: `;
         yield* this._stringify(itemValue);
         isFirst = false;
       }
 
       this._indentLevel--;
-      yield entries.length ? `\n${this._indent}}` : '}';
+      yield entries.length ? `\n${this._indent}}` : "}";
     }
   }
 }
@@ -75,8 +80,8 @@ exports.writeStats = writeStats;
 async function writeStats(stats, filepath) {
   return new Promise((resolve, reject) => {
     new StatsSerializeStream(stats)
-      .on('end', resolve)
-      .on('error', reject)
+      .on("end", resolve)
+      .on("error", reject)
       .pipe(createWriteStream(filepath));
   });
 }

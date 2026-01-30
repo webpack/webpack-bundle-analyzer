@@ -1,54 +1,53 @@
-import escapeRegExp from 'escape-string-regexp';
-import {escape} from 'html-escaper';
-import filesize from 'filesize';
-import cls from 'classnames';
+import escapeRegExp from "escape-string-regexp";
+import { escape } from "html-escaper";
+import { filesize } from "filesize";
+import cls from "classnames";
 
-import PureComponent from '../lib/PureComponent';
-import s from './ModuleItem.css';
+import PureComponent from "../lib/PureComponent";
+import * as s from "./ModuleItem.css";
 
 export default class ModuleItem extends PureComponent {
   state = {
-    visible: true
+    visible: true,
   };
 
-  render({module, showSize}) {
+  render({ module, showSize }) {
     const invisible = !this.state.visible;
     const classes = cls(s.container, s[this.itemType], {
-      [s.invisible]: invisible
+      [s.invisible]: invisible,
     });
 
     return (
-      <div className={classes}
+      <div
+        className={classes}
         title={invisible ? this.invisibleHint : null}
         onClick={this.handleClick}
         onMouseEnter={this.handleMouseEnter}
-        onMouseLeave={this.handleMouseLeave}>
-        <span dangerouslySetInnerHTML={{__html: this.titleHtml}}/>
-        {showSize && [
-          ' (',
-          <strong>{filesize(module[showSize])}</strong>,
-          ')'
-        ]}
+        onMouseLeave={this.handleMouseLeave}
+      >
+        <span dangerouslySetInnerHTML={{ __html: this.titleHtml }} />
+        {showSize && [" (", <strong>{filesize(module[showSize])}</strong>, ")"]}
       </div>
     );
   }
 
   get itemType() {
-    const {module} = this.props;
-    if (!module.path) return 'chunk';
-    return module.groups ? 'folder' : 'module';
+    const { module } = this.props;
+    if (!module.path) return "chunk";
+    return module.groups ? "folder" : "module";
   }
 
   get titleHtml() {
     let html;
-    const {module} = this.props;
+    const { module } = this.props;
     const title = module.path || module.label;
     const term = this.props.highlightedText;
 
     if (term) {
-      const regexp = (term instanceof RegExp) ?
-        new RegExp(term.source, 'igu') :
-        new RegExp(`(?:${escapeRegExp(term)})+`, 'iu');
+      const regexp =
+        term instanceof RegExp
+          ? new RegExp(term.source, "igu")
+          : new RegExp(`(?:${escapeRegExp(term)})+`, "iu");
       let match;
       let lastMatch;
 
@@ -58,11 +57,10 @@ export default class ModuleItem extends PureComponent {
       } while (match);
 
       if (lastMatch) {
-        html = (
+        html =
           escape(title.slice(0, lastMatch.index)) +
           `<strong>${escape(lastMatch[0])}</strong>` +
-          escape(title.slice(lastMatch.index + lastMatch[0].length))
-        );
+          escape(title.slice(lastMatch.index + lastMatch[0].length));
       }
     }
 
@@ -74,12 +72,13 @@ export default class ModuleItem extends PureComponent {
   }
 
   get invisibleHint() {
-    const itemType = this.itemType.charAt(0).toUpperCase() + this.itemType.slice(1);
+    const itemType =
+      this.itemType.charAt(0).toUpperCase() + this.itemType.slice(1);
     return `${itemType} is not rendered in the treemap because it's too small.`;
   }
 
   get isVisible() {
-    const {isVisible} = this.props;
+    const { isVisible } = this.props;
     return isVisible ? isVisible(this.props.module) : true;
   }
 
@@ -87,7 +86,7 @@ export default class ModuleItem extends PureComponent {
 
   handleMouseEnter = () => {
     if (this.props.isVisible) {
-      this.setState({visible: this.isVisible});
+      this.setState({ visible: this.isVisible });
     }
-  }
+  };
 }

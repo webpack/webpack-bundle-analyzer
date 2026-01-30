@@ -1,22 +1,25 @@
-import BaseFolder from './BaseFolder';
+import BaseFolder from "./BaseFolder";
 
 export default class ContentFolder extends BaseFolder {
-
   constructor(name, ownerModule, parent) {
     super(name, parent);
     this.ownerModule = ownerModule;
   }
 
   get parsedSize() {
-    return this.getSize('parsedSize');
+    return this.getSize("parsedSize");
   }
 
   get gzipSize() {
-    return this.getSize('gzipSize');
+    return this.getSize("gzipSize");
   }
 
   get brotliSize() {
-    return this.getSize('brotliSize');
+    return this.getSize("brotliSize");
+  }
+
+  get zstdSize() {
+    return this.getSize("zstdSize");
   }
 
   getSize(sizeType) {
@@ -33,8 +36,8 @@ export default class ContentFolder extends BaseFolder {
       parsedSize: this.parsedSize,
       gzipSize: this.gzipSize,
       brotliSize: this.brotliSize,
-      inaccurateSizes: true
+      zstdSize: this.zstdSize,
+      inaccurateSizes: true,
     };
   }
-
-};
+}

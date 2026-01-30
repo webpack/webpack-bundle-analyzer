@@ -1,5 +1,5 @@
 export function isChunkParsed(chunk) {
-  return (typeof chunk.parsedSize === 'number');
+  return typeof chunk.parsedSize === "number";
 }
 
 export function walkModules(modules, cb) {

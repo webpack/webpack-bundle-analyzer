@@ -9,7 +9,9 @@
   opacity: 1;
   white-space: nowrap;
   visibility: visible;
-  transition: opacity .2s ease, visibility .2s ease;
+  transition:
+    opacity 0.2s ease,
+    visibility 0.2s ease;
 }
 
 .hidden {

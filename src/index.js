@@ -1,6 +1,6 @@
-const {start} = require('./viewer');
+const { start } = require("./viewer");
 
 module.exports = {
   start,
-  BundleAnalyzerPlugin: require('./BundleAnalyzerPlugin')
+  BundleAnalyzerPlugin: require("./BundleAnalyzerPlugin"),
 };
