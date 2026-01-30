@@ -46,15 +46,15 @@ function createAssetsFilter(excludePatterns) {
   return () => true;
 }
 
-/**
- * @desc get string of current time
- * format: dd/MMM HH:mm
- * */
 function defaultAnalyzerUrl(options) {
   const { listenHost, boundAddress } = options;
   return `http://${listenHost}:${boundAddress.port}`;
 }
 
+/**
+ * @desc get string of current time
+ * format: dd/MMM HH:mm
+ * */
 function defaultTitle() {
   const time = new Date();
   const year = time.getFullYear();
