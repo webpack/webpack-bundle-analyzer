@@ -12,7 +12,7 @@
 .disabled {
   cursor: default;
   color: var(--text-secondary);
-  opacity: 0.40;
+  opacity: 0.4;
 }
 
 .item.disabled:hover {
