@@ -48,7 +48,7 @@ jobs:
         uses: bahmutov/npm-install@v1
 
       - name: Build sources
-        run: ${{ matrix.node.env }} npm run build
+        run: npm run build
 
       - name: Run lint
         run: npm run lint
