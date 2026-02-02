@@ -1,9 +1,6 @@
 const { readdirSync } = require("node:fs");
+const path = require("node:path");
 const webpack = require("webpack");
-
-global.webpackCompile = webpackCompile;
-global.makeWebpackConfig = makeWebpackConfig;
-global.forEachWebpackVersion = forEachWebpackVersion;
 
 const BundleAnalyzerPlugin = require("../lib/BundleAnalyzerPlugin");
 
@@ -37,49 +34,17 @@ const memoize = (fn) => {
 };
 
 const getAvailableWebpackVersions = memoize(() =>
-  readdirSync(`${__dirname}/webpack-versions`, { withFileTypes: true })
+  readdirSync(path.resolve(__dirname, "./webpack-versions"), {
+    withFileTypes: true,
+  })
     .filter((entry) => entry.isDirectory())
     .map((dir) => dir.name),
 );
 
-function forEachWebpackVersion(versions, cb) {
-  const availableVersions = getAvailableWebpackVersions();
-
-  if (typeof versions === "function") {
-    cb = versions;
-    versions = availableVersions;
-  } else {
-    const notFoundVersions = versions.filter(
-      (version) => !availableVersions.includes(version),
-    );
-
-    if (notFoundVersions.length) {
-      throw new Error(
-        `These Webpack versions are not currently available for testing: ${notFoundVersions.join(", ")}\n` +
-          'You need to install them manually into "test/webpack-versions" directory.',
-      );
-    }
-  }
-
-  for (const version of versions) {
-    const itFn = function itFn(testDescription, ...args) {
-      return it.call(this, `${testDescription} (Webpack ${version})`, ...args);
-    };
-
-    itFn.only = function only(testDescription, ...args) {
-      return it.only.call(
-        this,
-        `${testDescription} (Webpack ${version})`,
-        ...args,
-      );
-    };
-
-    cb({
-      it: itFn,
-      version,
-      webpackCompile: (config) => webpackCompile(config, version),
-    });
-  }
+function wait(ms) {
+  return new Promise((resolve) => {
+    setTimeout(resolve, ms);
+  });
 }
 
 async function webpackCompile(config, version) {
@@ -142,7 +107,7 @@ function makeWebpackConfig(opts = {}) {
       bundle: "./src",
     },
     output: {
-      path: `${__dirname}/output`,
+      path: path.resolve(__dirname, "./output"),
       filename: "[name].js",
     },
     optimization: {
@@ -171,8 +136,44 @@ function makeWebpackConfig(opts = {}) {
   };
 }
 
-function wait(ms) {
-  return new Promise((resolve) => {
-    setTimeout(resolve, ms);
-  });
+function forEachWebpackVersion(versions, cb) {
+  const availableVersions = getAvailableWebpackVersions();
+
+  if (typeof versions === "function") {
+    cb = versions;
+    versions = availableVersions;
+  } else {
+    const notFoundVersions = versions.filter(
+      (version) => !availableVersions.includes(version),
+    );
+
+    if (notFoundVersions.length) {
+      throw new Error(
+        `These Webpack versions are not currently available for testing: ${notFoundVersions.join(", ")}\n` +
+          'You need to install them manually into "test/webpack-versions" directory.',
+      );
+    }
+  }
+
+  for (const version of versions) {
+    const itFn = function itFn(testDescription, ...args) {
+      return it.call(this, `${testDescription} (Webpack ${version})`, ...args);
+    };
+
+    itFn.only = function only(testDescription, ...args) {
+      return it.only.call(
+        this,
+        `${testDescription} (Webpack ${version})`,
+        ...args,
+      );
+    };
+
+    cb({
+      it: itFn,
+      version,
+      webpackCompile: (config) => webpackCompile(config, version),
+    });
+  }
 }
+
+module.exports = { forEachWebpackVersion, makeWebpackConfig, webpackCompile };

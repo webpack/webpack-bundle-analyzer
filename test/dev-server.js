@@ -2,7 +2,7 @@ const { spawn } = require("node:child_process");
 const fs = require("node:fs");
 const path = require("node:path");
 
-const ROOT = `${__dirname}/dev-server`;
+const ROOT = path.resolve(__dirname, "./dev-server");
 const WEBPACK_CONFIG_PATH = `${ROOT}/webpack.config.js`;
 
 const webpackConfig = require(WEBPACK_CONFIG_PATH);

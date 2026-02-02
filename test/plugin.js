@@ -3,6 +3,15 @@ const path = require("node:path");
 const puppeteer = require("puppeteer");
 const BundleAnalyzerPlugin = require("../lib/BundleAnalyzerPlugin");
 const { isZstdSupported } = require("../src/sizeUtils");
+const {
+  forEachWebpackVersion,
+  makeWebpackConfig,
+  webpackCompile,
+} = require("./helpers");
+
+function getChartDataFromJSONReport(reportFilename = "report.json") {
+  return require(path.resolve(__dirname, `output/${reportFilename}`));
+}
 
 jest.setTimeout(15000);
 
@@ -16,6 +25,57 @@ describe("Plugin", () => {
 
 describe("Plugin", () => {
   let browser;
+
+  async function getTitleFromReport(reportFilename = "report.html") {
+    const page = await browser.newPage();
+    await page.goto(`file://${__dirname}/output/${reportFilename}`);
+    return await page.title();
+  }
+
+  async function getChartDataFromReport(reportFilename = "report.html") {
+    const page = await browser.newPage();
+    await page.goto(`file://${__dirname}/output/${reportFilename}`);
+    return await page.evaluate(() => window.chartData);
+  }
+
+  async function expectValidReport(opts) {
+    const {
+      bundleFilename = "bundle.js",
+      reportFilename = "report.html",
+      bundleLabel = "bundle.js",
+      statSize = 141,
+      parsedSize = 2821,
+      gzipSize,
+    } = { gzipSize: 770, ...opts };
+
+    expect(
+      fs.existsSync(path.resolve(__dirname, `./output/${bundleFilename}`)),
+    ).toBe(true);
+    expect(
+      fs.existsSync(path.resolve(__dirname, `./output/${reportFilename}`)),
+    ).toBe(true);
+    const chartData = await getChartDataFromReport(reportFilename);
+
+    const expected = {
+      label: bundleLabel,
+      statSize,
+      parsedSize,
+    };
+
+    if (typeof gzipSize !== "undefined") {
+      expected.gzipSize = gzipSize;
+    }
+
+    if (typeof opts.brotliSize !== "undefined") {
+      expected.brotliSize = opts.brotliSize;
+    }
+
+    if (typeof opts.zstdSize !== "undefined") {
+      expected.zstdSize = opts.zstdSize;
+    }
+
+    expect(chartData[0]).toMatchObject(expected);
+  }
 
   beforeEach(async () => {
     browser = await puppeteer.launch();
@@ -152,7 +212,7 @@ describe("Plugin", () => {
       });
 
       it("should propagate an error in a function", async () => {
-        const reportTitleError = new Error();
+        const reportTitleError = new Error("test");
         const config = makeWebpackConfig({
           analyzerOpts: {
             reportTitle: () => {
@@ -215,59 +275,4 @@ describe("Plugin", () => {
       }
     });
   });
-
-  async function expectValidReport(opts) {
-    const {
-      bundleFilename = "bundle.js",
-      reportFilename = "report.html",
-      bundleLabel = "bundle.js",
-      statSize = 141,
-      parsedSize = 2821,
-      gzipSize,
-    } = { gzipSize: 770, ...opts };
-
-    expect(
-      fs.existsSync(path.resolve(__dirname, `./output/${bundleFilename}`)),
-    ).toBe(true);
-    expect(
-      fs.existsSync(path.resolve(__dirname, `./output/${reportFilename}`)),
-    ).toBe(true);
-    const chartData = await getChartDataFromReport(reportFilename);
-
-    const expected = {
-      label: bundleLabel,
-      statSize,
-      parsedSize,
-    };
-
-    if (typeof gzipSize !== "undefined") {
-      expected.gzipSize = gzipSize;
-    }
-
-    if (typeof opts.brotliSize !== "undefined") {
-      expected.brotliSize = opts.brotliSize;
-    }
-
-    if (typeof opts.zstdSize !== "undefined") {
-      expected.zstdSize = opts.zstdSize;
-    }
-
-    expect(chartData[0]).toMatchObject(expected);
-  }
-
-  function getChartDataFromJSONReport(reportFilename = "report.json") {
-    return require(path.resolve(__dirname, `output/${reportFilename}`));
-  }
-
-  async function getTitleFromReport(reportFilename = "report.html") {
-    const page = await browser.newPage();
-    await page.goto(`file://${__dirname}/output/${reportFilename}`);
-    return await page.title();
-  }
-
-  async function getChartDataFromReport(reportFilename = "report.html") {
-    const page = await browser.newPage();
-    await page.goto(`file://${__dirname}/output/${reportFilename}`);
-    return await page.evaluate(() => window.chartData);
-  }
 });

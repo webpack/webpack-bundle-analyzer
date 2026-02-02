@@ -58,6 +58,15 @@ async function expectValidReport(opts) {
   });
 }
 
+function generateJSONReportFrom(statsFilename) {
+  childProcess.execSync(
+    `../lib/bin/analyzer.js -m json -r output/report.json stats/${statsFilename}`,
+    {
+      cwd: __dirname,
+    },
+  );
+}
+
 describe("Analyzer", () => {
   beforeAll(async () => {
     browser = await puppeteer.launch();
@@ -350,12 +359,3 @@ describe("Analyzer", () => {
     });
   });
 });
-
-function generateJSONReportFrom(statsFilename) {
-  childProcess.execSync(
-    `../lib/bin/analyzer.js -m json -r output/report.json stats/${statsFilename}`,
-    {
-      cwd: __dirname,
-    },
-  );
-}

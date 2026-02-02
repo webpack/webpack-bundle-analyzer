@@ -220,7 +220,7 @@ module.exports.parseBundle = function parseBundle(bundlePath, opts) {
   };
 
   walk.recursive(ast, walkState, {
-    ExpressionStatement(node, state, c) {
+    ExpressionStatement(node, state, callback) {
       if (state.locations) return;
 
       state.expressionStatementDepth++;
@@ -259,7 +259,7 @@ module.exports.parseBundle = function parseBundle(bundlePath, opts) {
       }
 
       if (!state.locations) {
-        c(node.expression, state);
+        callback(node.expression, state);
       }
 
       state.expressionStatementDepth--;
@@ -284,7 +284,7 @@ module.exports.parseBundle = function parseBundle(bundlePath, opts) {
       }
     },
 
-    CallExpression(node, state, c) {
+    CallExpression(node, state, callback) {
       if (state.locations) return;
 
       const args = node.arguments;
@@ -333,7 +333,7 @@ module.exports.parseBundle = function parseBundle(bundlePath, opts) {
       // Walking into arguments because some of plugins (e.g. `DedupePlugin`) or some Webpack
       // features (e.g. `umd` library output) can wrap modules list into additional IIFE.
       for (const arg of args) {
-        c(arg, state);
+        callback(arg, state);
       }
     },
   });
