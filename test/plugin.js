@@ -28,7 +28,7 @@ describe("Plugin", () => {
   async function getTitleFromReport(reportFilename = "report.html") {
     const page = await browser.newPage();
     await page.goto(
-      url.pathToFileURL(path.resovle(__dirname, `./output/${reportFilename}`)),
+      url.pathToFileURL(path.resolve(__dirname, `./output/${reportFilename}`)),
     );
     return await page.title();
   }
@@ -36,7 +36,7 @@ describe("Plugin", () => {
   async function getChartDataFromReport(reportFilename = "report.html") {
     const page = await browser.newPage();
     await page.goto(
-      url.pathToFileURL(path.resovle(__dirname, `./output/${reportFilename}`)),
+      url.pathToFileURL(path.resolve(__dirname, `./output/${reportFilename}`)),
     );
     return await page.evaluate(() => globalThis.chartData);
   }
