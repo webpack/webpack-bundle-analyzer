@@ -257,7 +257,7 @@ describe("Analyzer", () => {
     );
     const chartData = await getChartData();
     expect(chartData).toMatchObject(
-      require("./stats/webpack-5-bundle-with-concatenated-entry-module/expected-chart-data"),
+      require("./stats/webpack-5-bundle-with-concatenated-entry-module/expected-chart-data.json"),
     );
   });
 
