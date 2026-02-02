@@ -1,4 +1,4 @@
-import Node from "./Node";
+import Node from "./Node.js";
 
 export default class BaseFolder extends Node {
   constructor(name, parent) {
@@ -64,14 +64,14 @@ export default class BaseFolder extends Node {
       return finalState;
     }
 
-    Object.values(this.children).forEach((child) => {
+    for (const child of Object.values(this.children)) {
       state =
         deep && child.walk
           ? child.walk(walker, state, stop)
           : walker(child, state, stop);
 
       if (stopped) return false;
-    });
+    }
 
     return state;
   }

@@ -1,4 +1,4 @@
-const zlib = require("node:zlib");
+import zlib from "node:zlib";
 
 export const isZstdSupported = "createZstdCompress" in zlib;
 
@@ -12,6 +12,7 @@ export function getCompressedSize(compressionAlgorithm, input) {
   }
 
   if (compressionAlgorithm === "zstd" && isZstdSupported) {
+    // eslint-disable-next-line n/no-unsupported-features/node-builtins
     return zlib.zstdCompressSync(input).length;
   }
 

@@ -1,7 +1,6 @@
 import PureComponent from "../lib/PureComponent.jsx";
-import SwitcherItem from "./SwitcherItem.jsx";
-
 import * as styles from "./Switcher.css";
+import SwitcherItem from "./SwitcherItem.jsx";
 
 export default class Switcher extends PureComponent {
   render() {

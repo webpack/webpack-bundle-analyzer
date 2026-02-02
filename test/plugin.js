@@ -1,5 +1,6 @@
 const fs = require("node:fs");
 const path = require("node:path");
+const url = require("node:url");
 const puppeteer = require("puppeteer");
 const BundleAnalyzerPlugin = require("../lib/BundleAnalyzerPlugin");
 const { isZstdSupported } = require("../src/sizeUtils");
@@ -13,9 +14,7 @@ function getChartDataFromJSONReport(reportFilename = "report.json") {
   return require(path.resolve(__dirname, `output/${reportFilename}`));
 }
 
-jest.setTimeout(15000);
-
-describe("Plugin", () => {
+describe("Plugin options", () => {
   describe("options", () => {
     it("should be optional", () => {
       expect(() => new BundleAnalyzerPlugin()).not.toThrow();
@@ -28,14 +27,18 @@ describe("Plugin", () => {
 
   async function getTitleFromReport(reportFilename = "report.html") {
     const page = await browser.newPage();
-    await page.goto(`file://${__dirname}/output/${reportFilename}`);
+    await page.goto(
+      url.pathToFileURL(path.resovle(__dirname, `./output/${reportFilename}`)),
+    );
     return await page.title();
   }
 
   async function getChartDataFromReport(reportFilename = "report.html") {
     const page = await browser.newPage();
-    await page.goto(`file://${__dirname}/output/${reportFilename}`);
-    return await page.evaluate(() => window.chartData);
+    await page.goto(
+      url.pathToFileURL(path.resovle(__dirname, `./output/${reportFilename}`)),
+    );
+    return await page.evaluate(() => globalThis.chartData);
   }
 
   async function expectValidReport(opts) {
@@ -111,6 +114,7 @@ describe("Plugin", () => {
     });
   });
 
+  /* eslint jest/no-standalone-expect: ["error", { additionalTestBlockFunctions: ["forEachWebpackVersion"] }] */
   forEachWebpackVersion(({ it, webpackCompile }) => {
     it("should allow to generate json report", async () => {
       const config = makeWebpackConfig({

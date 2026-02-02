@@ -4,6 +4,7 @@
 // Reference: https://jestjs.io/docs/configuration
 
 module.exports = {
+  testTimeout: 15000,
   testMatch: ["**/test/*.js"],
   testPathIgnorePatterns: ["<rootDir>/test/helpers.js"],
   setupFilesAfterEnv: ["<rootDir>/test/helpers.js"],

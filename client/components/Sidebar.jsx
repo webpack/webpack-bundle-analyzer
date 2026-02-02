@@ -3,11 +3,10 @@ import { Component } from "preact";
 
 import Button from "./Button.jsx";
 import Icon from "./Icon.jsx";
+import * as styles from "./Sidebar.css";
 import ThemeToggle from "./ThemeToggle.jsx";
 
-import * as styles from "./Sidebar.css";
-
-const toggleTime = parseInt(styles.toggleTime, 10);
+const toggleTime = Number.parseInt(styles.toggleTime, 10);
 
 export default class Sidebar extends Component {
   static defaultProps = {

@@ -43,6 +43,7 @@ let logger;
 describe("Logger", () => {
   describe("level", () => {
     for (const testingLevel of Logger.levels) {
+      /* eslint-disable no-loop-func */
       describe(`"${testingLevel}"`, () => {
         beforeEach(() => {
           logger = new TestLogger(testingLevel);

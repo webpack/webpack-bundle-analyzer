@@ -33,7 +33,6 @@ const program = commanderProgram
   .argument("<bundleStatsFile>", "Path to Webpack Stats JSON file.")
   .argument(
     "[bundleDir]",
-    // eslint-disable-next-line max-len
     "Directory containing all generated bundles. You should provided it if you want analyzer to show you the real parsed module sizes. By default a directory of stats file is used.",
   )
   .option(
@@ -134,7 +133,9 @@ if (mode === "server") {
   if (!host) showHelp("Invalid host name");
 
   port = port === "auto" ? 0 : Number(port);
-  if (isNaN(port)) showHelp("Invalid port. Should be a number or `auto`");
+  if (Number.isNaN(port)) {
+    showHelp("Invalid port. Should be a number or `auto`");
+  }
 }
 if (!COMPRESSION_ALGORITHMS.has(compressionAlgorithm)) {
   showHelp(

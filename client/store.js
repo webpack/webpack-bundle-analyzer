@@ -1,6 +1,6 @@
 import { computed, makeObservable, observable } from "mobx";
-import localStorage from "./localStorage";
-import { isChunkParsed, walkModules } from "./utils";
+import localStorage from "./localStorage.js";
+import { isChunkParsed, walkModules } from "./utils.js";
 
 export class Store {
   cid = 0;
@@ -27,7 +27,7 @@ export class Store {
     localStorage.getItem("showConcatenatedModulesContent") === true;
 
   darkMode = (() => {
-    const systemPrefersDark = window.matchMedia(
+    const systemPrefersDark = globalThis.matchMedia(
       "(prefers-color-scheme: dark)",
     ).matches;
 
@@ -127,7 +127,7 @@ export class Store {
   }
 
   get isSearching() {
-    return !!this.searchQueryRegexp;
+    return Boolean(this.searchQueryRegexp);
   }
 
   get foundModulesByChunk() {
@@ -184,12 +184,12 @@ export class Store {
         };
       })
       .filter((result) => result.modules.length > 0)
-      .sort((c1, c2) => c1.modules.length - c2.modules.length);
+      .toSorted((c1, c2) => c1.modules.length - c2.modules.length);
   }
 
   get foundModules() {
     return this.foundModulesByChunk.reduce(
-      (arr, chunk) => arr.concat(chunk.modules),
+      (arr, chunk) => [...arr, ...chunk.modules],
       [],
     );
   }
@@ -253,9 +253,9 @@ export class Store {
 
   updateTheme() {
     if (this.darkMode) {
-      document.documentElement.setAttribute("data-theme", "dark");
+      document.documentElement.dataset.theme = "dark";
     } else {
-      document.documentElement.removeAttribute("data-theme");
+      delete document.documentElement.dataset.theme;
     }
   }
 }

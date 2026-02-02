@@ -1,7 +1,6 @@
 import PureComponent from "../lib/PureComponent.jsx";
-import CheckboxListItem from "./CheckboxListItem.jsx";
-
 import * as styles from "./CheckboxList.css";
+import CheckboxListItem from "./CheckboxListItem.jsx";
 
 const ALL_ITEM = Symbol("ALL_ITEM");
 

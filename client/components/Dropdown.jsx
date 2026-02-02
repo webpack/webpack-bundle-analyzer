@@ -63,10 +63,7 @@ export default class Dropdown extends PureComponent {
     if (el && event && !el.contains(event.target)) {
       this.setState({ showOptions: false });
       // If the query is not in the options, reset the selection
-      if (
-        this.state.query &&
-        !this.props.options.some((option) => option === this.state.query)
-      ) {
+      if (this.state.query && !this.props.options.includes(this.state.query)) {
         this.setState({ query: "" });
         this.props.onSelectionChange(undefined);
       }

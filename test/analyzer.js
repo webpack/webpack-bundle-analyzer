@@ -1,12 +1,11 @@
 const childProcess = require("node:child_process");
 const fs = require("node:fs");
 const path = require("node:path");
+const url = require("node:url");
 const puppeteer = require("puppeteer");
 const { isZstdSupported } = require("../src/sizeUtils");
 
 let browser;
-
-jest.setTimeout(15000);
 
 function generateReportFrom(statsFilename, additionalOptions = "") {
   childProcess.execSync(
@@ -19,7 +18,9 @@ function generateReportFrom(statsFilename, additionalOptions = "") {
 
 async function getTitleFromReport() {
   const page = await browser.newPage();
-  await page.goto(`file://${__dirname}/output/report.html`);
+  await page.goto(
+    url.pathToFileURL(path.resolve(__dirname, "./output/report.html")),
+  );
   return await page.title();
 }
 
@@ -35,14 +36,18 @@ function forEachChartItem(chartData, cb) {
 
 async function getChartData() {
   const page = await browser.newPage();
-  await page.goto(`file://${__dirname}/output/report.html`);
-  return await page.evaluate(() => window.chartData);
+  await page.goto(
+    url.pathToFileURL(path.resolve(__dirname, "./output/report.html")),
+  );
+  return await page.evaluate(() => globalThis.chartData);
 }
 
 async function getCompressionAlgorithm() {
   const page = await browser.newPage();
-  await page.goto(`file://${__dirname}/output/report.html`);
-  return await page.evaluate(() => window.compressionAlgorithm);
+  await page.goto(
+    url.pathToFileURL(path.resolve(__dirname, "./output/report.html")),
+  );
+  return await page.evaluate(() => globalThis.compressionAlgorithm);
 }
 
 async function expectValidReport(opts) {
@@ -155,6 +160,7 @@ describe("Analyzer", () => {
     expect(chartData).toHaveLength(0);
   });
 
+  // eslint-disable-next-line jest/no-disabled-tests
   it.skip("should not filter out modules that we couldn't find during parsing", async () => {
     generateReportFrom("with-missing-parsed-module/stats.json");
     const chartData = await getChartData();
@@ -167,6 +173,7 @@ describe("Analyzer", () => {
     expect(unparsedModules).toBe(1);
   });
 
+  // eslint-disable-next-line jest/no-disabled-tests
   it.skip("should gracefully parse invalid chunks", async () => {
     generateReportFrom("with-invalid-chunk/stats.json");
     const chartData = await getChartData();
@@ -183,6 +190,7 @@ describe("Analyzer", () => {
     expect(invalidChunk.parsedSize).toBe(30);
   });
 
+  // eslint-disable-next-line jest/no-disabled-tests
   it.skip("should gracefully process missing chunks", async () => {
     generateReportFrom("with-missing-chunk/stats.json");
     const chartData = await getChartData();
@@ -200,6 +208,7 @@ describe("Analyzer", () => {
     });
   });
 
+  // eslint-disable-next-line jest/no-disabled-tests
   it.skip("should gracefully process missing module chunks", async () => {
     generateReportFrom("with-missing-module-chunks/stats.json");
     const chartData = await getChartData();

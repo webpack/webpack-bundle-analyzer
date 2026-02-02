@@ -76,12 +76,12 @@ function isRuntimeModule(statModule) {
 
 function getBundleModules(bundleStats) {
   const seenIds = new Set();
+  const modules = [
+    ...(bundleStats.chunks?.map((chunk) => chunk.modules) || []),
+    ...(bundleStats.modules || []),
+  ].filter(Boolean);
 
-  return flatten(
-    (bundleStats.chunks?.map((chunk) => chunk.modules) || [])
-      .concat(bundleStats.modules)
-      .filter(Boolean),
-  ).filter((mod) => {
+  return flatten(modules).filter((mod) => {
     // Filtering out Webpack's runtime modules as they don't have ids and can't be parsed (introduced in Webpack 5)
     if (isRuntimeModule(mod)) {
       return false;
@@ -101,8 +101,7 @@ function getChunkToInitialByEntrypoint(bundleStats) {
   const chunkToEntrypointInititalMap = {};
   for (const entrypoint of Object.values(bundleStats.entrypoints || {})) {
     for (const asset of entrypoint.assets) {
-      chunkToEntrypointInititalMap[asset.name] =
-        chunkToEntrypointInititalMap[asset.name] ?? {};
+      chunkToEntrypointInititalMap[asset.name] ??= {};
       chunkToEntrypointInititalMap[asset.name][entrypoint.name] = true;
     }
   }
@@ -131,7 +130,7 @@ function getViewerData(bundleStats, bundleDir, opts) {
     bundleStats.children.length > 0
   ) {
     const { children } = bundleStats;
-    bundleStats = bundleStats.children[0];
+    [bundleStats] = bundleStats.children;
     // Sometimes if there are additional child chunks produced add them as child assets,
     // leave the 1st one as that is considered the 'root' asset.
     for (let i = 1; i < children.length; i++) {

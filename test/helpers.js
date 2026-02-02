@@ -4,6 +4,8 @@ const webpack = require("webpack");
 
 const BundleAnalyzerPlugin = require("../lib/BundleAnalyzerPlugin");
 
+/* global it */
+
 /**
  * @template T
  * @typedef {() => T} FunctionReturning
@@ -125,6 +127,7 @@ function makeWebpackConfig(opts = {}) {
             mangle: true,
             compress: {
               warnings: false,
+              // eslint-disable-next-line camelcase
               negate_iife: false,
             },
           }),
@@ -156,6 +159,7 @@ function forEachWebpackVersion(versions, cb) {
   }
 
   for (const version of versions) {
+    // eslint-disable-next-line func-style
     const itFn = function itFn(testDescription, ...args) {
       return it.call(this, `${testDescription} (Webpack ${version})`, ...args);
     };

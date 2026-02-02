@@ -33,6 +33,7 @@ class Logger {
   }
 
   _log(level, ...args) {
+    // eslint-disable-next-line no-console
     console[LEVEL_TO_CONSOLE_METHOD.get(level) || level](...args);
   }
 }

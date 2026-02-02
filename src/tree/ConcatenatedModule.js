@@ -1,7 +1,7 @@
-import ContentFolder from "./ContentFolder";
-import ContentModule from "./ContentModule";
-import Module from "./Module";
-import { getModulePathParts } from "./utils";
+import ContentFolder from "./ContentFolder.js";
+import ContentModule from "./ContentModule.js";
+import Module from "./Module.js";
+import { getModulePathParts } from "./utils.js";
 
 export default class ConcatenatedModule extends Module {
   constructor(name, data, parent, opts) {
@@ -89,11 +89,11 @@ export default class ConcatenatedModule extends Module {
   }
 
   mergeNestedFolders() {
-    Object.values(this.children).forEach((child) => {
+    for (const child of Object.values(this.children)) {
       if (child.mergeNestedFolders) {
         child.mergeNestedFolders();
       }
-    });
+    }
   }
 
   toChartData() {

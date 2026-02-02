@@ -8,10 +8,11 @@ import "./viewer.css";
 // Initializing WebSocket for live treemap updates
 let ws;
 try {
-  if (window.enableWebSocket) {
+  if (globalThis.enableWebSocket) {
     ws = new WebSocket(`ws://${location.host}`);
   }
 } catch {
+  // eslint-disable-next-line no-console
   console.warn(
     "Couldn't connect to analyzer websocket server so you'll have to reload page manually to see updates in the treemap",
   );
@@ -20,11 +21,11 @@ try {
 window.addEventListener(
   "load",
   () => {
-    store.defaultSize = `${window.defaultSizes}Size`;
-    store.setModules(window.chartData);
-    store.setEntrypoints(window.entrypoints);
+    store.defaultSize = `${globalThis.defaultSizes}Size`;
+    store.setModules(globalThis.chartData);
+    store.setEntrypoints(globalThis.entrypoints);
     store.updateTheme();
-    render(<ModulesTreemap />, document.getElementById("app"));
+    render(<ModulesTreemap />, document.querySelector("#app"));
 
     if (ws) {
       ws.addEventListener("message", (event) => {

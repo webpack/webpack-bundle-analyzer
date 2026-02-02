@@ -11,13 +11,12 @@ import CheckboxList from "./CheckboxList.jsx";
 import ContextMenu from "./ContextMenu.jsx";
 import Dropdown from "./Dropdown.jsx";
 import ModulesList from "./ModulesList.jsx";
+import * as styles from "./ModulesTreemap.css";
 import Search from "./Search.jsx";
 import Sidebar from "./Sidebar.jsx";
 import Switcher from "./Switcher.jsx";
 import Tooltip from "./Tooltip.jsx";
 import Treemap from "./Treemap.jsx";
-
-import * as styles from "./ModulesTreemap.css";
 
 function getSizeSwitchItems() {
   const items = [
@@ -25,15 +24,15 @@ function getSizeSwitchItems() {
     { label: "Parsed", prop: "parsedSize" },
   ];
 
-  if (window.compressionAlgorithm === "gzip") {
+  if (globalThis.compressionAlgorithm === "gzip") {
     items.push({ label: "Gzipped", prop: "gzipSize" });
   }
 
-  if (window.compressionAlgorithm === "brotli") {
+  if (globalThis.compressionAlgorithm === "brotli") {
     items.push({ label: "Brotli", prop: "brotliSize" });
   }
 
-  if (window.compressionAlgorithm === "zstd") {
+  if (globalThis.compressionAlgorithm === "zstd") {
     items.push({ label: "Zstandard", prop: "zstdSize" });
   }
 
@@ -248,14 +247,16 @@ class ModulesTreemap extends Component {
     }
 
     if (store.hasFoundModules) {
-      return [
-        <div className={styles.foundModulesInfoItem}>
-          Count: <strong>{store.foundModules.length}</strong>
-        </div>,
-        <div className={styles.foundModulesInfoItem}>
-          Total size: <strong>{filesize(store.foundModulesSize)}</strong>
-        </div>,
-      ];
+      return (
+        <>
+          <div className={styles.foundModulesInfoItem}>
+            Count: <strong>{store.foundModules.length}</strong>
+          </div>
+          <div className={styles.foundModulesInfoItem}>
+            Total size: <strong>{filesize(store.foundModulesSize)}</strong>
+          </div>
+        </>
+      );
     }
 
     return `Nothing found${store.allChunksSelected ? "" : " in selected chunks"}`;
@@ -383,7 +384,7 @@ class ModulesTreemap extends Component {
         {this.renderModuleSize(module, "stat")}
         {!module.inaccurateSizes && this.renderModuleSize(module, "parsed")}
         {!module.inaccurateSizes &&
-          this.renderModuleSize(module, window.compressionAlgorithm)}
+          this.renderModuleSize(module, globalThis.compressionAlgorithm)}
         {module.path && (
           <div>
             Path: <strong>{module.path}</strong>

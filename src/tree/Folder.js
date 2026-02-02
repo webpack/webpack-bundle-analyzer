@@ -1,8 +1,8 @@
-import { getCompressedSize } from "../sizeUtils";
-import BaseFolder from "./BaseFolder";
-import ConcatenatedModule from "./ConcatenatedModule";
-import Module from "./Module";
-import { getModulePathParts } from "./utils";
+import { getCompressedSize } from "../sizeUtils.js";
+import BaseFolder from "./BaseFolder.js";
+import ConcatenatedModule from "./ConcatenatedModule.js";
+import Module from "./Module.js";
+import { getModulePathParts } from "./utils.js";
 
 export default class Folder extends BaseFolder {
   constructor(name, opts) {

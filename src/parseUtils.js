@@ -161,7 +161,7 @@ function mayBeAsyncChunkArguments(args) {
  * Returns bundle source except modules
  */
 function getBundleRuntime(content, modulesLocations) {
-  const sortedLocations = Object.values(modulesLocations || {}).sort(
+  const sortedLocations = Object.values(modulesLocations || {}).toSorted(
     (a, b) => a.start - b.start,
   );
 
@@ -341,9 +341,9 @@ module.exports.parseBundle = function parseBundle(bundlePath, opts) {
   const modules = {};
 
   if (walkState.locations) {
-    Object.entries(walkState.locations).forEach(([id, loc]) => {
+    for (const [id, loc] of Object.entries(walkState.locations)) {
       modules[id] = content.slice(loc.start, loc.end);
-    });
+    }
   }
 
   return {

@@ -47,6 +47,7 @@ And it also shows their gzipped, Brotli, or Zstandard sizes!
 
 <h2 align="center">Options (for plugin)</h2>
 
+<!-- eslint-skip -->
 ```js
 new BundleAnalyzerPlugin(options?: object)
 ```

@@ -1,4 +1,4 @@
-import Module from "./Module";
+import Module from "./Module.js";
 
 export default class ContentModule extends Module {
   constructor(name, data, ownerModule, parent) {

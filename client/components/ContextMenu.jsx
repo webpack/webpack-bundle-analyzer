@@ -2,9 +2,8 @@ import cls from "classnames";
 import PureComponent from "../lib/PureComponent.jsx";
 import { store } from "../store.js";
 import { elementIsOutside } from "../utils.js";
-import ContextMenuItem from "./ContextMenuItem.jsx";
-
 import * as styles from "./ContextMenu.css";
+import ContextMenuItem from "./ContextMenuItem.jsx";
 
 export default class ContextMenu extends PureComponent {
   componentDidMount() {

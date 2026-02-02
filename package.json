@@ -81,7 +81,7 @@
     "debounce": "^3.0.0",
     "del-cli": "^7.0.0",
     "eslint": "^9.39.2",
-    "eslint-config-webpack": "^4.9.2",
+    "eslint-config-webpack": "^4.9.3",
     "filesize": "^11.0.13",
     "jest": "^30.2.0",
     "mobx": "^6.15.0",

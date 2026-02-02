@@ -39,7 +39,7 @@ describe("StatsSerializeStream", () => {
   it("should properly stringify simple arrays", () => {
     expectProperJson([]);
     expectProperJson([1, undefined, 2]);
-    // eslint-disable-next-line
+    // eslint-disable-next-line no-sparse-arrays
     expectProperJson([1, , 2]);
     expectProperJson([false, "f'o\"o", -1, 42.42]);
   });

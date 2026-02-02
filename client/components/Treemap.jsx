@@ -89,7 +89,7 @@ export default class Treemap extends Component {
         const chunkName = component.getChunkNamePart(root.label);
         const hash = /[^0-9]/u.test(chunkName)
           ? hashCode(chunkName)
-          : (Number.parseInt(chunkName) / 1000) * 360;
+          : (Number.parseInt(chunkName, 10) / 1000) * 360;
         variables.groupColor = {
           model: "hsla",
           h: Math.round(Math.abs(hash) % 360),

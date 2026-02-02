@@ -1,9 +1,8 @@
 import { Component } from "preact";
 
 import Checkbox from "./Checkbox.jsx";
-import CheckboxList from "./CheckboxList.jsx";
-
 import * as styles from "./CheckboxList.css";
+import CheckboxList from "./CheckboxList.jsx";
 
 export default class CheckboxListItem extends Component {
   render() {
