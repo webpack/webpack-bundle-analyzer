@@ -16,6 +16,18 @@ const COMPRESSION_ALGORITHMS = new Set(
   isZstdSupported ? ["gzip", "brotli", "zstd"] : ["gzip", "brotli"],
 );
 
+function br(str) {
+  return `\n${" ".repeat(32)}${str}`;
+}
+
+function array() {
+  const arr = [];
+  return (val) => {
+    arr.push(val);
+    return arr;
+  };
+}
+
 const program = commanderProgram
   .version(require("../../package.json").version)
   .argument("<bundleStatsFile>", "Path to Webpack Stats JSON file.")
@@ -106,6 +118,12 @@ if (typeof reportTitle === "undefined") {
   reportTitle = utils.defaultTitle;
 }
 
+function showHelp(error) {
+  if (error) console.log(`\n  ${magenta(error)}\n`);
+  program.outputHelp();
+  process.exit(1);
+}
+
 if (!bundleStatsFile) {
   showHelp("Provide path to Webpack Stats file as first argument");
 }
@@ -132,8 +150,6 @@ if (!SIZES.has(defaultSizes)) {
 bundleStatsFile = resolve(bundleStatsFile);
 
 if (!bundleDir) bundleDir = dirname(bundleStatsFile);
-
-parseAndAnalyse(bundleStatsFile);
 
 async function parseAndAnalyse(bundleStatsFile) {
   try {
@@ -180,20 +196,4 @@ async function parseAndAnalyse(bundleStatsFile) {
   }
 }
 
-function showHelp(error) {
-  if (error) console.log(`\n  ${magenta(error)}\n`);
-  program.outputHelp();
-  process.exit(1);
-}
-
-function br(str) {
-  return `\n${" ".repeat(32)}${str}`;
-}
-
-function array() {
-  const arr = [];
-  return (val) => {
-    arr.push(val);
-    return arr;
-  };
-}
+parseAndAnalyse(bundleStatsFile);

@@ -5,7 +5,7 @@ import iconPin from "../assets/icon-pin.svg";
 import iconSun from "../assets/icon-sun.svg";
 import PureComponent from "../lib/PureComponent.jsx";
 
-import * as s from "./Icon.css";
+import * as styles from "./Icon.css";
 
 const ICONS = {
   "arrow-right": {
@@ -28,7 +28,7 @@ const ICONS = {
 
 export default class Icon extends PureComponent {
   render({ className }) {
-    return <i className={cls(s.icon, className)} style={this.style} />;
+    return <i className={cls(styles.icon, className)} style={this.style} />;
   }
 
   get style() {

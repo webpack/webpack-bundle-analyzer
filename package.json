@@ -2,10 +2,19 @@
   "name": "webpack-bundle-analyzer",
   "version": "5.2.0",
   "description": "Webpack plugin and CLI utility that represents bundle content as convenient interactive zoomable treemap",
-  "author": "Yury Grunin <grunin.ya@ya.ru>",
-  "license": "MIT",
+  "keywords": [
+    "webpack",
+    "bundle",
+    "analyzer",
+    "modules",
+    "size",
+    "interactive",
+    "chart",
+    "treemap",
+    "zoomable",
+    "zoom"
+  ],
   "homepage": "https://github.com/webpack/webpack-bundle-analyzer",
-  "changelog": "https://github.com/webpack/webpack-bundle-analyzer/blob/main/CHANGELOG.md",
   "bugs": {
     "url": "https://github.com/webpack/webpack-bundle-analyzer/issues"
   },
@@ -13,12 +22,14 @@
     "type": "git",
     "url": "git+https://github.com/webpack/webpack-bundle-analyzer.git"
   },
+  "license": "MIT",
+  "author": "Yury Grunin <grunin.ya@ya.ru>",
   "main": "lib/index.js",
   "bin": "lib/bin/analyzer.js",
-  "engines": {
-    "node": ">= 20.9.0"
-  },
-  "packageManager": "npm@10.1.0",
+  "files": [
+    "public",
+    "lib"
+  ],
   "scripts": {
     "clean:analyzer": "del-cli lib",
     "clean:viewer": "del-cli public",
@@ -39,10 +50,6 @@
     "test": "npm run install-test-webpack-versions && NODE_OPTIONS=--openssl-legacy-provider jest --runInBand",
     "test-dev": "npm run install-test-webpack-versions && NODE_OPTIONS=--openssl-legacy-provider jest --watch --runInBand"
   },
-  "files": [
-    "public",
-    "lib"
-  ],
   "dependencies": {
     "@discoveryjs/json-ext": "^0.6.3",
     "acorn": "^8.0.4",
@@ -93,16 +100,9 @@
     "webpack-cli": "^6.0.1",
     "webpack-dev-server": "^5.2.0"
   },
-  "keywords": [
-    "webpack",
-    "bundle",
-    "analyzer",
-    "modules",
-    "size",
-    "interactive",
-    "chart",
-    "treemap",
-    "zoomable",
-    "zoom"
-  ]
+  "packageManager": "npm@10.1.0",
+  "engines": {
+    "node": ">= 20.9.0"
+  },
+  "changelog": "https://github.com/webpack/webpack-bundle-analyzer/blob/main/CHANGELOG.md"
 }

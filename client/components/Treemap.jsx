@@ -1,6 +1,20 @@
 import FoamTree from "@carrotsearch/foamtree";
 import { Component } from "preact";
 
+function preventDefault(event) {
+  event.preventDefault();
+}
+
+function hashCode(str) {
+  let hash = 0;
+  for (let i = 0; i < str.length; i++) {
+    const code = str.charCodeAt(i);
+    hash = (hash << 5) - hash + code;
+    hash &= hash;
+  }
+  return hash;
+}
+
 export default class Treemap extends Component {
   constructor(props) {
     super(props);
@@ -245,18 +259,4 @@ export default class Treemap extends Component {
       chunkLabel.split(/[^a-z0-9]/iu)[this.chunkNamePartIndex] || chunkLabel
     );
   }
-}
-
-function preventDefault(event) {
-  event.preventDefault();
-}
-
-function hashCode(str) {
-  let hash = 0;
-  for (let i = 0; i < str.length; i++) {
-    const code = str.charCodeAt(i);
-    hash = (hash << 5) - hash + code;
-    hash &= hash;
-  }
-  return hash;
 }

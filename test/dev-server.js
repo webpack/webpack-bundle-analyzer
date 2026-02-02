@@ -11,6 +11,13 @@ const timeout = 15000;
 
 jest.setTimeout(timeout);
 
+async function deleteOutputDirectory() {
+  await fs.promises.rm(webpackConfig.output.path, {
+    force: true,
+    recursive: true,
+  });
+}
+
 describe("Webpack Dev Server", () => {
   beforeAll(deleteOutputDirectory);
 
@@ -27,6 +34,12 @@ describe("Webpack Dev Server", () => {
       },
     );
 
+    function finish(errorMessage) {
+      clearInterval(reportCheckIntervalId);
+      devServer.kill();
+      done(errorMessage ? new Error(errorMessage) : null);
+    }
+
     const reportCheckIntervalId = setInterval(() => {
       if (
         fs.existsSync(path.resolve(webpackConfig.output.path, "./report.html"))
@@ -38,18 +51,5 @@ describe("Webpack Dev Server", () => {
         );
       }
     }, 300);
-
-    function finish(errorMessage) {
-      clearInterval(reportCheckIntervalId);
-      devServer.kill();
-      done(errorMessage ? new Error(errorMessage) : null);
-    }
   });
 });
-
-async function deleteOutputDirectory() {
-  await fs.promises.rm(webpackConfig.output.path, {
-    force: true,
-    recursive: true,
-  });
-}

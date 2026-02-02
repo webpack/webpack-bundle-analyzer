@@ -29,6 +29,44 @@ function resolveDefaultSizes(defaultSizes, compressionAlgorithm) {
   return defaultSizes;
 }
 
+function getEntrypoints(bundleStats) {
+  if (
+    bundleStats === null ||
+    bundleStats === undefined ||
+    !bundleStats.entrypoints
+  ) {
+    return [];
+  }
+  return Object.values(bundleStats.entrypoints).map(
+    (entrypoint) => entrypoint.name,
+  );
+}
+
+function getChartData(analyzerOpts, ...args) {
+  let chartData;
+  const { logger } = analyzerOpts;
+
+  try {
+    chartData = analyzer.getViewerData(...args, analyzerOpts);
+  } catch (err) {
+    logger.error(`Couldn't analyze webpack bundle:\n${err}`);
+    logger.debug(err.stack);
+    chartData = null;
+  }
+
+  // chartData can either be an array (bundleInfo[]) or null. It can't be an plain object anyway
+  if (
+    // analyzer.getViewerData() doesn't failed in the previous step
+    chartData &&
+    !Array.isArray(chartData)
+  ) {
+    logger.error("Couldn't find any javascript bundles in provided stats file");
+    chartData = null;
+  }
+
+  return chartData;
+}
+
 async function startServer(bundleStats, opts) {
   const {
     port = 8888,
@@ -200,44 +238,6 @@ async function generateJSONReport(bundleStats, opts) {
 
   logger.info(
     `${bold("Webpack Bundle Analyzer")} saved JSON report to ${bold(reportFilename)}`,
-  );
-}
-
-function getChartData(analyzerOpts, ...args) {
-  let chartData;
-  const { logger } = analyzerOpts;
-
-  try {
-    chartData = analyzer.getViewerData(...args, analyzerOpts);
-  } catch (err) {
-    logger.error(`Couldn't analyze webpack bundle:\n${err}`);
-    logger.debug(err.stack);
-    chartData = null;
-  }
-
-  // chartData can either be an array (bundleInfo[]) or null. It can't be an plain object anyway
-  if (
-    // analyzer.getViewerData() doesn't failed in the previous step
-    chartData &&
-    !Array.isArray(chartData)
-  ) {
-    logger.error("Couldn't find any javascript bundles in provided stats file");
-    chartData = null;
-  }
-
-  return chartData;
-}
-
-function getEntrypoints(bundleStats) {
-  if (
-    bundleStats === null ||
-    bundleStats === undefined ||
-    !bundleStats.entrypoints
-  ) {
-    return [];
-  }
-  return Object.values(bundleStats.entrypoints).map(
-    (entrypoint) => entrypoint.name,
   );
 }
 

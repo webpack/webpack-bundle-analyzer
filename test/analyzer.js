@@ -8,6 +8,56 @@ let browser;
 
 jest.setTimeout(15000);
 
+function generateReportFrom(statsFilename, additionalOptions = "") {
+  childProcess.execSync(
+    `../lib/bin/analyzer.js ${additionalOptions} -m static -r output/report.html -O stats/${statsFilename}`,
+    {
+      cwd: __dirname,
+    },
+  );
+}
+
+async function getTitleFromReport() {
+  const page = await browser.newPage();
+  await page.goto(`file://${__dirname}/output/report.html`);
+  return await page.title();
+}
+
+function forEachChartItem(chartData, cb) {
+  for (const item of chartData) {
+    cb(item);
+
+    if (item.groups) {
+      forEachChartItem(item.groups, cb);
+    }
+  }
+}
+
+async function getChartData() {
+  const page = await browser.newPage();
+  await page.goto(`file://${__dirname}/output/report.html`);
+  return await page.evaluate(() => window.chartData);
+}
+
+async function getCompressionAlgorithm() {
+  const page = await browser.newPage();
+  await page.goto(`file://${__dirname}/output/report.html`);
+  return await page.evaluate(() => window.compressionAlgorithm);
+}
+
+async function expectValidReport(opts) {
+  const { bundleLabel = "bundle.js", statSize = 141 } = opts || {};
+
+  expect(fs.existsSync(path.resolve(__dirname, "./output/report.html"))).toBe(
+    true,
+  );
+  const chartData = await getChartData();
+  expect(chartData[0]).toMatchObject({
+    label: bundleLabel,
+    statSize,
+  });
+}
+
 describe("Analyzer", () => {
   beforeAll(async () => {
     browser = await puppeteer.launch();
@@ -308,52 +358,4 @@ function generateJSONReportFrom(statsFilename) {
       cwd: __dirname,
     },
   );
-}
-
-function generateReportFrom(statsFilename, additionalOptions = "") {
-  childProcess.execSync(
-    `../lib/bin/analyzer.js ${additionalOptions} -m static -r output/report.html -O stats/${statsFilename}`,
-    {
-      cwd: __dirname,
-    },
-  );
-}
-
-async function getTitleFromReport() {
-  const page = await browser.newPage();
-  await page.goto(`file://${__dirname}/output/report.html`);
-  return await page.title();
-}
-
-async function getChartData() {
-  const page = await browser.newPage();
-  await page.goto(`file://${__dirname}/output/report.html`);
-  return await page.evaluate(() => window.chartData);
-}
-
-async function getCompressionAlgorithm() {
-  const page = await browser.newPage();
-  await page.goto(`file://${__dirname}/output/report.html`);
-  return await page.evaluate(() => window.compressionAlgorithm);
-}
-
-function forEachChartItem(chartData, cb) {
-  for (const item of chartData) {
-    cb(item);
-
-    if (item.groups) {
-      forEachChartItem(item.groups, cb);
-    }
-  }
-}
-
-async function expectValidReport(opts) {
-  const { bundleLabel = "bundle.js", statSize = 141 } = opts || {};
-
-  expect(fs.existsSync(`${__dirname}/output/report.html`)).toBe(true);
-  const chartData = await getChartData();
-  expect(chartData[0]).toMatchObject({
-    label: bundleLabel,
-    statSize,
-  });
 }
