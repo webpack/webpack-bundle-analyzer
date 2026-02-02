@@ -26,7 +26,13 @@ export default class ModuleItem extends PureComponent {
         onMouseLeave={this.handleMouseLeave}
       >
         <span dangerouslySetInnerHTML={{ __html: this.titleHtml }} />
-        {showSize && [" (", <strong>{filesize(module[showSize])}</strong>, ")"]}
+        {showSize && (
+          <>
+            {" ("}
+            <strong>{filesize(module[showSize])}</strong>
+            {")"}
+          </>
+        )}
       </div>
     );
   }
