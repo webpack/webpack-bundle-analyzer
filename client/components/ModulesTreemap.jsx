@@ -205,7 +205,11 @@ class ModulesTreemap extends Component {
     const label = isAllItem ? "All" : item.label;
     const size = isAllItem ? store.totalChunksSize : item[store.activeSize];
 
-    return [`${label} (`, <strong>{filesize(size)}</strong>, ")"];
+    return (
+      <>
+        {label} (<strong>{filesize(size)}</strong>)
+      </>
+    );
   };
 
   get sizeSwitchItems() {
