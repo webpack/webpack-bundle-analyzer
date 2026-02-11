@@ -69,10 +69,9 @@ class BundleAnalyzerPlugin {
         // Making analyzer logs to be after all webpack logs in the console
         setImmediate(async () => {
           try {
-            await Promise.all(actions.map((action) => action()));
+            await Promise.all(actions.map(action => action()));
+          } finally {
             callback();
-          } catch (err) {
-            callback(err);
           }
         });
       } else {
