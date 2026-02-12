@@ -34,15 +34,17 @@ class BundleAnalyzerPlugin {
   }
 
   apply(compiler) {
-    this.compiler = compiler;
-
+   
     const done = (stats, callback) => {
       callback = callback || (() => {});
 
       const actions = [];
+      
+      const outputPath = stats.compilation.outputOptions.path;
+      const bundleDir = this.getBundleDirFromCompilation(stats.compilation);
 
       if (this.opts.generateStatsFile) {
-        actions.push(() => this.generateStatsFile(stats.toJson(this.opts.statsOptions)));
+        actions.push(() => this.generateStatsFile(stats.toJson(this.opts.statsOptions), outputPath));
       }
 
       // Handling deprecated `startAnalyzer` flag
@@ -51,11 +53,11 @@ class BundleAnalyzerPlugin {
       }
 
       if (this.opts.analyzerMode === 'server') {
-        actions.push(() => this.startAnalyzerServer(stats.toJson()));
+        actions.push(() => this.startAnalyzerServer(stats.toJson(), bundleDir));
       } else if (this.opts.analyzerMode === 'static') {
-        actions.push(() => this.generateStaticReport(stats.toJson()));
+        actions.push(() => this.generateStaticReport(stats.toJson(), outputPath, bundleDir));
       } else if (this.opts.analyzerMode === 'json') {
-        actions.push(() => this.generateJSONReport(stats.toJson()));
+        actions.push(() => this.generateJSONReport(stats.toJson(), outputPath, bundleDir));
       }
 
       if (actions.length) {
@@ -80,8 +82,8 @@ class BundleAnalyzerPlugin {
     }
   }
 
-  async generateStatsFile(stats) {
-    const statsFilepath = path.resolve(this.compiler.outputPath, this.opts.statsFilename);
+  async generateStatsFile(stats, outputPath) {
+    const statsFilepath = path.resolve(outputPath, this.opts.statsFilename);
     await fs.promises.mkdir(path.dirname(statsFilepath), {recursive: true});
 
     try {
@@ -97,7 +99,7 @@ class BundleAnalyzerPlugin {
     }
   }
 
-  async startAnalyzerServer(stats) {
+  async startAnalyzerServer(stats, bundleDir) {
     if (this.server) {
       (await this.server).updateChartData(stats);
     } else {
@@ -107,7 +109,7 @@ class BundleAnalyzerPlugin {
         port: this.opts.analyzerPort,
         reportTitle: this.opts.reportTitle,
         compressionAlgorithm: this.opts.compressionAlgorithm,
-        bundleDir: this.getBundleDirFromCompiler(),
+        bundleDir: bundleDir,
         logger: this.logger,
         defaultSizes: this.opts.defaultSizes,
         excludeAssets: this.opts.excludeAssets,
@@ -116,42 +118,39 @@ class BundleAnalyzerPlugin {
     }
   }
 
-  async generateJSONReport(stats) {
+  async generateJSONReport(stats, outputPath, bundleDir) {
     await viewer.generateJSONReport(stats, {
-      reportFilename: path.resolve(this.compiler.outputPath, this.opts.reportFilename || 'report.json'),
+      reportFilename: path.resolve(outputPath, this.opts.reportFilename || 'report.json'),
       compressionAlgorithm: this.opts.compressionAlgorithm,
-      bundleDir: this.getBundleDirFromCompiler(),
+      bundleDir: bundleDir,
       logger: this.logger,
       excludeAssets: this.opts.excludeAssets
     });
   }
 
-  async generateStaticReport(stats) {
+  async generateStaticReport(stats, outputPath, bundleDir) {
     await viewer.generateReport(stats, {
       openBrowser: this.opts.openAnalyzer,
-      reportFilename: path.resolve(this.compiler.outputPath, this.opts.reportFilename || 'report.html'),
+      reportFilename: path.resolve(outputPath, this.opts.reportFilename || 'report.html'),
       reportTitle: this.opts.reportTitle,
       compressionAlgorithm: this.opts.compressionAlgorithm,
-      bundleDir: this.getBundleDirFromCompiler(),
+      bundleDir: bundleDir,
       logger: this.logger,
       defaultSizes: this.opts.defaultSizes,
       excludeAssets: this.opts.excludeAssets
     });
   }
 
-  getBundleDirFromCompiler() {
-    if (typeof this.compiler.outputFileSystem.constructor === 'undefined') {
-      return this.compiler.outputPath;
+  getBundleDirFromCompilation(compilation) {
+    if (typeof compilation.outputFileSystem?.constructor === 'undefined') {
+      return compilation.outputOptions.path;
     }
-    switch (this.compiler.outputFileSystem.constructor.name) {
+    switch (compilation.outputFileSystem.constructor.name) {
       case 'MemoryFileSystem':
-        return null;
-      // Detect AsyncMFS used by Nuxt 2.5 that replaces webpack's MFS during development
-      // Related: #274
       case 'AsyncMFS':
         return null;
       default:
-        return this.compiler.outputPath;
+        return compilation.outputOptions.path;
     }
   }
 
