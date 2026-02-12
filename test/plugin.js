@@ -2,6 +2,7 @@ const fs = require("node:fs");
 const path = require("node:path");
 const url = require("node:url");
 const puppeteer = require("puppeteer");
+const webpack = require("webpack");
 const BundleAnalyzerPlugin = require("../lib/BundleAnalyzerPlugin");
 const { isZstdSupported } = require("../src/sizeUtils");
 const {
@@ -95,26 +96,30 @@ describe("Plugin", () => {
       recursive: true,
     });
   });
+  
+  const NODE_MAJOR = Number.parseInt(process.versions.node.split(".")[0], 10);
+  const SKIP_WEBPACK_4 = NODE_MAJOR >= 20;
+  
+  if (!SKIP_WEBPACK_4) {
+    forEachWebpackVersion(["4.44.2"], ({ it, webpackCompile }) => {
+      it("should support webpack config with custom `jsonpFunction` name", async () => {
+        const config = makeWebpackConfig({
+          multipleChunks: true,
+        });
 
-  forEachWebpackVersion(["4.44.2"], ({ it, webpackCompile }) => {
-    // Webpack 5 doesn't support `jsonpFunction` option
-    it("should support webpack config with custom `jsonpFunction` name", async () => {
-      const config = makeWebpackConfig({
-        multipleChunks: true,
-      });
+        config.output.jsonpFunction = "somethingCompletelyDifferent";
 
-      config.output.jsonpFunction = "somethingCompletelyDifferent";
+        await webpackCompile(config);
 
-      await webpackCompile(config);
-
-      await expectValidReport({
-        parsedSize: 1349,
-        gzipSize: 358,
+        await expectValidReport({
+          parsedSize: 1349,
+          gzipSize: 358,
+        });
       });
     });
-  });
+  }
 
-  /* eslint jest/no-standalone-expect: ["error", { additionalTestBlockFunctions: ["forEachWebpackVersion"] }] */
+  /* eslint jest/no-standalone-expect: ["error", { additionalTestBlockFunctions: ["forEachWebpackVersion", "runTest"] }] */
   forEachWebpackVersion(({ it, webpackCompile }) => {
     it("should allow to generate json report", async () => {
       const config = makeWebpackConfig({
@@ -182,7 +187,8 @@ describe("Plugin", () => {
     });
 
     describe("reportTitle", () => {
-      it("should have a sensible default", async () => {
+      const runTest = SKIP_WEBPACK_4 ? it.skip : it;
+      runTest("should have a sensible default", async () => {
         const config = makeWebpackConfig();
         await webpackCompile(config, "4.44.2");
         const generatedReportTitle = await getTitleFromReport();
@@ -191,7 +197,7 @@ describe("Plugin", () => {
         );
       });
 
-      it("should support a string value", async () => {
+      runTest("should support a string value", async () => {
         const reportTitle = "A string report title";
         const config = makeWebpackConfig({
           analyzerOpts: {
@@ -203,7 +209,7 @@ describe("Plugin", () => {
         expect(generatedReportTitle).toBe(reportTitle);
       });
 
-      it("should support a function value", async () => {
+      runTest("should support a function value", async () => {
         const reportTitleResult = "A string report title";
         const config = makeWebpackConfig({
           analyzerOpts: {
@@ -215,7 +221,7 @@ describe("Plugin", () => {
         expect(generatedReportTitle).toBe(reportTitleResult);
       });
 
-      it("should propagate an error in a function", async () => {
+      runTest("should log an error when reportTitle throws", async () => {
         const reportTitleError = new Error("test");
         const config = makeWebpackConfig({
           analyzerOpts: {
@@ -225,25 +231,28 @@ describe("Plugin", () => {
           },
         });
 
-        let error = null;
-        try {
-          await webpackCompile(config, "4.44.2");
-        } catch (err) {
-          error = err;
-        }
+        const errorSpy = jest
+          .spyOn(console, "error")
+          .mockImplementation(() => {});
+        await webpackCompile(config, "4.44.2");
+        
+        expect(errorSpy).toHaveBeenCalledWith(
+          expect.stringContaining("action failed: test"),
+        );
 
-        expect(error).toBe(reportTitleError);
+        errorSpy.mockRestore();
       });
     });
 
     describe("compressionAlgorithm", () => {
-      it("should default to gzip", async () => {
+      const runTest = SKIP_WEBPACK_4 ? it.skip : it;
+      runTest("should default to gzip", async () => {
         const config = makeWebpackConfig({ analyzerOpts: {} });
         await webpackCompile(config, "4.44.2");
         await expectValidReport({ parsedSize: 1317, gzipSize: 341 });
       });
 
-      it("should support gzip", async () => {
+      runTest("should support gzip", async () => {
         const config = makeWebpackConfig({
           analyzerOpts: { compressionAlgorithm: "gzip" },
         });
@@ -251,7 +260,7 @@ describe("Plugin", () => {
         await expectValidReport({ parsedSize: 1317, gzipSize: 341 });
       });
 
-      it("should support brotli", async () => {
+      runTest("should support brotli", async () => {
         const config = makeWebpackConfig({
           analyzerOpts: { compressionAlgorithm: "brotli" },
         });
@@ -264,7 +273,7 @@ describe("Plugin", () => {
       });
 
       if (isZstdSupported) {
-        it("should support zstd", async () => {
+        runTest("should support zstd", async () => {
           const config = makeWebpackConfig({
             analyzerOpts: { compressionAlgorithm: "zstd" },
           });
@@ -279,4 +288,41 @@ describe("Plugin", () => {
       }
     });
   });
-});
+  
+    describe("Issue #499", () => {
+      it("should not cause WebpackLogger 'done hook' error when callback throws", (done) => {
+        expect.assertions(1);
+
+        const compiler = webpack({
+          mode: "development",
+          entry: __filename,
+          plugins: [new BundleAnalyzerPlugin({ analyzerMode: "disabled" })],
+        });
+
+        let webpackLoggerError = false;
+        const originalConsoleError = console.error;
+
+        console.error = (...args) => {
+          const message = args.join(" ");
+          if (message.includes("No such label 'done hook'")) {
+            webpackLoggerError = true;
+          }
+          originalConsoleError.apply(console, args);
+        };
+
+        compiler.run(() => {
+          try {
+            throw new Error("Intentional test error");
+          } catch {
+            // Swallow expected error
+          }
+        });
+
+        setTimeout(() => {
+          console.error = originalConsoleError;
+          expect(webpackLoggerError).toBe(false);
+          done();
+        }, 1000);
+      });
+    });
+  });
