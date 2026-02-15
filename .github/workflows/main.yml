@@ -17,35 +17,36 @@ jobs:
     name: Tests on Node.js v${{ matrix.node.version }}
     steps:
       - name: Checkout repo
-        uses: actions/checkout@v5
+        uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6.0.2
 
       - name: Setup node
-        uses: actions/setup-node@v6
+        uses: actions/setup-node@6044e13b5dc448c55e2357c09f80417699197238 # v6.2.0
         with:
           node-version: ${{ matrix.node.version }}
-
-      - name: Download deps
-        uses: bahmutov/npm-install@v1
+          cache: npm
 
       - name: Build sources
         run: ${{ matrix.node.env }} npm run build
 
       - name: Run tests
-        run: ${{ matrix.node.env }} npm run test
+        run: ${{ matrix.node.env }} npm run test:coverage
+
+      - name: Codecov
+        uses: codecov/codecov-action@671740ac38dd9b0130fbe1cec585b89eea48d3de # v5.5.2
+        env:
+          CODECOV_TOKEN: ${{ secrets.CODECOV_TOKEN }}
 
   lint:
     runs-on: ubuntu-latest
     steps:
       - name: Checkout repo
-        uses: actions/checkout@v5
+        uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6.0.2
 
       - name: Setup node
-        uses: actions/setup-node@v6
+        uses: actions/setup-node@6044e13b5dc448c55e2357c09f80417699197238 # v6.2.0
         with:
           node-version: "22.x"
-
-      - name: Download deps
-        uses: bahmutov/npm-install@v1
+          cache: npm
 
       - name: Build sources
         run: npm run build

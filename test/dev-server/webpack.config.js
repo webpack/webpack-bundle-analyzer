@@ -1,7 +1,7 @@
 "use strict";
 
 const path = require("node:path");
-const BundleAnalyzerPlugin = require("../../lib/BundleAnalyzerPlugin");
+const BundleAnalyzerPlugin = require("../../src/BundleAnalyzerPlugin");
 
 module.exports = {
   mode: "development",

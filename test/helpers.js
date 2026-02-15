@@ -2,7 +2,7 @@ const { readdirSync } = require("node:fs");
 const path = require("node:path");
 const webpack = require("webpack");
 
-const BundleAnalyzerPlugin = require("../lib/BundleAnalyzerPlugin");
+const BundleAnalyzerPlugin = require("../src/BundleAnalyzerPlugin");
 
 /* global it */
 

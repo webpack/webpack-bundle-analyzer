@@ -1,8 +1,8 @@
 const crypto = require("node:crypto");
 const net = require("node:net");
 
-const Logger = require("../lib/Logger");
-const { getEntrypoints, startServer } = require("../lib/viewer");
+const Logger = require("../src/Logger");
+const { getEntrypoints, startServer } = require("../src/viewer");
 
 describe("WebSocket server", () => {
   it("should not crash when an error is emitted on the websocket", (done) => {

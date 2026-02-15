@@ -48,6 +48,7 @@
     "fix": "npm run fix:code && npm run fmt",
     "install-test-webpack-versions": "./bin/install-test-webpack-versions.sh",
     "test": "npm run install-test-webpack-versions && NODE_OPTIONS=--openssl-legacy-provider jest --runInBand",
+    "test:coverage": "npm run test -- --coverage",
     "test-dev": "npm run install-test-webpack-versions && NODE_OPTIONS=--openssl-legacy-provider jest --watch --runInBand"
   },
   "dependencies": {
