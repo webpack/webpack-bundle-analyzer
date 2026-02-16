@@ -1,4 +1,4 @@
-const { createAssetsFilter } = require("../lib/utils");
+const { createAssetsFilter } = require("../src/utils");
 
 describe("createAssetsFilter", () => {
   it("should create a noop filter if pattern is not set", () => {

@@ -1,7 +1,7 @@
 const { readFileSync } = require("node:fs");
 const path = require("node:path");
 const { globSync } = require("tinyglobby");
-const { StatsSerializeStream } = require("../lib/statsUtils");
+const { StatsSerializeStream } = require("../src/statsUtils");
 
 async function stringify(json) {
   return new Promise((resolve, reject) => {

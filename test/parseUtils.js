@@ -1,7 +1,7 @@
 const fs = require("node:fs");
 const path = require("node:path");
 
-const { parseBundle } = require("../lib/parseUtils");
+const { parseBundle } = require("../src/parseUtils");
 
 const BUNDLES_DIR = path.resolve(__dirname, "./bundles");
 

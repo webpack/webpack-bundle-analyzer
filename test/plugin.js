@@ -2,7 +2,7 @@ const fs = require("node:fs");
 const path = require("node:path");
 const url = require("node:url");
 const puppeteer = require("puppeteer");
-const BundleAnalyzerPlugin = require("../lib/BundleAnalyzerPlugin");
+const BundleAnalyzerPlugin = require("../src/BundleAnalyzerPlugin");
 const { isZstdSupported } = require("../src/sizeUtils");
 const {
   forEachWebpackVersion,
