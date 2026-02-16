@@ -1,5 +1,6 @@
 import cls from "classnames";
-import * as s from "./ContextMenuItem.css";
+
+import * as styles from "./ContextMenuItem.css";
 
 function noop() {
   return false;
@@ -7,8 +8,8 @@ function noop() {
 
 export default function ContextMenuItem({ children, disabled, onClick }) {
   const className = cls({
-    [s.item]: true,
-    [s.disabled]: disabled,
+    [styles.item]: true,
+    [styles.disabled]: disabled,
   });
   const handler = disabled ? noop : onClick;
   return (

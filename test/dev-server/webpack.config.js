@@ -1,10 +1,13 @@
-const BundleAnalyzerPlugin = require("../../lib/BundleAnalyzerPlugin");
+"use strict";
+
+const path = require("node:path");
+const BundleAnalyzerPlugin = require("../../src/BundleAnalyzerPlugin");
 
 module.exports = {
   mode: "development",
-  entry: `${__dirname}/src.js`,
+  entry: path.resolve(__dirname, "./src.js"),
   output: {
-    path: `${__dirname}/output`,
+    path: path.resolve(__dirname, "./output"),
     filename: "bundle.js",
   },
   plugins: [

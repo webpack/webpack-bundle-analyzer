@@ -1,4 +1,4 @@
-const Logger = require("../lib/Logger");
+const Logger = require("../src/Logger");
 
 class TestLogger extends Logger {
   constructor(level) {
@@ -14,64 +14,6 @@ class TestLogger extends Logger {
     this.logs.push([level, ...args]);
   }
 }
-
-let logger;
-
-describe("Logger", function () {
-  describe("level", function () {
-    for (const testingLevel of Logger.levels) {
-      describe(`"${testingLevel}"`, function () {
-        beforeEach(function () {
-          logger = new TestLogger(testingLevel);
-        });
-
-        for (const level of Logger.levels.filter(
-          (level) => level !== "silent",
-        )) {
-          if (
-            Logger.levels.indexOf(level) >= Logger.levels.indexOf(testingLevel)
-          ) {
-            it(`should log "${level}" message`, function () {
-              logger[level]("msg1", "msg2");
-              expect(logger.logs).toEqual([[level, "msg1", "msg2"]]);
-            });
-          } else {
-            it(`should not log "${level}" message`, function () {
-              logger[level]("msg1", "msg2");
-              expect(logger.logs).toHaveLength(0);
-            });
-          }
-        }
-      });
-    }
-
-    it('should be set to "info" by default', function () {
-      logger = new TestLogger();
-      expectLoggerLevel(logger, "info");
-    });
-
-    it("should allow to change level", function () {
-      logger = new TestLogger("warn");
-      expectLoggerLevel(logger, "warn");
-      logger.setLogLevel("info");
-      expectLoggerLevel(logger, "info");
-      logger.setLogLevel("silent");
-      expectLoggerLevel(logger, "silent");
-    });
-
-    it("should throw if level is invalid on instance creation", function () {
-      expect(() => new TestLogger("invalid")).toThrow(
-        invalidLogLevelMessage("invalid"),
-      );
-    });
-
-    it("should throw if level is invalid on `setLogLevel`", function () {
-      expect(() => new TestLogger().setLogLevel("invalid")).toThrow(
-        invalidLogLevelMessage("invalid"),
-      );
-    });
-  });
-});
 
 function expectLoggerLevel(logger, level) {
   logger.clear();
@@ -95,3 +37,62 @@ function expectLoggerLevel(logger, level) {
 function invalidLogLevelMessage(level) {
   return `Invalid log level "${level}". Use one of these: ${Logger.levels.join(", ")}`;
 }
+
+let logger;
+
+describe("Logger", () => {
+  describe("level", () => {
+    for (const testingLevel of Logger.levels) {
+      /* eslint-disable no-loop-func */
+      describe(`"${testingLevel}"`, () => {
+        beforeEach(() => {
+          logger = new TestLogger(testingLevel);
+        });
+
+        for (const level of Logger.levels.filter(
+          (level) => level !== "silent",
+        )) {
+          if (
+            Logger.levels.indexOf(level) >= Logger.levels.indexOf(testingLevel)
+          ) {
+            it(`should log "${level}" message`, () => {
+              logger[level]("msg1", "msg2");
+              expect(logger.logs).toEqual([[level, "msg1", "msg2"]]);
+            });
+          } else {
+            it(`should not log "${level}" message`, () => {
+              logger[level]("msg1", "msg2");
+              expect(logger.logs).toHaveLength(0);
+            });
+          }
+        }
+      });
+    }
+
+    it('should be set to "info" by default', () => {
+      logger = new TestLogger();
+      expectLoggerLevel(logger, "info");
+    });
+
+    it("should allow to change level", () => {
+      logger = new TestLogger("warn");
+      expectLoggerLevel(logger, "warn");
+      logger.setLogLevel("info");
+      expectLoggerLevel(logger, "info");
+      logger.setLogLevel("silent");
+      expectLoggerLevel(logger, "silent");
+    });
+
+    it("should throw if level is invalid on instance creation", () => {
+      expect(() => new TestLogger("invalid")).toThrow(
+        invalidLogLevelMessage("invalid"),
+      );
+    });
+
+    it("should throw if level is invalid on `setLogLevel`", () => {
+      expect(() => new TestLogger().setLogLevel("invalid")).toThrow(
+        invalidLogLevelMessage("invalid"),
+      );
+    });
+  });
+});

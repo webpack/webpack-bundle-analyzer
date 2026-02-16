@@ -1,4 +1,4 @@
-import BaseFolder from "./BaseFolder";
+import BaseFolder from "./BaseFolder.js";
 
 export default class ContentFolder extends BaseFolder {
   constructor(name, ownerModule, parent) {

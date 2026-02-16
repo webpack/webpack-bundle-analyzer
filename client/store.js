@@ -1,9 +1,10 @@
-import { observable, computed, makeObservable } from "mobx";
-import { isChunkParsed, walkModules } from "./utils";
-import localStorage from "./localStorage";
+import { computed, makeObservable, observable } from "mobx";
+import localStorage from "./localStorage.js";
+import { isChunkParsed, walkModules } from "./utils.js";
 
 export class Store {
   cid = 0;
+
   sizes = new Set([
     "statSize",
     "parsedSize",
@@ -13,21 +14,27 @@ export class Store {
   ]);
 
   allChunks;
+
   selectedChunks;
+
   searchQuery = "";
+
   defaultSize;
+
   selectedSize;
+
   showConcatenatedModulesContent =
     localStorage.getItem("showConcatenatedModulesContent") === true;
+
   darkMode = (() => {
-    const systemPrefersDark = window.matchMedia(
+    const systemPrefersDark = globalThis.matchMedia(
       "(prefers-color-scheme: dark)",
     ).matches;
 
     try {
       const saved = localStorage.getItem("darkMode");
       if (saved !== null) return saved === "true";
-    } catch (e) {
+    } catch {
       // Some browsers might not have localStorage available and we can fail silently
     }
 
@@ -114,13 +121,13 @@ export class Store {
 
     try {
       return new RegExp(query, "iu");
-    } catch (err) {
+    } catch {
       return null;
     }
   }
 
   get isSearching() {
-    return !!this.searchQueryRegexp;
+    return Boolean(this.searchQueryRegexp);
   }
 
   get foundModulesByChunk() {
@@ -167,22 +174,22 @@ export class Store {
         // Filtering out missing groups
         foundGroups = foundGroups.filter(Boolean).reverse();
         // Sorting each group by active size
-        foundGroups.forEach((modules) =>
-          modules.sort((m1, m2) => m2[activeSize] - m1[activeSize]),
-        );
+        for (const modules of foundGroups) {
+          modules.sort((m1, m2) => m2[activeSize] - m1[activeSize]);
+        }
 
         return {
           chunk,
-          modules: [].concat(...foundGroups),
+          modules: foundGroups.flat(),
         };
       })
       .filter((result) => result.modules.length > 0)
-      .sort((c1, c2) => c1.modules.length - c2.modules.length);
+      .toSorted((c1, c2) => c1.modules.length - c2.modules.length);
   }
 
   get foundModules() {
     return this.foundModulesByChunk.reduce(
-      (arr, chunk) => arr.concat(chunk.modules),
+      (arr, chunk) => [...arr, ...chunk.modules],
       [],
     );
   }
@@ -238,7 +245,7 @@ export class Store {
     this.darkMode = !this.darkMode;
     try {
       localStorage.setItem("darkMode", this.darkMode);
-    } catch (e) {
+    } catch {
       // Some browsers might not have localStorage available and we can fail silently
     }
     this.updateTheme();
@@ -246,9 +253,9 @@ export class Store {
 
   updateTheme() {
     if (this.darkMode) {
-      document.documentElement.setAttribute("data-theme", "dark");
+      document.documentElement.dataset.theme = "dark";
     } else {
-      document.documentElement.removeAttribute("data-theme");
+      delete document.documentElement.dataset.theme;
     }
   }
 }

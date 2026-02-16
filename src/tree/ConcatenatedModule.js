@@ -1,7 +1,7 @@
-import Module from "./Module";
-import ContentModule from "./ContentModule";
-import ContentFolder from "./ContentFolder";
-import { getModulePathParts } from "./utils";
+import ContentFolder from "./ContentFolder.js";
+import ContentModule from "./ContentModule.js";
+import Module from "./Module.js";
+import { getModulePathParts } from "./utils.js";
 
 export default class ConcatenatedModule extends Module {
   constructor(name, data, parent, opts) {
@@ -36,9 +36,9 @@ export default class ConcatenatedModule extends Module {
   }
 
   fillContentModules() {
-    this.data.modules.forEach((moduleData) =>
-      this.addContentModule(moduleData),
-    );
+    for (const moduleData of this.data.modules) {
+      this.addContentModule(moduleData);
+    }
   }
 
   addContentModule(moduleData) {
@@ -54,7 +54,7 @@ export default class ConcatenatedModule extends Module {
     ];
     let currentFolder = this;
 
-    folders.forEach((folderName) => {
+    for (const folderName of folders) {
       let childFolder = currentFolder.getChild(folderName);
 
       if (!childFolder) {
@@ -64,7 +64,7 @@ export default class ConcatenatedModule extends Module {
       }
 
       currentFolder = childFolder;
-    });
+    }
 
     const ModuleConstructor = moduleData.modules
       ? ConcatenatedModule
@@ -89,11 +89,11 @@ export default class ConcatenatedModule extends Module {
   }
 
   mergeNestedFolders() {
-    Object.values(this.children).forEach((child) => {
+    for (const child of Object.values(this.children)) {
       if (child.mergeNestedFolders) {
         child.mergeNestedFolders();
       }
-    });
+    }
   }
 
   toChartData() {

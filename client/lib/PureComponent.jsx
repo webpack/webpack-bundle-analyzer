@@ -1,11 +1,5 @@
 import { Component } from "preact";
 
-export default class PureComponent extends Component {
-  shouldComponentUpdate(nextProps, nextState) {
-    return !isEqual(nextProps, this.props) || !isEqual(this.state, nextState);
-  }
-}
-
 function isEqual(obj1, obj2) {
   if (obj1 === obj2) return true;
   const keys = Object.keys(obj1);
@@ -15,4 +9,10 @@ function isEqual(obj1, obj2) {
     if (obj1[key] !== obj2[key]) return false;
   }
   return true;
+}
+
+export default class PureComponent extends Component {
+  shouldComponentUpdate(nextProps, nextState) {
+    return !isEqual(nextProps, this.props) || !isEqual(this.state, nextState);
+  }
 }

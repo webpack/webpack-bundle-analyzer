@@ -1,5 +1,8 @@
-const webpack = require("webpack");
+"use strict";
+
+const path = require("node:path");
 const TerserPlugin = require("terser-webpack-plugin");
+const webpack = require("webpack");
 const BundleAnalyzePlugin = require("./lib/BundleAnalyzerPlugin");
 
 const isDev = (process.env.NODE_ENV || "production") === "development";
@@ -8,14 +11,13 @@ const needAnalyze = process.env.ANALYZE || false;
 module.exports = {
   mode: process.env.NODE_ENV || "production",
   context: __dirname,
-  entry: "./client/viewer",
+  entry: "./client/viewer.jsx",
   output: {
-    path: `${__dirname}/public`,
+    path: path.resolve(__dirname, "./public"),
     filename: "viewer.js",
     publicPath: "/",
   },
   resolve: {
-    extensions: [".js", ".jsx"],
     alias: {
       react: "preact/compat",
       "react-dom/test-utils": "preact/test-utils",

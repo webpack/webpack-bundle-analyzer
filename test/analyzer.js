@@ -1,43 +1,103 @@
-const fs = require("fs");
-const path = require("path");
-const childProcess = require("child_process");
+const childProcess = require("node:child_process");
+const fs = require("node:fs");
+const path = require("node:path");
+const url = require("node:url");
 const puppeteer = require("puppeteer");
 const { isZstdSupported } = require("../src/sizeUtils");
 
 let browser;
 
-describe("Analyzer", function () {
-  jest.setTimeout(15000);
+function generateReportFrom(statsFilename, additionalOptions = "") {
+  childProcess.execSync(
+    `../lib/bin/analyzer.js ${additionalOptions} -m static -r output/report.html -O stats/${statsFilename}`,
+    {
+      cwd: __dirname,
+    },
+  );
+}
 
-  beforeAll(async function () {
+async function getTitleFromReport() {
+  const page = await browser.newPage();
+  await page.goto(
+    url.pathToFileURL(path.resolve(__dirname, "./output/report.html")),
+  );
+  return await page.title();
+}
+
+function forEachChartItem(chartData, cb) {
+  for (const item of chartData) {
+    cb(item);
+
+    if (item.groups) {
+      forEachChartItem(item.groups, cb);
+    }
+  }
+}
+
+async function getChartData() {
+  const page = await browser.newPage();
+  await page.goto(
+    url.pathToFileURL(path.resolve(__dirname, "./output/report.html")),
+  );
+  return await page.evaluate(() => globalThis.chartData);
+}
+
+async function getCompressionAlgorithm() {
+  const page = await browser.newPage();
+  await page.goto(
+    url.pathToFileURL(path.resolve(__dirname, "./output/report.html")),
+  );
+  return await page.evaluate(() => globalThis.compressionAlgorithm);
+}
+
+async function expectValidReport(opts) {
+  const { bundleLabel = "bundle.js", statSize = 141 } = opts || {};
+
+  expect(fs.existsSync(path.resolve(__dirname, "./output/report.html"))).toBe(
+    true,
+  );
+  const chartData = await getChartData();
+  expect(chartData[0]).toMatchObject({
+    label: bundleLabel,
+    statSize,
+  });
+}
+
+function generateJSONReportFrom(statsFilename) {
+  childProcess.execSync(
+    `../lib/bin/analyzer.js -m json -r output/report.json stats/${statsFilename}`,
+    {
+      cwd: __dirname,
+    },
+  );
+}
+
+describe("Analyzer", () => {
+  beforeAll(async () => {
     browser = await puppeteer.launch();
-    await fs.promises.rm(`${__dirname}/output`, {
+    await fs.promises.rm(path.resolve(__dirname, "./output"), {
       force: true,
       recursive: true,
     });
   });
 
-  beforeEach(async function () {
-    jest.setTimeout(15000);
-  });
-
-  afterEach(async function () {
-    await fs.promises.rm(`${__dirname}/output`, {
+  afterEach(async () => {
+    await fs.promises.rm(path.resolve(__dirname, "./output"), {
       force: true,
       recursive: true,
     });
   });
 
-  afterAll(async function () {
+  afterAll(async () => {
     await browser.close();
   });
 
-  it("should support stats files with all the information in `children` array", async function () {
+  it("should support stats files with all the information in `children` array", async () => {
     generateReportFrom("with-children-array.json");
     await expectValidReport();
   });
 
-  it("should generate report containing worker bundles", async function () {
+  it("should generate report containing worker bundles", async () => {
     generateReportFrom("with-worker-loader/stats.json");
     const chartData = await getChartData();
     expect(chartData[1]).toMatchObject({
@@ -45,7 +105,7 @@ describe("Analyzer", function () {
     });
   });
 
-  it("should generate report for array webpack.config.js", async function () {
+  it("should generate report for array webpack.config.js", async () => {
     generateReportFrom("with-array-config/stats.json");
     const chartData = await getChartData();
     expect(chartData).toHaveLength(2);
@@ -57,7 +117,7 @@ describe("Analyzer", function () {
     });
   });
 
-  it("should generate report when worker bundles have dynamic imports", async function () {
+  it("should generate report when worker bundles have dynamic imports", async () => {
     generateReportFrom("with-worker-loader-dynamic-import/stats.json");
     const chartData = await getChartData();
     expect(chartData[1]).toMatchObject({
@@ -65,7 +125,7 @@ describe("Analyzer", function () {
     });
   });
 
-  it("should support stats files with modules inside `chunks` array", async function () {
+  it("should support stats files with modules inside `chunks` array", async () => {
     generateReportFrom("with-modules-in-chunks/stats.json");
     const chartData = await getChartData();
     expect(chartData).toMatchObject(
@@ -73,7 +133,7 @@ describe("Analyzer", function () {
     );
   });
 
-  it("should record accurate byte lengths for sources with special chars", async function () {
+  it("should record accurate byte lengths for sources with special chars", async () => {
     generateReportFrom("with-special-chars/stats.json");
     const chartData = await getChartData();
     expect(chartData).toMatchObject(
@@ -81,12 +141,12 @@ describe("Analyzer", function () {
     );
   });
 
-  it("should support bundles with invalid dynamic require calls", async function () {
+  it("should support bundles with invalid dynamic require calls", async () => {
     generateReportFrom("with-invalid-dynamic-require.json");
     await expectValidReport({ statSize: 136 });
   });
 
-  it("should use information about concatenated modules generated by webpack 4", async function () {
+  it("should use information about concatenated modules generated by webpack 4", async () => {
     generateReportFrom("with-module-concatenation-info/stats.json");
     const chartData = await getChartData();
     expect(chartData[0].groups[0]).toMatchObject(
@@ -94,13 +154,14 @@ describe("Analyzer", function () {
     );
   });
 
-  it("should handle stats with minimal configuration", async function () {
+  it("should handle stats with minimal configuration", async () => {
     generateReportFrom("minimal-stats/stats.json");
     const chartData = await getChartData();
     expect(chartData).toHaveLength(0);
   });
 
-  it.skip("should not filter out modules that we couldn't find during parsing", async function () {
+  // eslint-disable-next-line jest/no-disabled-tests
+  it.skip("should not filter out modules that we couldn't find during parsing", async () => {
     generateReportFrom("with-missing-parsed-module/stats.json");
     const chartData = await getChartData();
     let unparsedModules = 0;
@@ -112,7 +173,8 @@ describe("Analyzer", function () {
     expect(unparsedModules).toBe(1);
   });
 
-  it.skip("should gracefully parse invalid chunks", async function () {
+  // eslint-disable-next-line jest/no-disabled-tests
+  it.skip("should gracefully parse invalid chunks", async () => {
     generateReportFrom("with-invalid-chunk/stats.json");
     const chartData = await getChartData();
     const invalidChunk = chartData.find((i) => i.label === "invalid-chunk.js");
@@ -128,7 +190,8 @@ describe("Analyzer", function () {
     expect(invalidChunk.parsedSize).toBe(30);
   });
 
-  it.skip("should gracefully process missing chunks", async function () {
+  // eslint-disable-next-line jest/no-disabled-tests
+  it.skip("should gracefully process missing chunks", async () => {
     generateReportFrom("with-missing-chunk/stats.json");
     const chartData = await getChartData();
     const invalidChunk = chartData.find((i) => i.label === "invalid-chunk.js");
@@ -145,7 +208,8 @@ describe("Analyzer", function () {
     });
   });
 
-  it.skip("should gracefully process missing module chunks", async function () {
+  // eslint-disable-next-line jest/no-disabled-tests
+  it.skip("should gracefully process missing module chunks", async () => {
     generateReportFrom("with-missing-module-chunks/stats.json");
     const chartData = await getChartData();
     const invalidChunk = chartData.find((i) => i.label === "invalid-chunk.js");
@@ -162,17 +226,17 @@ describe("Analyzer", function () {
     });
   });
 
-  it("should support stats files with js modules chunk", async function () {
+  it("should support stats files with js modules chunk", async () => {
     generateReportFrom("with-modules-chunk.json");
     await expectValidReport({ bundleLabel: "bundle.mjs" });
   });
 
-  it("should support stats files with cjs chunk", async function () {
+  it("should support stats files with cjs chunk", async () => {
     generateReportFrom("with-cjs-chunk.json");
     await expectValidReport({ bundleLabel: "bundle.cjs" });
   });
 
-  it("should properly parse extremely optimized bundle from webpack 5", async function () {
+  it("should properly parse extremely optimized bundle from webpack 5", async () => {
     generateReportFrom("extremely-optimized-webpack-5-bundle/stats.json");
     const chartData = await getChartData();
     expect(chartData).toMatchObject(
@@ -180,7 +244,7 @@ describe("Analyzer", function () {
     );
   });
 
-  it("should properly parse webpack 5 bundle with single entry", async function () {
+  it("should properly parse webpack 5 bundle with single entry", async () => {
     generateReportFrom("webpack-5-bundle-with-single-entry/stats.json");
     const chartData = await getChartData();
     expect(chartData).toMatchObject(
@@ -188,7 +252,7 @@ describe("Analyzer", function () {
     );
   });
 
-  it("should properly parse webpack 5 bundle with multiple entries", async function () {
+  it("should properly parse webpack 5 bundle with multiple entries", async () => {
     generateReportFrom("webpack-5-bundle-with-multiple-entries/stats.json");
     const chartData = await getChartData();
     expect(chartData).toMatchObject(
@@ -196,31 +260,32 @@ describe("Analyzer", function () {
     );
   });
 
-  it("should properly parse webpack 5 bundle with an entry module that is a concatenated module", async function () {
+  it("should properly parse webpack 5 bundle with an entry module that is a concatenated module", async () => {
     generateReportFrom(
       "webpack-5-bundle-with-concatenated-entry-module/stats.json",
     );
     const chartData = await getChartData();
     expect(chartData).toMatchObject(
-      require("./stats/webpack-5-bundle-with-concatenated-entry-module/expected-chart-data"),
+      require("./stats/webpack-5-bundle-with-concatenated-entry-module/expected-chart-data.json"),
     );
   });
 
-  it("should support generating JSON output for the report", async function () {
+  it("should support generating JSON output for the report", async () => {
     generateJSONReportFrom("with-modules-in-chunks/stats.json");
 
     const chartData = require(path.resolve(__dirname, "output/report.json"));
+
     expect(chartData).toMatchObject(
       require("./stats/with-modules-in-chunks/expected-chart-data"),
     );
   });
 
-  it("should support stats files with non-asset asset", async function () {
+  it("should support stats files with non-asset asset", async () => {
     generateReportFrom("with-non-asset-asset/stats.json");
     await expectValidReport({ bundleLabel: "bundle.js" });
   });
 
-  it("should map chunks correctly to entrypoints", async function () {
+  it("should map chunks correctly to entrypoints", async () => {
     generateReportFrom("with-multiple-entrypoints/stats.json");
     const chartData = await getChartData();
     expect(chartData).toMatchObject(
@@ -228,15 +293,15 @@ describe("Analyzer", function () {
     );
   });
 
-  it("should return empty chartData if there are no entrypoints", async function () {
+  it("should return empty chartData if there are no entrypoints", async () => {
     generateReportFrom("with-no-entrypoints/stats.json");
     const chartData = await getChartData();
     expect(chartData).toHaveLength(0);
   });
 
-  describe("options", function () {
-    describe("title", function () {
-      it("should take the --title option", async function () {
+  describe("options", () => {
+    describe("title", () => {
+      it("should take the --title option", async () => {
         const reportTitle = "A string report title";
         generateReportFrom(
           "with-modules-chunk.json",
@@ -247,7 +312,8 @@ describe("Analyzer", function () {
 
         expect(generatedReportTitle).toBe(reportTitle);
       });
-      it("should take the -t option", async function () {
+
+      it("should take the -t option", async () => {
         const reportTitle = "A string report title";
 
         generateReportFrom("with-modules-chunk.json", `-t "${reportTitle}"`);
@@ -256,7 +322,8 @@ describe("Analyzer", function () {
 
         expect(generatedReportTitle).toBe(reportTitle);
       });
-      it("should use a suitable default title", async function () {
+
+      it("should use a suitable default title", async () => {
         generateReportFrom("with-modules-chunk.json");
 
         const generatedReportTitle = await getTitleFromReport();
@@ -267,8 +334,8 @@ describe("Analyzer", function () {
       });
     });
 
-    describe("compression algorithm", function () {
-      it("should accept --compression-algorithm brotli", async function () {
+    describe("compression algorithm", () => {
+      it("should accept --compression-algorithm brotli", async () => {
         generateReportFrom(
           "with-modules-chunk.json",
           "--compression-algorithm brotli",
@@ -276,7 +343,7 @@ describe("Analyzer", function () {
         expect(await getCompressionAlgorithm()).toBe("brotli");
       });
 
-      it("should accept --compression-algorithm gzip", async function () {
+      it("should accept --compression-algorithm gzip", async () => {
         generateReportFrom(
           "with-modules-chunk.json",
           "--compression-algorithm gzip",
@@ -285,7 +352,7 @@ describe("Analyzer", function () {
       });
 
       if (isZstdSupported) {
-        it("should accept --compression-algorithm zstd", async function () {
+        it("should accept --compression-algorithm zstd", async () => {
           generateReportFrom(
             "with-modules-chunk.json",
             "--compression-algorithm zstd",
@@ -294,67 +361,10 @@ describe("Analyzer", function () {
         });
       }
 
-      it("should default to gzip", async function () {
+      it("should default to gzip", async () => {
         generateReportFrom("with-modules-chunk.json");
         expect(await getCompressionAlgorithm()).toBe("gzip");
       });
     });
   });
 });
-
-function generateJSONReportFrom(statsFilename) {
-  childProcess.execSync(
-    `../lib/bin/analyzer.js -m json -r output/report.json stats/${statsFilename}`,
-    {
-      cwd: __dirname,
-    },
-  );
-}
-
-function generateReportFrom(statsFilename, additionalOptions = "") {
-  childProcess.execSync(
-    `../lib/bin/analyzer.js ${additionalOptions} -m static -r output/report.html -O stats/${statsFilename}`,
-    {
-      cwd: __dirname,
-    },
-  );
-}
-
-async function getTitleFromReport() {
-  const page = await browser.newPage();
-  await page.goto(`file://${__dirname}/output/report.html`);
-  return await page.title();
-}
-
-async function getChartData() {
-  const page = await browser.newPage();
-  await page.goto(`file://${__dirname}/output/report.html`);
-  return await page.evaluate(() => window.chartData);
-}
-
-async function getCompressionAlgorithm() {
-  const page = await browser.newPage();
-  await page.goto(`file://${__dirname}/output/report.html`);
-  return await page.evaluate(() => window.compressionAlgorithm);
-}
-
-function forEachChartItem(chartData, cb) {
-  for (const item of chartData) {
-    cb(item);
-
-    if (item.groups) {
-      forEachChartItem(item.groups, cb);
-    }
-  }
-}
-
-async function expectValidReport(opts) {
-  const { bundleLabel = "bundle.js", statSize = 141 } = opts || {};
-
-  expect(fs.existsSync(`${__dirname}/output/report.html`)).toBe(true);
-  const chartData = await getChartData();
-  expect(chartData[0]).toMatchObject({
-    label: bundleLabel,
-    statSize,
-  });
-}

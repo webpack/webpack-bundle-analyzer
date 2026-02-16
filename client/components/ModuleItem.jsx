@@ -1,10 +1,10 @@
-import escapeRegExp from "escape-string-regexp";
-import { escape } from "html-escaper";
-import { filesize } from "filesize";
 import cls from "classnames";
+import escapeRegExp from "escape-string-regexp";
+import { filesize } from "filesize";
+import { escape } from "html-escaper";
+import PureComponent from "../lib/PureComponent.jsx";
 
-import PureComponent from "../lib/PureComponent";
-import * as s from "./ModuleItem.css";
+import * as styles from "./ModuleItem.css";
 
 export default class ModuleItem extends PureComponent {
   state = {
@@ -13,8 +13,8 @@ export default class ModuleItem extends PureComponent {
 
   render({ module, showSize }) {
     const invisible = !this.state.visible;
-    const classes = cls(s.container, s[this.itemType], {
-      [s.invisible]: invisible,
+    const classes = cls(styles.container, styles[this.itemType], {
+      [styles.invisible]: invisible,
     });
 
     return (
@@ -26,7 +26,13 @@ export default class ModuleItem extends PureComponent {
         onMouseLeave={this.handleMouseLeave}
       >
         <span dangerouslySetInnerHTML={{ __html: this.titleHtml }} />
-        {showSize && [" (", <strong>{filesize(module[showSize])}</strong>, ")"]}
+        {showSize && (
+          <>
+            {" ("}
+            <strong>{filesize(module[showSize])}</strong>
+            {")"}
+          </>
+        )}
       </div>
     );
   }
@@ -57,10 +63,11 @@ export default class ModuleItem extends PureComponent {
       } while (match);
 
       if (lastMatch) {
-        html =
-          escape(title.slice(0, lastMatch.index)) +
-          `<strong>${escape(lastMatch[0])}</strong>` +
-          escape(title.slice(lastMatch.index + lastMatch[0].length));
+        html = `${escape(
+          title.slice(0, lastMatch.index),
+        )}<strong>${escape(lastMatch[0])}</strong>${escape(
+          title.slice(lastMatch.index + lastMatch[0].length),
+        )}`;
       }
     }
 

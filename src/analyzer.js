@@ -1,21 +1,116 @@
-const fs = require("fs");
-const path = require("path");
+const fs = require("node:fs");
+const path = require("node:path");
 
 const { parseChunked } = require("@discoveryjs/json-ext");
 
 const Logger = require("./Logger");
-const Folder = require("./tree/Folder").default;
 const { parseBundle } = require("./parseUtils");
-const { createAssetsFilter } = require("./utils");
 const { getCompressedSize } = require("./sizeUtils");
+const Folder = require("./tree/Folder").default;
+const { createAssetsFilter } = require("./utils");
 
 const FILENAME_QUERY_REGEXP = /\?.*$/u;
 const FILENAME_EXTENSIONS = /\.(js|mjs|cjs|bundle)$/iu;
 
-module.exports = {
-  getViewerData,
-  readStatsFromFile,
-};
+function createModulesTree(modules, opts) {
+  const root = new Folder(".", opts);
+
+  for (const module of modules) {
+    root.addModule(module);
+  }
+
+  root.mergeNestedFolders();
+
+  return root;
+}
+
+/**
+ * arr-flatten <https://github.com/jonschlinkert/arr-flatten>
+ *
+ * Copyright (c) 2014-2017, Jon Schlinkert.
+ * Released under the MIT License.
+ *
+ * Modified by Sukka <https://skk.moe>
+ *
+ * Replace recursively flatten with one-level deep flatten to match lodash.flatten
+ *
+ * TODO: replace with Array.prototype.flat once Node.js 10 support is dropped
+ */
+function flatten(arr) {
+  if (!arr) return [];
+  const len = arr.length;
+  if (!len) return [];
+
+  let cur;
+
+  const res = [];
+  for (let i = 0; i < len; i++) {
+    cur = arr[i];
+    if (Array.isArray(cur)) {
+      res.push(...cur);
+    } else {
+      res.push(cur);
+    }
+  }
+  return res;
+}
+
+function getChildAssetBundles(bundleStats, assetName) {
+  return flatten(
+    (bundleStats.children || []).find((child) =>
+      Object.values(child.assetsByChunkName),
+    ),
+  ).includes(assetName);
+}
+
+function assetHasModule(statAsset, statModule) {
+  // Checking if this module is the part of asset chunks
+  return (statModule.chunks || []).some((moduleChunk) =>
+    statAsset.chunks.includes(moduleChunk),
+  );
+}
+
+function isRuntimeModule(statModule) {
+  return statModule.moduleType === "runtime";
+}
+
+function getBundleModules(bundleStats) {
+  const seenIds = new Set();
+  const modules = [
+    ...(bundleStats.chunks?.map((chunk) => chunk.modules) || []),
+    ...(bundleStats.modules || []),
+  ].filter(Boolean);
+
+  return flatten(modules).filter((mod) => {
+    // Filtering out Webpack's runtime modules as they don't have ids and can't be parsed (introduced in Webpack 5)
+    if (isRuntimeModule(mod)) {
+      return false;
+    }
+    if (seenIds.has(mod.id)) {
+      return false;
+    }
+    seenIds.add(mod.id);
+    return true;
+  });
+}
+
+function getChunkToInitialByEntrypoint(bundleStats) {
+  if (bundleStats === null || bundleStats === undefined) {
+    return {};
+  }
+  const chunkToEntrypointInititalMap = {};
+  for (const entrypoint of Object.values(bundleStats.entrypoints || {})) {
+    for (const asset of entrypoint.assets) {
+      chunkToEntrypointInititalMap[asset.name] ??= {};
+      chunkToEntrypointInititalMap[asset.name][entrypoint.name] = true;
+    }
+  }
+  return chunkToEntrypointInititalMap;
+}
+
+function isEntryModule(statModule) {
+  return statModule.depth === 0;
+}
 
 function getViewerData(bundleStats, bundleDir, opts) {
   const {
@@ -28,28 +123,30 @@ function getViewerData(bundleStats, bundleDir, opts) {
 
   // Sometimes all the information is located in `children` array (e.g. problem in #10)
   if (
-    (bundleStats.assets == null || bundleStats.assets.length === 0) &&
+    (bundleStats.assets === null ||
+      bundleStats.assets === undefined ||
+      bundleStats.assets.length === 0) &&
     bundleStats.children &&
     bundleStats.children.length > 0
   ) {
     const { children } = bundleStats;
-    bundleStats = bundleStats.children[0];
+    [bundleStats] = bundleStats.children;
     // Sometimes if there are additional child chunks produced add them as child assets,
     // leave the 1st one as that is considered the 'root' asset.
     for (let i = 1; i < children.length; i++) {
-      children[i].assets.forEach((asset) => {
+      for (const asset of children[i].assets) {
         asset.isChild = true;
         bundleStats.assets.push(asset);
-      });
+      }
     }
   } else if (bundleStats.children && bundleStats.children.length > 0) {
     // Sometimes if there are additional child chunks produced add them as child assets
-    bundleStats.children.forEach((child) => {
-      child.assets.forEach((asset) => {
+    for (const child of bundleStats.children) {
+      for (const asset of child.assets) {
         asset.isChild = true;
         bundleStats.assets.push(asset);
-      });
-    });
+      }
+    }
   }
 
   // Picking only `*.js, *.cjs or *.mjs` assets from bundle that has non-empty `chunks` array
@@ -120,19 +217,21 @@ function getViewerData(bundleStats, bundleDir, opts) {
       size: statAsset.size,
     });
     const assetSources =
-      bundlesSources &&
-      Object.prototype.hasOwnProperty.call(bundlesSources, statAsset.name)
+      bundlesSources && Object.hasOwn(bundlesSources, statAsset.name)
         ? bundlesSources[statAsset.name]
         : null;
 
     if (assetSources) {
       asset.parsedSize = Buffer.byteLength(assetSources.src);
-      if (compressionAlgorithm === "gzip")
+      if (compressionAlgorithm === "gzip") {
         asset.gzipSize = getCompressedSize("gzip", assetSources.src);
-      if (compressionAlgorithm === "brotli")
+      }
+      if (compressionAlgorithm === "brotli") {
         asset.brotliSize = getCompressedSize("brotli", assetSources.src);
-      if (compressionAlgorithm === "zstd")
+      }
+      if (compressionAlgorithm === "zstd") {
         asset.zstdSize = getCompressedSize("zstd", assetSources.src);
+      }
     }
 
     // Picking modules from current bundle script
@@ -206,100 +305,7 @@ function readStatsFromFile(filename) {
   return parseChunked(fs.createReadStream(filename, { encoding: "utf8" }));
 }
 
-function getChildAssetBundles(bundleStats, assetName) {
-  return flatten(
-    (bundleStats.children || []).find((c) =>
-      Object.values(c.assetsByChunkName),
-    ),
-  ).includes(assetName);
-}
-
-function getBundleModules(bundleStats) {
-  const seenIds = new Set();
-
-  return flatten(
-    (bundleStats.chunks?.map((chunk) => chunk.modules) || [])
-      .concat(bundleStats.modules)
-      .filter(Boolean),
-  ).filter((mod) => {
-    // Filtering out Webpack's runtime modules as they don't have ids and can't be parsed (introduced in Webpack 5)
-    if (isRuntimeModule(mod)) {
-      return false;
-    }
-    if (seenIds.has(mod.id)) {
-      return false;
-    }
-    seenIds.add(mod.id);
-    return true;
-  });
-}
-
-function assetHasModule(statAsset, statModule) {
-  // Checking if this module is the part of asset chunks
-  return (statModule.chunks || []).some((moduleChunk) =>
-    statAsset.chunks.includes(moduleChunk),
-  );
-}
-
-function isEntryModule(statModule) {
-  return statModule.depth === 0;
-}
-
-function isRuntimeModule(statModule) {
-  return statModule.moduleType === "runtime";
-}
-
-function createModulesTree(modules, opts) {
-  const root = new Folder(".", opts);
-
-  modules.forEach((module) => root.addModule(module));
-  root.mergeNestedFolders();
-
-  return root;
-}
-
-function getChunkToInitialByEntrypoint(bundleStats) {
-  if (bundleStats == null) {
-    return {};
-  }
-  const chunkToEntrypointInititalMap = {};
-  Object.values(bundleStats.entrypoints || {}).forEach((entrypoint) => {
-    for (const asset of entrypoint.assets) {
-      chunkToEntrypointInititalMap[asset.name] =
-        chunkToEntrypointInititalMap[asset.name] ?? {};
-      chunkToEntrypointInititalMap[asset.name][entrypoint.name] = true;
-    }
-  });
-  return chunkToEntrypointInititalMap;
-}
-
-/**
- * arr-flatten <https://github.com/jonschlinkert/arr-flatten>
- *
- * Copyright (c) 2014-2017, Jon Schlinkert.
- * Released under the MIT License.
- *
- * Modified by Sukka <https://skk.moe>
- *
- * Replace recursively flatten with one-level deep flatten to match lodash.flatten
- *
- * TODO: replace with Array.prototype.flat once Node.js 10 support is dropped
- */
-function flatten(arr) {
-  if (!arr) return [];
-  const len = arr.length;
-  if (!len) return [];
-
-  let cur;
-
-  const res = [];
-  for (let i = 0; i < len; i++) {
-    cur = arr[i];
-    if (Array.isArray(cur)) {
-      res.push(...cur);
-    } else {
-      res.push(cur);
-    }
-  }
-  return res;
-}
+module.exports = {
+  getViewerData,
+  readStatsFromFile,
+};

@@ -1,7 +1,7 @@
 import { createRef } from "preact";
-import PureComponent from "../lib/PureComponent";
+import PureComponent from "../lib/PureComponent.jsx";
 
-import * as s from "./Dropdown.css";
+import * as styles from "./Dropdown.css";
 
 export default class Dropdown extends PureComponent {
   input = createRef();
@@ -29,12 +29,12 @@ export default class Dropdown extends PureComponent {
       : options;
 
     return (
-      <div className={s.container}>
-        <div className={s.label}>{label}:</div>
+      <div className={styles.container}>
+        <div className={styles.label}>{label}:</div>
         <div>
           <input
             ref={this.input}
-            className={s.input}
+            className={styles.input}
             type="text"
             value={this.state.query}
             onInput={this.handleInput}
@@ -45,7 +45,7 @@ export default class Dropdown extends PureComponent {
               {filteredOptions.map((option) => (
                 <div
                   key={option}
-                  className={s.option}
+                  className={styles.option}
                   onClick={this.getOptionClickHandler(option)}
                 >
                   {option}
@@ -63,10 +63,7 @@ export default class Dropdown extends PureComponent {
     if (el && event && !el.contains(event.target)) {
       this.setState({ showOptions: false });
       // If the query is not in the options, reset the selection
-      if (
-        this.state.query &&
-        !this.props.options.some((option) => option === this.state.query)
-      ) {
+      if (this.state.query && !this.props.options.includes(this.state.query)) {
         this.setState({ query: "" });
         this.props.onSelectionChange(undefined);
       }

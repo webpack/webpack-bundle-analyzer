@@ -1,11 +1,11 @@
-const fs = require("fs");
-const path = require("path");
+const fs = require("node:fs");
+const path = require("node:path");
 const { bold } = require("picocolors");
 
 const Logger = require("./Logger");
-const viewer = require("./viewer");
-const utils = require("./utils");
 const { writeStats } = require("./statsUtils");
+const utils = require("./utils");
+const viewer = require("./viewer");
 
 class BundleAnalyzerPlugin {
   constructor(opts = {}) {
@@ -42,7 +42,7 @@ class BundleAnalyzerPlugin {
     this.compiler = compiler;
 
     const done = (stats, callback) => {
-      callback = callback || (() => {});
+      callback ||= () => {};
 
       const actions = [];
 
@@ -71,8 +71,8 @@ class BundleAnalyzerPlugin {
           try {
             await Promise.all(actions.map((action) => action()));
             callback();
-          } catch (e) {
-            callback(e);
+          } catch (err) {
+            callback(err);
           }
         });
       } else {

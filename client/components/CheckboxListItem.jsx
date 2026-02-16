@@ -1,13 +1,13 @@
 import { Component } from "preact";
 
-import Checkbox from "./Checkbox";
-import CheckboxList from "./CheckboxList";
-import * as s from "./CheckboxList.css";
+import Checkbox from "./Checkbox.jsx";
+import * as styles from "./CheckboxList.css";
+import CheckboxList from "./CheckboxList.jsx";
 
 export default class CheckboxListItem extends Component {
   render() {
     return (
-      <div className={s.item}>
+      <div className={styles.item}>
         <Checkbox {...this.props} onChange={this.handleChange}>
           {this.renderLabel()}
         </Checkbox>

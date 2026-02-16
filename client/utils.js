@@ -6,10 +6,8 @@ export function walkModules(modules, cb) {
   for (const module of modules) {
     if (cb(module) === false) return false;
 
-    if (module.groups) {
-      if (walkModules(module.groups, cb) === false) {
-        return false;
-      }
+    if (module.groups && walkModules(module.groups, cb) === false) {
+      return false;
     }
   }
 }

@@ -1,6 +1,6 @@
-import CheckboxListItem from "./CheckboxListItem";
-import * as s from "./CheckboxList.css";
-import PureComponent from "../lib/PureComponent";
+import PureComponent from "../lib/PureComponent.jsx";
+import * as styles from "./CheckboxList.css";
+import CheckboxListItem from "./CheckboxListItem.jsx";
 
 const ALL_ITEM = Symbol("ALL_ITEM");
 
@@ -40,8 +40,8 @@ export default class CheckboxList extends PureComponent {
     const { label, items, renderLabel } = this.props;
 
     return (
-      <div className={s.container}>
-        <div className={s.label}>{label}:</div>
+      <div className={styles.container}>
+        <div className={styles.label}>{label}:</div>
         <div>
           <CheckboxListItem
             item={ALL_ITEM}

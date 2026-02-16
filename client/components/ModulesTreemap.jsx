@@ -1,23 +1,22 @@
-import { Component } from "preact";
 import { filesize } from "filesize";
 import { computed, makeObservable } from "mobx";
 import { observer } from "mobx-react";
+import { Component } from "preact";
 
-import { isChunkParsed } from "../utils";
-import localStorage from "../localStorage";
-import Treemap from "./Treemap";
-import Tooltip from "./Tooltip";
-import Switcher from "./Switcher";
-import Sidebar from "./Sidebar";
-import Checkbox from "./Checkbox";
-import CheckboxList from "./CheckboxList";
-import ContextMenu from "./ContextMenu";
-
-import * as s from "./ModulesTreemap.css";
-import Search from "./Search";
-import { store } from "../store";
-import ModulesList from "./ModulesList";
-import Dropdown from "./Dropdown";
+import localStorage from "../localStorage.js";
+import { store } from "../store.js";
+import { isChunkParsed } from "../utils.js";
+import Checkbox from "./Checkbox.jsx";
+import CheckboxList from "./CheckboxList.jsx";
+import ContextMenu from "./ContextMenu.jsx";
+import Dropdown from "./Dropdown.jsx";
+import ModulesList from "./ModulesList.jsx";
+import * as styles from "./ModulesTreemap.css";
+import Search from "./Search.jsx";
+import Sidebar from "./Sidebar.jsx";
+import Switcher from "./Switcher.jsx";
+import Tooltip from "./Tooltip.jsx";
+import Treemap from "./Treemap.jsx";
 
 function getSizeSwitchItems() {
   const items = [
@@ -25,14 +24,17 @@ function getSizeSwitchItems() {
     { label: "Parsed", prop: "parsedSize" },
   ];
 
-  if (window.compressionAlgorithm === "gzip")
+  if (globalThis.compressionAlgorithm === "gzip") {
     items.push({ label: "Gzipped", prop: "gzipSize" });
+  }
 
-  if (window.compressionAlgorithm === "brotli")
+  if (globalThis.compressionAlgorithm === "brotli") {
     items.push({ label: "Brotli", prop: "brotliSize" });
+  }
 
-  if (window.compressionAlgorithm === "zstd")
+  if (globalThis.compressionAlgorithm === "zstd") {
     items.push({ label: "Zstandard", prop: "zstdSize" });
+  }
 
   return items;
 }
@@ -83,14 +85,14 @@ class ModulesTreemap extends Component {
     } = this.state;
 
     return (
-      <div className={s.container}>
+      <div className={styles.container}>
         <Sidebar
           pinned={sidebarPinned}
           onToggle={this.handleSidebarToggle}
           onPinStateChange={this.handleSidebarPinStateChange}
           onResize={this.handleSidebarResize}
         >
-          <div className={s.sidebarGroup}>
+          <div className={styles.sidebarGroup}>
             <Switcher
               label="Treemap sizes"
               items={this.sizeSwitchItems}
@@ -98,7 +100,7 @@ class ModulesTreemap extends Component {
               onSwitch={this.handleSizeSwitch}
             />
             {store.hasConcatenatedModules && (
-              <div className={s.showOption}>
+              <div className={styles.showOption}>
                 <Checkbox
                   checked={store.showConcatenatedModulesContent}
                   onChange={this.handleConcatenatedModulesContentToggle}
@@ -108,33 +110,35 @@ class ModulesTreemap extends Component {
               </div>
             )}
           </div>
-          <div className={s.sidebarGroup}>
+          <div className={styles.sidebarGroup}>
             <Dropdown
               label="Filter to initial chunks"
               options={store.entrypoints}
               onSelectionChange={this.handleSelectionChange}
             />
           </div>
-          <div className={s.sidebarGroup}>
+          <div className={styles.sidebarGroup}>
             <Search
               label="Search modules"
               query={store.searchQuery}
               autofocus
               onQueryChange={this.handleQueryChange}
             />
-            <div className={s.foundModulesInfo}>{this.foundModulesInfo}</div>
+            <div className={styles.foundModulesInfo}>
+              {this.foundModulesInfo}
+            </div>
             {store.isSearching && store.hasFoundModules && (
-              <div className={s.foundModulesContainer}>
+              <div className={styles.foundModulesContainer}>
                 {store.foundModulesByChunk.map(({ chunk, modules }) => (
-                  <div key={chunk.cid} className={s.foundModulesChunk}>
+                  <div key={chunk.cid} className={styles.foundModulesChunk}>
                     <div
-                      className={s.foundModulesChunkName}
+                      className={styles.foundModulesChunkName}
                       onClick={() => this.treemap.zoomToGroup(chunk)}
                     >
                       {chunk.label}
                     </div>
                     <ModulesList
-                      className={s.foundModulesList}
+                      className={styles.foundModulesList}
                       modules={modules}
                       showSize={store.activeSize}
                       highlightedText={store.searchQueryRegexp}
@@ -147,7 +151,7 @@ class ModulesTreemap extends Component {
             )}
           </div>
           {this.chunkItems.length > 1 && (
-            <div className={s.sidebarGroup}>
+            <div className={styles.sidebarGroup}>
               <CheckboxList
                 label="Show chunks"
                 items={this.chunkItems}
@@ -160,7 +164,7 @@ class ModulesTreemap extends Component {
         </Sidebar>
         <Treemap
           ref={this.saveTreemapRef}
-          className={s.map}
+          className={styles.map}
           data={store.visibleChunks}
           highlightGroups={this.highlightedModules}
           weightProp={store.activeSize}
@@ -189,7 +193,7 @@ class ModulesTreemap extends Component {
     const isActive = store.activeSize === sizeProp;
 
     return typeof size === "number" ? (
-      <div className={isActive ? s.activeSize : ""}>
+      <div className={isActive ? styles.activeSize : ""}>
         {sizeLabel} size: <strong>{filesize(size)}</strong>
       </div>
     ) : null;
@@ -200,7 +204,11 @@ class ModulesTreemap extends Component {
     const label = isAllItem ? "All" : item.label;
     const size = isAllItem ? store.totalChunksSize : item[store.activeSize];
 
-    return [`${label} (`, <strong>{filesize(size)}</strong>, ")"];
+    return (
+      <>
+        {label} (<strong>{filesize(size)}</strong>)
+      </>
+    );
   };
 
   get sizeSwitchItems() {
@@ -239,19 +247,19 @@ class ModulesTreemap extends Component {
     }
 
     if (store.hasFoundModules) {
-      return [
-        <div className={s.foundModulesInfoItem}>
-          Count: <strong>{store.foundModules.length}</strong>
-        </div>,
-        <div className={s.foundModulesInfoItem}>
-          Total size: <strong>{filesize(store.foundModulesSize)}</strong>
-        </div>,
-      ];
-    } else {
       return (
-        "Nothing found" + (store.allChunksSelected ? "" : " in selected chunks")
+        <>
+          <div className={styles.foundModulesInfoItem}>
+            Count: <strong>{store.foundModules.length}</strong>
+          </div>
+          <div className={styles.foundModulesInfoItem}>
+            Total size: <strong>{filesize(store.foundModulesSize)}</strong>
+          </div>
+        </>
       );
     }
+
+    return `Nothing found${store.allChunksSelected ? "" : " in selected chunks"}`;
   }
 
   handleSelectionChange = (selected) => {
@@ -376,7 +384,7 @@ class ModulesTreemap extends Component {
         {this.renderModuleSize(module, "stat")}
         {!module.inaccurateSizes && this.renderModuleSize(module, "parsed")}
         {!module.inaccurateSizes &&
-          this.renderModuleSize(module, window.compressionAlgorithm)}
+          this.renderModuleSize(module, globalThis.compressionAlgorithm)}
         {module.path && (
           <div>
             Path: <strong>{module.path}</strong>

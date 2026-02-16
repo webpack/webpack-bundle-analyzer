@@ -24,8 +24,7 @@ yarn add -D webpack-bundle-analyzer
 <h2 align="center">Usage (as a plugin)</h2>
 
 ```js
-const BundleAnalyzerPlugin =
-  require("webpack-bundle-analyzer").BundleAnalyzerPlugin;
+const { BundleAnalyzerPlugin } = require("webpack-bundle-analyzer");
 
 module.exports = {
   plugins: [new BundleAnalyzerPlugin()],
@@ -47,6 +46,8 @@ And the best thing is it supports minified bundles! It parses them to get real s
 And it also shows their gzipped, Brotli, or Zstandard sizes!
 
 <h2 align="center">Options (for plugin)</h2>
+
+<!-- eslint-skip -->
 
 ```js
 new BundleAnalyzerPlugin(options?: object)

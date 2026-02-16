@@ -1,5 +1,5 @@
-const { createWriteStream } = require("fs");
-const { Readable } = require("stream");
+const { createWriteStream } = require("node:fs");
+const { Readable } = require("node:stream");
 
 class StatsSerializeStream extends Readable {
   constructor(stats) {
@@ -74,9 +74,6 @@ class StatsSerializeStream extends Readable {
   }
 }
 
-exports.StatsSerializeStream = StatsSerializeStream;
-exports.writeStats = writeStats;
-
 async function writeStats(stats, filepath) {
   return new Promise((resolve, reject) => {
     new StatsSerializeStream(stats)
@@ -85,3 +82,5 @@ async function writeStats(stats, filepath) {
       .pipe(createWriteStream(filepath));
   });
 }
+
+module.exports = { StatsSerializeStream, writeStats };

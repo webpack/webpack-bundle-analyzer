@@ -3,27 +3,29 @@ const KEY_PREFIX = "wba";
 export default {
   getItem(key) {
     try {
-      return JSON.parse(window.localStorage.getItem(`${KEY_PREFIX}.${key}`));
-    } catch (err) {
+      return JSON.parse(
+        globalThis.localStorage.getItem(`${KEY_PREFIX}.${key}`),
+      );
+    } catch {
       return null;
     }
   },
 
   setItem(key, value) {
     try {
-      window.localStorage.setItem(
+      globalThis.localStorage.setItem(
         `${KEY_PREFIX}.${key}`,
         JSON.stringify(value),
       );
-    } catch (err) {
+    } catch {
       /* ignored */
     }
   },
 
   removeItem(key) {
     try {
-      window.localStorage.removeItem(`${KEY_PREFIX}.${key}`);
-    } catch (err) {
+      globalThis.localStorage.removeItem(`${KEY_PREFIX}.${key}`);
+    } catch {
       /* ignored */
     }
   },

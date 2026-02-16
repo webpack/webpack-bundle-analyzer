@@ -1,4 +1,4 @@
-const { inspect, types } = require("util");
+const { inspect, types } = require("node:util");
 const opener = require("opener");
 
 const MONTHS = [
@@ -15,8 +15,6 @@ const MONTHS = [
   "Nov",
   "Dec",
 ];
-
-exports.createAssetsFilter = createAssetsFilter;
 
 function createAssetsFilter(excludePatterns) {
   const excludeFunctions = (
@@ -43,16 +41,21 @@ function createAssetsFilter(excludePatterns) {
 
   if (excludeFunctions.length) {
     return (asset) => excludeFunctions.every((fn) => fn(asset) !== true);
-  } else {
-    return () => true;
   }
+
+  return () => true;
+}
+
+function defaultAnalyzerUrl(options) {
+  const { listenHost, boundAddress } = options;
+  return `http://${listenHost}:${boundAddress.port}`;
 }
 
 /**
  * @desc get string of current time
  * format: dd/MMM HH:mm
  * */
-exports.defaultTitle = function () {
+function defaultTitle() {
   const time = new Date();
   const year = time.getFullYear();
   const month = MONTHS[time.getMonth()];
@@ -63,20 +66,17 @@ exports.defaultTitle = function () {
   const currentTime = `${day} ${month} ${year} at ${hour}:${minute}`;
 
   return `${process.env.npm_package_name || "Webpack Bundle Analyzer"} [${currentTime}]`;
-};
-
-exports.defaultAnalyzerUrl = function (options) {
-  const { listenHost, boundAddress } = options;
-  return `http://${listenHost}:${boundAddress.port}`;
-};
+}
 
 /**
  * Calls opener on a URI, but silently try / catches it.
  */
-exports.open = function (uri, logger) {
+function open(uri, logger) {
   try {
     opener(uri);
   } catch (err) {
     logger.debug(`Opener failed to open "${uri}":\n${err}`);
   }
-};
+}
+
+module.exports = { createAssetsFilter, defaultAnalyzerUrl, defaultTitle, open };

@@ -1,12 +1,13 @@
 import cls from "classnames";
-import * as s from "./Button.css";
-import PureComponent from "../lib/PureComponent";
+import PureComponent from "../lib/PureComponent.jsx";
+
+import * as styles from "./Button.css";
 
 export default class Button extends PureComponent {
   render({ active, className, children, ...props }) {
     const classes = cls(className, {
-      [s.button]: true,
-      [s.active]: active,
+      [styles.button]: true,
+      [styles.active]: active,
     });
 
     return (

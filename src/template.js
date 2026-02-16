@@ -1,19 +1,16 @@
-/* eslint-disable max-len */
-const path = require("path");
-const fs = require("fs");
+const fs = require("node:fs");
+const path = require("node:path");
 
 const { escape } = require("html-escaper");
 
 const projectRoot = path.resolve(__dirname, "..");
 const assetsRoot = path.join(projectRoot, "public");
 
-exports.renderViewer = renderViewer;
-
 /**
  * Escapes `<` characters in JSON to safely use it in `<script>` tag.
  */
 function escapeJson(json) {
-  return JSON.stringify(json).replace(/</gu, "\\u003c");
+  return JSON.stringify(json).replaceAll("<", "\\u003c");
 }
 
 function getAssetContent(filename) {
@@ -36,9 +33,9 @@ function getScript(filename, mode) {
   if (mode === "static") {
     return `<!-- ${escape(filename)} -->
 <script>${getAssetContent(filename)}</script>`;
-  } else {
-    return `<script src="${escape(filename)}"></script>`;
   }
+
+  return `<script src="${escape(filename)}"></script>`;
 }
 
 function renderViewer({
@@ -79,3 +76,5 @@ function renderViewer({
       </body>
     </html>`;
 }
+
+module.exports = { renderViewer };

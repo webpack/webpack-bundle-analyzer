@@ -1,12 +1,12 @@
-import { Component } from "preact";
 import cls from "classnames";
+import { Component } from "preact";
 
-import * as s from "./Sidebar.css";
-import Button from "./Button";
-import Icon from "./Icon";
-import ThemeToggle from "./ThemeToggle";
+import Button from "./Button.jsx";
+import Icon from "./Icon.jsx";
+import * as styles from "./Sidebar.css";
+import ThemeToggle from "./ThemeToggle.jsx";
 
-const toggleTime = parseInt(s.toggleTime);
+const toggleTime = Number.parseInt(styles.toggleTime, 10);
 
 export default class Sidebar extends Component {
   static defaultProps = {
@@ -15,9 +15,13 @@ export default class Sidebar extends Component {
   };
 
   allowHide = true;
+
   toggling = false;
+
   hideContentTimeout = null;
+
   width = null;
+
   state = {
     visible: true,
     renderContent: true,
@@ -37,11 +41,11 @@ export default class Sidebar extends Component {
     const { visible, renderContent } = this.state;
 
     const className = cls({
-      [s.container]: true,
-      [s.pinned]: pinned,
-      [s.left]: position === "left",
-      [s.hidden]: !visible,
-      [s.empty]: !renderContent,
+      [styles.container]: true,
+      [styles.pinned]: pinned,
+      [styles.left]: position === "left",
+      [styles.hidden]: !visible,
+      [styles.empty]: !renderContent,
     });
 
     return (
@@ -56,7 +60,7 @@ export default class Sidebar extends Component {
           <Button
             type="button"
             title="Pin"
-            className={s.pinButton}
+            className={styles.pinButton}
             active={pinned}
             toggle
             onClick={this.handlePinButtonClick}
@@ -67,16 +71,19 @@ export default class Sidebar extends Component {
         <Button
           type="button"
           title={visible ? "Hide" : "Show sidebar"}
-          className={s.toggleButton}
+          className={styles.toggleButton}
           onClick={this.handleToggleButtonClick}
         >
           <Icon name="arrow-right" size={10} rotate={visible ? 180 : 0} />
         </Button>
         {pinned && visible && (
-          <div className={s.resizer} onMouseDown={this.handleResizeStart} />
+          <div
+            className={styles.resizer}
+            onMouseDown={this.handleResizeStart}
+          />
         )}
         <div
-          className={s.content}
+          className={styles.content}
           onMouseEnter={this.handleMouseEnter}
           onMouseMove={this.handleMouseMove}
         >

@@ -1,11 +1,25 @@
-const path = require("path");
-const { readFileSync } = require("fs");
+const { readFileSync } = require("node:fs");
+const path = require("node:path");
 const { globSync } = require("tinyglobby");
+const { StatsSerializeStream } = require("../src/statsUtils");
 
-const { StatsSerializeStream } = require("../lib/statsUtils");
+async function stringify(json) {
+  return new Promise((resolve, reject) => {
+    let result = "";
+
+    new StatsSerializeStream(json)
+      .on("data", (chunk) => (result += chunk))
+      .on("end", () => resolve(result))
+      .on("error", reject);
+  });
+}
+
+async function expectProperJson(json) {
+  expect(await stringify(json)).toBe(JSON.stringify(json, null, 2));
+}
 
 describe("StatsSerializeStream", () => {
-  it("should properly stringify primitives", function () {
+  it("should properly stringify primitives", () => {
     expectProperJson(0);
     expectProperJson(1);
     expectProperJson(-1);
@@ -22,15 +36,15 @@ describe("StatsSerializeStream", () => {
     expectProperJson("Вива Лас-Вегас!");
   });
 
-  it("should properly stringify simple arrays", function () {
+  it("should properly stringify simple arrays", () => {
     expectProperJson([]);
     expectProperJson([1, undefined, 2]);
-    // eslint-disable-next-line
+    // eslint-disable-next-line no-sparse-arrays
     expectProperJson([1, , 2]);
     expectProperJson([false, "f'o\"o", -1, 42.42]);
   });
 
-  it("should properly stringify objects", function () {
+  it("should properly stringify objects", () => {
     expectProperJson({});
     expectProperJson({
       a: 1,
@@ -40,7 +54,7 @@ describe("StatsSerializeStream", () => {
     });
   });
 
-  it("should properly stringify complex structures", function () {
+  it("should properly stringify complex structures", () => {
     expectProperJson({
       foo: [],
       bar: {
@@ -56,26 +70,11 @@ describe("StatsSerializeStream", () => {
     });
   });
 
-  globSync("stats/**/*.json", { cwd: __dirname }).forEach((filepath) => {
-    it(`should properly stringify JSON from "${filepath}"`, function () {
+  for (const filepath of globSync("stats/**/*.json", { cwd: __dirname })) {
+    it(`should properly stringify JSON from "${filepath}"`, () => {
       const content = readFileSync(path.resolve(__dirname, filepath), "utf8");
       const json = JSON.parse(content);
       expectProperJson(json);
     });
-  });
+  }
 });
-
-async function expectProperJson(json) {
-  expect(await stringify(json)).toBe(JSON.stringify(json, null, 2));
-}
-
-async function stringify(json) {
-  return new Promise((resolve, reject) => {
-    let result = "";
-
-    new StatsSerializeStream(json)
-      .on("data", (chunk) => (result += chunk))
-      .on("end", () => resolve(result))
-      .on("error", reject);
-  });
-}

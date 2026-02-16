@@ -1,40 +1,71 @@
-const path = require("path");
-const fs = require("fs");
-const http = require("http");
+const fs = require("node:fs");
+const http = require("node:http");
+const path = require("node:path");
 
-const WebSocket = require("ws");
-const sirv = require("sirv");
 const { bold } = require("picocolors");
+const sirv = require("sirv");
+const WebSocket = require("ws");
 
 const Logger = require("./Logger");
 const analyzer = require("./analyzer");
-const { open } = require("./utils");
 const { renderViewer } = require("./template");
+const { open } = require("./utils");
 
 const projectRoot = path.resolve(__dirname, "..");
 
 function resolveTitle(reportTitle) {
   if (typeof reportTitle === "function") {
     return reportTitle();
-  } else {
-    return reportTitle;
   }
+
+  return reportTitle;
 }
 
 function resolveDefaultSizes(defaultSizes, compressionAlgorithm) {
-  if (["gzip", "brotli", "zstd"].includes(defaultSizes))
+  if (["gzip", "brotli", "zstd"].includes(defaultSizes)) {
     return compressionAlgorithm;
+  }
+
   return defaultSizes;
 }
 
-module.exports = {
-  startServer,
-  generateReport,
-  generateJSONReport,
-  getEntrypoints,
-  // deprecated
-  start: startServer,
-};
+function getEntrypoints(bundleStats) {
+  if (
+    bundleStats === null ||
+    bundleStats === undefined ||
+    !bundleStats.entrypoints
+  ) {
+    return [];
+  }
+  return Object.values(bundleStats.entrypoints).map(
+    (entrypoint) => entrypoint.name,
+  );
+}
+
+function getChartData(analyzerOpts, ...args) {
+  let chartData;
+  const { logger } = analyzerOpts;
+
+  try {
+    chartData = analyzer.getViewerData(...args, analyzerOpts);
+  } catch (err) {
+    logger.error(`Couldn't analyze webpack bundle:\n${err}`);
+    logger.debug(err.stack);
+    chartData = null;
+  }
+
+  // chartData can either be an array (bundleInfo[]) or null. It can't be an plain object anyway
+  if (
+    // analyzer.getViewerData() doesn't failed in the previous step
+    chartData &&
+    !Array.isArray(chartData)
+  ) {
+    logger.error("Couldn't find any javascript bundles in provided stats file");
+    chartData = null;
+  }
+
+  return chartData;
+}
 
 async function startServer(bundleStats, opts) {
   const {
@@ -112,12 +143,6 @@ async function startServer(bundleStats, opts) {
     });
   });
 
-  return {
-    ws: wss,
-    http: server,
-    updateChartData,
-  };
-
   function updateChartData(bundleStats) {
     const newChartData = getChartData(analyzerOpts, bundleStats, bundleDir);
 
@@ -125,7 +150,7 @@ async function startServer(bundleStats, opts) {
 
     chartData = newChartData;
 
-    wss.clients.forEach((client) => {
+    for (const client of wss.clients) {
       if (client.readyState === WebSocket.OPEN) {
         client.send(
           JSON.stringify({
@@ -134,8 +159,14 @@ async function startServer(bundleStats, opts) {
           }),
         );
       }
-    });
+    }
   }
+
+  return {
+    ws: wss,
+    http: server,
+    updateChartData,
+  };
 }
 
 async function generateReport(bundleStats, opts) {
@@ -210,40 +241,11 @@ async function generateJSONReport(bundleStats, opts) {
   );
 }
 
-function getChartData(analyzerOpts, ...args) {
-  let chartData;
-  const { logger } = analyzerOpts;
-
-  try {
-    chartData = analyzer.getViewerData(...args, analyzerOpts);
-  } catch (err) {
-    logger.error(`Couldn't analyze webpack bundle:\n${err}`);
-    logger.debug(err.stack);
-    chartData = null;
-  }
-
-  // chartData can either be an array (bundleInfo[]) or null. It can't be an plain object anyway
-  if (
-    // analyzer.getViewerData() doesn't failed in the previous step
-    chartData &&
-    !Array.isArray(chartData)
-  ) {
-    logger.error("Couldn't find any javascript bundles in provided stats file");
-    chartData = null;
-  }
-
-  return chartData;
-}
-
-function getEntrypoints(bundleStats) {
-  if (
-    bundleStats === null ||
-    bundleStats === undefined ||
-    !bundleStats.entrypoints
-  ) {
-    return [];
-  }
-  return Object.values(bundleStats.entrypoints).map(
-    (entrypoint) => entrypoint.name,
-  );
-}
+module.exports = {
+  generateJSONReport,
+  generateReport,
+  getEntrypoints,
+  // deprecated
+  start: startServer,
+  startServer,
+};

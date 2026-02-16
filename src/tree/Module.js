@@ -1,5 +1,5 @@
-import Node from "./Node";
-import { getCompressedSize } from "../sizeUtils";
+import { getCompressedSize } from "../sizeUtils.js";
+import Node from "./Node.js";
 
 export default class Module extends Node {
   constructor(name, data, parent, opts) {

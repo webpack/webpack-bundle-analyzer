@@ -1,9 +1,10 @@
 // TODO: switch to a more modern debounce package once we drop Node.js 10 support
 import debounce from "debounce";
 
-import * as s from "./Search.css";
-import Button from "./Button";
-import PureComponent from "../lib/PureComponent";
+import PureComponent from "../lib/PureComponent.jsx";
+import Button from "./Button.jsx";
+
+import * as styles from "./Search.css";
 
 export default class Search extends PureComponent {
   componentDidMount() {
@@ -20,12 +21,12 @@ export default class Search extends PureComponent {
     const { label, query } = this.props;
 
     return (
-      <div className={s.container}>
-        <div className={s.label}>{label}:</div>
-        <div className={s.row}>
+      <div className={styles.container}>
+        <div className={styles.label}>{label}:</div>
+        <div className={styles.row}>
           <input
             ref={this.saveInputNode}
-            className={s.input}
+            className={styles.input}
             type="text"
             value={query}
             placeholder="Enter regexp"
@@ -33,7 +34,7 @@ export default class Search extends PureComponent {
             onBlur={this.handleInputBlur}
             onKeyDown={this.handleKeyDown}
           />
-          <Button className={s.clear} onClick={this.handleClearClick}>
+          <Button className={styles.clear} onClick={this.handleClearClick}>
             x
           </Button>
         </div>
