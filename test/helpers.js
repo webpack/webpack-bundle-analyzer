@@ -1,4 +1,3 @@
-const { readdirSync } = require("node:fs");
 const path = require("node:path");
 const webpack = require("webpack");
 
