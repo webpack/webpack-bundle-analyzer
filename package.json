@@ -46,10 +46,9 @@
     "fmt:check": "npm run fmt:base -- --check",
     "fmt:base": "prettier --cache --ignore-unknown .",
     "fix": "npm run fix:code && npm run fmt",
-    "install-test-webpack-versions": "./bin/install-test-webpack-versions.sh",
-    "test": "npm run install-test-webpack-versions && NODE_OPTIONS=--openssl-legacy-provider jest --runInBand",
+    "test": "NODE_OPTIONS=--openssl-legacy-provider jest --runInBand",
     "test:coverage": "npm run test -- --coverage",
-    "test-dev": "npm run install-test-webpack-versions && NODE_OPTIONS=--openssl-legacy-provider jest --watch --runInBand"
+    "test-dev": "NODE_OPTIONS=--openssl-legacy-provider jest --watch --runInBand"
   },
   "dependencies": {
     "@discoveryjs/json-ext": "^0.6.3",
@@ -95,7 +94,8 @@
     "style-loader": "^4.0.0",
     "terser-webpack-plugin": "^5.1.2",
     "tinyglobby": "^0.2.15",
-    "webpack": "^5.98.0",
+    "webpack-4": "npm:webpack@^4",
+    "webpack": "^5.105.2",
     "webpack-cli": "^6.0.1",
     "webpack-dev-server": "^5.2.0"
   },
