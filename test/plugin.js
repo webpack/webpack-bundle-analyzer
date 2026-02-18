@@ -96,7 +96,7 @@ describe("Plugin", () => {
     });
   });
 
-  forEachWebpackVersion(["4.44.2"], ({ it, webpackCompile }) => {
+  forEachWebpackVersion(["4"], ({ it, webpackCompile }) => {
     // Webpack 5 doesn't support `jsonpFunction` option
     it("should support webpack config with custom `jsonpFunction` name", async () => {
       const config = makeWebpackConfig({
@@ -184,7 +184,7 @@ describe("Plugin", () => {
     describe("reportTitle", () => {
       it("should have a sensible default", async () => {
         const config = makeWebpackConfig();
-        await webpackCompile(config, "4.44.2");
+        await webpackCompile(config, "4");
         const generatedReportTitle = await getTitleFromReport();
         expect(generatedReportTitle).toMatch(
           /^webpack-bundle-analyzer \[.* at \d{2}:\d{2}\]/u,
@@ -198,7 +198,7 @@ describe("Plugin", () => {
             reportTitle,
           },
         });
-        await webpackCompile(config, "4.44.2");
+        await webpackCompile(config, "4");
         const generatedReportTitle = await getTitleFromReport();
         expect(generatedReportTitle).toBe(reportTitle);
       });
@@ -210,7 +210,7 @@ describe("Plugin", () => {
             reportTitle: () => reportTitleResult,
           },
         });
-        await webpackCompile(config, "4.44.2");
+        await webpackCompile(config, "4");
         const generatedReportTitle = await getTitleFromReport();
         expect(generatedReportTitle).toBe(reportTitleResult);
       });
@@ -227,7 +227,7 @@ describe("Plugin", () => {
 
         let error = null;
         try {
-          await webpackCompile(config, "4.44.2");
+          await webpackCompile(config, "4");
         } catch (err) {
           error = err;
         }
@@ -239,7 +239,7 @@ describe("Plugin", () => {
     describe("compressionAlgorithm", () => {
       it("should default to gzip", async () => {
         const config = makeWebpackConfig({ analyzerOpts: {} });
-        await webpackCompile(config, "4.44.2");
+        await webpackCompile(config, "4");
         await expectValidReport({ parsedSize: 1317, gzipSize: 341 });
       });
 
@@ -247,7 +247,7 @@ describe("Plugin", () => {
         const config = makeWebpackConfig({
           analyzerOpts: { compressionAlgorithm: "gzip" },
         });
-        await webpackCompile(config, "4.44.2");
+        await webpackCompile(config, "4");
         await expectValidReport({ parsedSize: 1317, gzipSize: 341 });
       });
 
@@ -255,7 +255,7 @@ describe("Plugin", () => {
         const config = makeWebpackConfig({
           analyzerOpts: { compressionAlgorithm: "brotli" },
         });
-        await webpackCompile(config, "4.44.2");
+        await webpackCompile(config, "4");
         await expectValidReport({
           gzipSize: undefined,
           parsedSize: 1317,
@@ -268,7 +268,7 @@ describe("Plugin", () => {
           const config = makeWebpackConfig({
             analyzerOpts: { compressionAlgorithm: "zstd" },
           });
-          await webpackCompile(config, "4.44.2");
+          await webpackCompile(config, "4");
           await expectValidReport({
             parsedSize: 1317,
             gzipSize: undefined,

@@ -6,55 +6,23 @@ const BundleAnalyzerPlugin = require("../src/BundleAnalyzerPlugin");
 
 /* global it */
 
-/**
- * @template T
- * @typedef {() => T} FunctionReturning
- */
-
-/**
- * @template T
- * @param {FunctionReturning<T>} fn memorized function
- * @returns {FunctionReturning<T>} new function
- */
-const memoize = (fn) => {
-  let cache = false;
-  /** @type {T | undefined} */
-  let result;
-  return () => {
-    if (cache) {
-      return /** @type {T} */ (result);
-    }
-
-    result = fn();
-    cache = true;
-    // Allow to clean up memory for fn
-    // and all dependent resources
-    /** @type {FunctionReturning<T> | undefined} */
-    (fn) = undefined;
-    return /** @type {T} */ (result);
-  };
-};
-
-const getAvailableWebpackVersions = memoize(() =>
-  readdirSync(path.resolve(__dirname, "./webpack-versions"), {
-    withFileTypes: true,
-  })
-    .filter((entry) => entry.isDirectory())
-    .map((dir) => dir.name),
-);
-
 function wait(ms) {
   return new Promise((resolve) => {
     setTimeout(resolve, ms);
   });
 }
 
+const webpackVersions = {
+  4: path.resolve(__dirname, "../node_modules/webpack-4"),
+  5: path.resolve(__dirname, "../node_modules/webpack"),
+};
+
 async function webpackCompile(config, version) {
   if (version === undefined || version === null) {
     throw new Error("Webpack version is not specified");
   }
 
-  if (!getAvailableWebpackVersions().includes(version)) {
+  if (!webpackVersions[version]) {
     throw new Error(
       `Webpack version "${version}" is not available for testing`,
     );
@@ -63,7 +31,7 @@ async function webpackCompile(config, version) {
   let webpack;
 
   try {
-    webpack = require(`./webpack-versions/${version}/node_modules/webpack`);
+    webpack = require(webpackVersions[version]);
   } catch (err) {
     throw new Error(
       `Error requiring Webpack ${version}:\n${err}\n\n` +
@@ -140,7 +108,7 @@ function makeWebpackConfig(opts = {}) {
 }
 
 function forEachWebpackVersion(versions, cb) {
-  const availableVersions = getAvailableWebpackVersions();
+  const availableVersions = Object.keys(webpackVersions);
 
   if (typeof versions === "function") {
     cb = versions;
