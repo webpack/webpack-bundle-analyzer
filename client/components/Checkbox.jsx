@@ -1,9 +1,20 @@
 import cls from "classnames";
 import { Component } from "preact";
+import PropTypes from "prop-types";
 
 import * as styles from "./Checkbox.css";
 
 export default class Checkbox extends Component {
+  static propTypes = {
+    className: PropTypes.string,
+
+    checked: PropTypes.bool,
+
+    onChange: PropTypes.func.isRequired,
+
+    children: PropTypes.node,
+  };
+
   render() {
     const { checked, className, children } = this.props;
 
@@ -15,7 +26,7 @@ export default class Checkbox extends Component {
           checked={checked}
           onChange={this.handleChange}
         />
-        <span className={styles.itemText}>{children}</span>
+        {children && <span className={styles.itemText}>{children}</span>}
       </label>
     );
   }

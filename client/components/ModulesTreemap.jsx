@@ -173,7 +173,9 @@ class ModulesTreemap extends Component {
           onGroupSecondaryClick={this.handleTreemapGroupSecondaryClick}
           onResize={this.handleResize}
         />
-        <Tooltip visible={showTooltip}>{tooltipContent}</Tooltip>
+        {tooltipContent && (
+          <Tooltip visible={showTooltip}>{tooltipContent}</Tooltip>
+        )}
         <ContextMenu
           visible={showChunkContextMenu}
           chunk={selectedChunk}
@@ -264,12 +266,14 @@ class ModulesTreemap extends Component {
 
   handleSelectionChange = (selected) => {
     if (!selected) {
-      store.selectedChunks = store.allChunks;
+      store.setSelectedChunks(store.allChunks);
       return;
     }
 
-    store.selectedChunks = store.allChunks.filter(
-      (chunk) => chunk.isInitialByEntrypoint[selected] ?? false,
+    store.setSelectedChunks(
+      store.allChunks.filter(
+        (chunk) => chunk.isInitialByEntrypoint[selected] ?? false,
+      ),
     );
   };
 
@@ -314,15 +318,15 @@ class ModulesTreemap extends Component {
   };
 
   handleSizeSwitch = (sizeSwitchItem) => {
-    store.selectedSize = sizeSwitchItem.prop;
+    store.setSelectedSize(sizeSwitchItem.prop);
   };
 
   handleQueryChange = (query) => {
-    store.searchQuery = query;
+    store.setSearchQuery(query);
   };
 
   handleSelectedChunksChange = (selectedChunks) => {
-    store.selectedChunks = selectedChunks;
+    store.setSelectedSize(selectedChunks);
   };
 
   handleMouseLeaveTreemap = () => {

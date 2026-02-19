@@ -1,4 +1,4 @@
-import { computed, makeObservable, observable } from "mobx";
+import { action, computed, makeObservable, observable } from "mobx";
 import localStorage from "./localStorage.js";
 import { isChunkParsed, walkModules } from "./utils.js";
 
@@ -51,6 +51,12 @@ export class Store {
       showConcatenatedModulesContent: observable,
       darkMode: observable,
 
+      toggleDarkMode: action,
+      setModules: action,
+      setSelectedChunks: action,
+      setSelectedSize: action,
+      setSearchQuery: action,
+
       hasParsedSizes: computed,
       activeSize: computed,
       visibleChunks: computed,
@@ -83,6 +89,10 @@ export class Store {
     return this.allChunks.some(isChunkParsed);
   }
 
+  setSelectedSize(selectedSize) {
+    this.selectedSize = selectedSize;
+  }
+
   get activeSize() {
     const activeSize = this.selectedSize || this.defaultSize;
 
@@ -91,6 +101,10 @@ export class Store {
     }
 
     return activeSize;
+  }
+
+  setSelectedChunks(chunks) {
+    this.selectedChunks = chunks;
   }
 
   get visibleChunks() {
@@ -185,6 +199,10 @@ export class Store {
       })
       .filter((result) => result.modules.length > 0)
       .toSorted((c1, c2) => c1.modules.length - c2.modules.length);
+  }
+
+  setSearchQuery(query) {
+    this.searchQuery = query;
   }
 
   get foundModules() {

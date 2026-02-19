@@ -1,9 +1,16 @@
 import { createRef } from "preact";
+import PropTypes from "prop-types";
 import PureComponent from "../lib/PureComponent.jsx";
 
 import * as styles from "./Dropdown.css";
 
 export default class Dropdown extends PureComponent {
+  static propTypes = {
+    label: PropTypes.string.isRequired,
+    options: PropTypes.arrayOf(PropTypes.string).isRequired,
+    onSelectionChange: PropTypes.func.isRequired,
+  };
+
   input = createRef();
 
   state = {
