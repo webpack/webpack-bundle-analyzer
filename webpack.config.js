@@ -114,15 +114,15 @@ module.exports = {
     ],
   },
   plugins: ((plugins) => {
-    if (isDev) {
-      if (needAnalyze) {
-        plugins.push(
-          new BundleAnalyzePlugin({
-            generateStatsFile: true,
-          }),
-        );
-      }
+    if (needAnalyze) {
+      plugins.push(
+        new BundleAnalyzePlugin({
+          generateStatsFile: true,
+        }),
+      );
+    }
 
+    if (!isDev) {
       plugins.push(
         new webpack.DefinePlugin({
           process: JSON.stringify({
