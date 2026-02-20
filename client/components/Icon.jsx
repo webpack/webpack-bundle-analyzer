@@ -1,4 +1,5 @@
 import cls from "classnames";
+import PropTypes from "prop-types";
 import iconArrowRight from "../assets/icon-arrow-right.svg";
 import iconMoon from "../assets/icon-moon.svg";
 import iconPin from "../assets/icon-pin.svg";
@@ -27,6 +28,14 @@ const ICONS = {
 };
 
 export default class Icon extends PureComponent {
+  static propTypes = {
+    className: PropTypes.string,
+
+    name: PropTypes.string.isRequired,
+    size: PropTypes.number,
+    rotate: PropTypes.number,
+  };
+
   render({ className }) {
     return <i className={cls(styles.icon, className)} style={this.style} />;
   }

@@ -1,5 +1,7 @@
 import FoamTree from "@carrotsearch/foamtree";
 import { Component } from "preact";
+import PropTypes from "prop-types";
+import { SizeType, ViewerDataType } from "./types.js";
 
 function preventDefault(event) {
   event.preventDefault();
@@ -16,6 +18,19 @@ function hashCode(str) {
 }
 
 export default class Treemap extends Component {
+  static propTypes = {
+    classname: PropTypes.string,
+
+    data: ViewerDataType.isRequired,
+    highlightGroups: PropTypes.instanceOf(Set).isRequired,
+    weightProp: SizeType.isRequired,
+
+    onGroupHover: PropTypes.func,
+    onGroupSecondaryClick: PropTypes.func,
+    onMouseLeave: PropTypes.func,
+    onResize: PropTypes.func,
+  };
+
   constructor(props) {
     super(props);
     this.treemap = null;

@@ -39,7 +39,6 @@ export default defineConfig([
     extends: [configs["browser-recommended"]],
     rules: {
       // TODO fix me in future
-      "react/prop-types": "off",
       "react/no-deprecated": "off",
     },
   },

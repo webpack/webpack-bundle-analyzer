@@ -1,11 +1,25 @@
 import cls from "classnames";
+import PropTypes from "prop-types";
 import PureComponent from "../lib/PureComponent.jsx";
 import { store } from "../store.js";
 import { elementIsOutside } from "../utils.js";
 import * as styles from "./ContextMenu.css";
 import ContextMenuItem from "./ContextMenuItem.jsx";
+import { ViewerDataItemType } from "./types.js";
 
 export default class ContextMenu extends PureComponent {
+  static propTypes = {
+    visible: PropTypes.bool,
+
+    chunk: ViewerDataItemType,
+    coords: PropTypes.shape({
+      x: PropTypes.number,
+      y: PropTypes.number,
+    }).isRequired,
+
+    onHide: PropTypes.func,
+  };
+
   componentDidMount() {
     this.boundingRect = this.node.getBoundingClientRect();
   }
@@ -68,24 +82,25 @@ export default class ContextMenu extends PureComponent {
       const filteredChunks = store.selectedChunks.filter(
         (chunk) => chunk.label !== selectedChunk.label,
       );
-      store.selectedChunks = filteredChunks;
+      store.setSelectedChunks(filteredChunks);
     }
     this.hide();
   };
 
   handleClickFilterToChunk = () => {
     const { chunk: selectedChunk } = this.props;
+
     if (selectedChunk && selectedChunk.label) {
       const filteredChunks = store.allChunks.filter(
         (chunk) => chunk.label === selectedChunk.label,
       );
-      store.selectedChunks = filteredChunks;
+      store.setSelectedChunks(filteredChunks);
     }
     this.hide();
   };
 
   handleClickShowAllChunks = () => {
-    store.selectedChunks = store.allChunks;
+    store.setSelectedChunks(store.allChunks);
     this.hide();
   };
 

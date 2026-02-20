@@ -1,10 +1,21 @@
+import PropTypes from "prop-types";
 import PureComponent from "../lib/PureComponent.jsx";
 import * as styles from "./CheckboxList.css";
 import CheckboxListItem from "./CheckboxListItem.jsx";
+import { ViewerDataType } from "./types.js";
 
 const ALL_ITEM = Symbol("ALL_ITEM");
 
 export default class CheckboxList extends PureComponent {
+  static propTypes = {
+    label: PropTypes.string.isRequired,
+    renderLabel: PropTypes.func.isRequired,
+    items: PropTypes.oneOfType([ViewerDataType, PropTypes.symbol]),
+    checkedItems: PropTypes.oneOfType([ViewerDataType, PropTypes.symbol]),
+
+    onChange: PropTypes.func.isRequired,
+  };
+
   static ALL_ITEM = ALL_ITEM;
 
   constructor(props) {

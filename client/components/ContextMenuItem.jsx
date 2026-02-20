@@ -1,4 +1,5 @@
 import cls from "classnames";
+import PropTypes from "prop-types";
 
 import * as styles from "./ContextMenuItem.css";
 
@@ -18,3 +19,11 @@ export default function ContextMenuItem({ children, disabled, onClick }) {
     </li>
   );
 }
+
+ContextMenuItem.propTypes = {
+  disabled: PropTypes.bool,
+
+  children: PropTypes.node.isRequired,
+
+  onClick: PropTypes.func,
+};

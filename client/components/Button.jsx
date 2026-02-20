@@ -1,9 +1,22 @@
 import cls from "classnames";
+import PropTypes from "prop-types";
 import PureComponent from "../lib/PureComponent.jsx";
 
 import * as styles from "./Button.css";
 
 export default class Button extends PureComponent {
+  static propTypes = {
+    className: PropTypes.string,
+
+    active: PropTypes.bool,
+    toggle: PropTypes.bool,
+    disabled: PropTypes.bool,
+
+    onClick: PropTypes.func.isRequired,
+
+    children: PropTypes.node,
+  };
+
   render({ active, className, children, ...props }) {
     const classes = cls(className, {
       [styles.button]: true,
@@ -25,12 +38,15 @@ export default class Button extends PureComponent {
   }
 
   get disabled() {
-    const { props } = this;
-    return props.disabled || (props.active && !props.toggle);
+    const { disabled, active, toggle } = this.props;
+    return disabled || (active && !toggle);
   }
 
   handleClick = (event) => {
-    this.elem.blur();
+    if (this.elem) {
+      this.elem.blur();
+    }
+
     this.props.onClick(event);
   };
 

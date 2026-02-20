@@ -1,6 +1,6 @@
 import cls from "classnames";
 import { Component } from "preact";
-
+import PropTypes from "prop-types";
 import Button from "./Button.jsx";
 import Icon from "./Icon.jsx";
 import * as styles from "./Sidebar.css";
@@ -9,6 +9,17 @@ import ThemeToggle from "./ThemeToggle.jsx";
 const toggleTime = Number.parseInt(styles.toggleTime, 10);
 
 export default class Sidebar extends Component {
+  static propTypes = {
+    pinned: PropTypes.bool.isRequired,
+    position: PropTypes.string,
+
+    onToggle: PropTypes.func.isRequired,
+    onResize: PropTypes.func.isRequired,
+    onPinStateChange: PropTypes.func.isRequired,
+
+    children: PropTypes.node.isRequired,
+  };
+
   static defaultProps = {
     pinned: false,
     position: "left",

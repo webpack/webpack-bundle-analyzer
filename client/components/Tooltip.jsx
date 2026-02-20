@@ -1,9 +1,16 @@
 import cls from "classnames";
 import { Component } from "preact";
 
+import PropTypes from "prop-types";
 import * as styles from "./Tooltip.css";
 
 export default class Tooltip extends Component {
+  static propTypes = {
+    visible: PropTypes.bool.isRequired,
+
+    children: PropTypes.node.isRequired,
+  };
+
   static marginX = 10;
 
   static marginY = 30;
@@ -32,6 +39,7 @@ export default class Tooltip extends Component {
 
   render() {
     const { children, visible } = this.props;
+
     const className = cls({
       [styles.container]: true,
       [styles.hidden]: !visible,

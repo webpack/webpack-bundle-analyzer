@@ -11,7 +11,9 @@ const needAnalyze = process.env.ANALYZE || false;
 module.exports = {
   mode: process.env.NODE_ENV || "production",
   context: __dirname,
-  entry: "./client/viewer.jsx",
+  entry: isDev
+    ? ["preact/debug", "./client/viewer.jsx"]
+    : "./client/viewer.jsx",
   output: {
     path: path.resolve(__dirname, "./public"),
     filename: "viewer.js",
@@ -112,15 +114,15 @@ module.exports = {
     ],
   },
   plugins: ((plugins) => {
-    if (!isDev) {
-      if (needAnalyze) {
-        plugins.push(
-          new BundleAnalyzePlugin({
-            generateStatsFile: true,
-          }),
-        );
-      }
+    if (needAnalyze) {
+      plugins.push(
+        new BundleAnalyzePlugin({
+          generateStatsFile: true,
+        }),
+      );
+    }
 
+    if (!isDev) {
       plugins.push(
         new webpack.DefinePlugin({
           process: JSON.stringify({

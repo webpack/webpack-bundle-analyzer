@@ -2,11 +2,22 @@ import cls from "classnames";
 import escapeRegExp from "escape-string-regexp";
 import { filesize } from "filesize";
 import { escape } from "html-escaper";
+import PropTypes from "prop-types";
 import PureComponent from "../lib/PureComponent.jsx";
-
 import * as styles from "./ModuleItem.css";
+import { ModuleType, SizeType } from "./types.js";
 
 export default class ModuleItem extends PureComponent {
+  static propTypes = {
+    module: ModuleType.isRequired,
+    showSize: SizeType.isRequired,
+    highlightedText: PropTypes.instanceOf(RegExp),
+
+    isVisible: PropTypes.func.isRequired,
+
+    onClick: PropTypes.func.isRequired,
+  };
+
   state = {
     visible: true,
   };
