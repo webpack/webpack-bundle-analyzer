@@ -20,6 +20,13 @@ import Node from "./Node.js";
  * @property {number | undefined} zstdSize zstd size
  */
 
+/**
+ * @typedef {object} SizeFields
+ * @property {number=} _gzipSize gzip size
+ * @property {number=} _brotliSize brotli size
+ * @property {number=} _zstdSize zstd size
+ */
+
 export default class Module extends Node {
   /**
    * @param {string} name name
@@ -33,12 +40,6 @@ export default class Module extends Node {
     this.data = data;
     /** @type {ModuleOptions} */
     this.opts = opts;
-    /** @type {number | undefined} */
-    this._gzipSize = undefined;
-    /** @type {number | undefined} */
-    this._brotliSize = undefined;
-    /** @type {number | undefined} */
-    this._zstdSize = undefined;
   }
 
   get src() {
@@ -47,9 +48,10 @@ export default class Module extends Node {
 
   set src(value) {
     this.data.parsedSrc = value;
-    delete this._gzipSize;
-    delete this._brotliSize;
-    delete this._zstdSize;
+
+    delete (/** @type {Module & SizeFields} */ (this)._gzipSize);
+    delete (/** @type {Module & SizeFields} */ (this)._brotliSize);
+    delete (/** @type {Module & SizeFields} */ (this)._zstdSize);
   }
 
   /**
@@ -110,12 +112,13 @@ export default class Module extends Node {
       /** @type {`_${CompressionAlgorithm}Size`} */
       (`_${compressionAlgorithm}Size`);
     if (!(key in this)) {
-      this[key] = this.src
+      /** @type {Module & SizeFields} */
+      (this)[key] = this.src
         ? getCompressedSize(compressionAlgorithm, this.src)
         : undefined;
     }
 
-    return this[key];
+    return /** @type {Module & SizeFields} */ (this)[key];
   }
 
   /**

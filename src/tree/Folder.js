@@ -7,6 +7,7 @@ import { getModulePathParts } from "./utils.js";
 /** @typedef {import("webpack").StatsModule} StatsModule */
 /** @typedef {import("../analyzer").AnalyzerOptions} AnalyzerOptions */
 /** @typedef {import("../analyzer").CompressionAlgorithm} CompressionAlgorithm */
+/** @typedef {import("./Module").SizeFields} SizeFields */
 /** @typedef {import("./BaseFolder").BaseFolderChartData} BaseFolderChartData */
 
 /**
@@ -28,12 +29,6 @@ export default class Folder extends BaseFolder {
     super(name);
     /** @type {AnalyzerOptions} */
     this.opts = opts;
-    /** @type {number | undefined} */
-    this._gzipSize = undefined;
-    /** @type {number | undefined} */
-    this._brotliSize = undefined;
-    /** @type {number | undefined} */
-    this._zstdSize = undefined;
   }
 
   get parsedSize() {
@@ -68,12 +63,13 @@ export default class Folder extends BaseFolder {
       (`_${compressionAlgorithm}Size`);
 
     if (!Object.hasOwn(this, key)) {
-      this[key] = this.src
+      /** @type {Folder & SizeFields} */
+      (this)[key] = this.src
         ? getCompressedSize(compressionAlgorithm, this.src)
         : 0;
     }
 
-    return this[key];
+    return /** @type {Folder & SizeFields} */ (this)[key];
   }
 
   /**
