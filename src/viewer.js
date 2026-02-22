@@ -11,8 +11,23 @@ const analyzer = require("./analyzer");
 const { renderViewer } = require("./template");
 const { open } = require("./utils");
 
+/** @typedef {import("http").Server} Server */
+/** @typedef {import("ws").WebSocketServer} WebSocketServer */
+/** @typedef {import("webpack").StatsCompilation} StatsCompilation */
+/** @typedef {import("./BundleAnalyzerPlugin").Sizes} Sizes */
+/** @typedef {import("./BundleAnalyzerPlugin").CompressionAlgorithm} CompressionAlgorithm */
+/** @typedef {import("./BundleAnalyzerPlugin").ReportTitle} ReportTitle */
+/** @typedef {import("./BundleAnalyzerPlugin").AnalyzerUrl} AnalyzerUrl */
+/** @typedef {import("./BundleAnalyzerPlugin").ExcludeAssets} ExcludeAssets */
+/** @typedef {import("./analyzer").ViewerDataOptions} ViewerDataOptions */
+/** @typedef {import("./analyzer").ChartData} ChartData */
+
 const projectRoot = path.resolve(__dirname, "..");
 
+/**
+ * @param {string | (() => string)} reportTitle report title
+ * @returns {string} resolved title
+ */
 function resolveTitle(reportTitle) {
   if (typeof reportTitle === "function") {
     return reportTitle();
@@ -21,6 +36,11 @@ function resolveTitle(reportTitle) {
   return reportTitle;
 }
 
+/**
+ * @param {Sizes} defaultSizes default sizes
+ * @param {CompressionAlgorithm} compressionAlgorithm compression algorithm
+ * @returns {Sizes} default sizes
+ */
 function resolveDefaultSizes(defaultSizes, compressionAlgorithm) {
   if (["gzip", "brotli", "zstd"].includes(defaultSizes)) {
     return compressionAlgorithm;
@@ -29,6 +49,12 @@ function resolveDefaultSizes(defaultSizes, compressionAlgorithm) {
   return defaultSizes;
 }
 
+/** @typedef {(string | undefined | null)[]} Entrypoints */
+
+/**
+ * @param {StatsCompilation} bundleStats bundle stats
+ * @returns {Entrypoints} entrypoints
+ */
 function getEntrypoints(bundleStats) {
   if (
     bundleStats === null ||
@@ -37,20 +63,28 @@ function getEntrypoints(bundleStats) {
   ) {
     return [];
   }
+
   return Object.values(bundleStats.entrypoints).map(
     (entrypoint) => entrypoint.name,
   );
 }
 
-function getChartData(analyzerOpts, ...args) {
+/**
+ * @param {ViewerDataOptions} analyzerOpts analyzer options
+ * @param {StatsCompilation} bundleStats bundle stats
+ * @param {string | null} bundleDir bundle dir
+ * @returns {ChartData | null} chart data
+ */
+function getChartData(analyzerOpts, bundleStats, bundleDir) {
+  /** @type {ChartData | undefined | null} */
   let chartData;
   const { logger } = analyzerOpts;
 
   try {
-    chartData = analyzer.getViewerData(...args, analyzerOpts);
+    chartData = analyzer.getViewerData(bundleStats, bundleDir, analyzerOpts);
   } catch (err) {
     logger.error(`Couldn't analyze webpack bundle:\n${err}`);
-    logger.debug(err.stack);
+    logger.debug(/** @type {Error} */ (err).stack);
     chartData = null;
   }
 
@@ -67,6 +101,27 @@ function getChartData(analyzerOpts, ...args) {
   return chartData;
 }
 
+/**
+ * @typedef {object} ServerOptions
+ * @property {number} port port
+ * @property {string} host host
+ * @property {boolean} openBrowser true when need to open browser, otherwise false
+ * @property {string | null} bundleDir bundle dir
+ * @property {Logger} logger logger
+ * @property {Sizes} defaultSizes default sizes
+ * @property {CompressionAlgorithm} compressionAlgorithm compression algorithm
+ * @property {ExcludeAssets | null} excludeAssets exclude assets
+ * @property {ReportTitle} reportTitle report title
+ * @property {AnalyzerUrl} analyzerUrl analyzer url
+ */
+
+/** @typedef {{ ws: WebSocketServer, http: Server, updateChartData: (bundleStats: StatsCompilation) => void }} ViewerServerObj */
+
+/**
+ * @param {StatsCompilation} bundleStats bundle stats
+ * @param {ServerOptions} opts options
+ * @returns {Promise<ViewerServerObj>} server
+ */
 async function startServer(bundleStats, opts) {
   const {
     port = 8888,
@@ -84,21 +139,23 @@ async function startServer(bundleStats, opts) {
   const analyzerOpts = { logger, excludeAssets, compressionAlgorithm };
 
   let chartData = getChartData(analyzerOpts, bundleStats, bundleDir);
-  const entrypoints = getEntrypoints(bundleStats);
 
-  if (!chartData) return;
+  if (!chartData) {
+    throw new Error("Can't get chart data");
+  }
 
   const sirvMiddleware = sirv(`${projectRoot}/public`, {
     // disables caching and traverse the file system on every request
     dev: true,
   });
 
+  const entrypoints = getEntrypoints(bundleStats);
   const server = http.createServer((req, res) => {
     if (req.method === "GET" && req.url === "/") {
       const html = renderViewer({
         mode: "server",
         title: resolveTitle(reportTitle),
-        chartData,
+        chartData: /** @type {ChartData} */ (chartData),
         entrypoints,
         defaultSizes: resolveDefaultSizes(defaultSizes, compressionAlgorithm),
         compressionAlgorithm,
@@ -111,38 +168,46 @@ async function startServer(bundleStats, opts) {
     }
   });
 
-  await new Promise((resolve) => {
-    server.listen(port, host, () => {
-      resolve();
+  await new Promise(
+    /**
+     * @param {(value: void) => void} resolve resolve
+     */
+    (resolve) => {
+      server.listen(port, host, () => {
+        resolve();
 
-      const url = analyzerUrl({
-        listenPort: port,
-        listenHost: host,
-        boundAddress: server.address(),
+        const url = analyzerUrl({
+          listenPort: port,
+          listenHost: host,
+          boundAddress: server.address(),
+        });
+
+        logger.info(
+          `${bold("Webpack Bundle Analyzer")} is started at ${bold(url)}\n` +
+            `Use ${bold("Ctrl+C")} to close it`,
+        );
+
+        if (openBrowser) {
+          open(url, logger);
+        }
       });
-
-      logger.info(
-        `${bold("Webpack Bundle Analyzer")} is started at ${bold(url)}\n` +
-          `Use ${bold("Ctrl+C")} to close it`,
-      );
-
-      if (openBrowser) {
-        open(url, logger);
-      }
-    });
-  });
+    },
+  );
 
   const wss = new WebSocket.Server({ server });
 
   wss.on("connection", (ws) => {
     ws.on("error", (err) => {
       // Ignore network errors like `ECONNRESET`, `EPIPE`, etc.
-      if (err.errno) return;
+      if (/** @type {NodeJS.ErrnoException} */ (err).errno) return;
 
       logger.info(err.message);
     });
   });
 
+  /**
+   * @param {StatsCompilation} bundleStats bundle stats
+   */
   function updateChartData(bundleStats) {
     const newChartData = getChartData(analyzerOpts, bundleStats, bundleDir);
 
@@ -169,6 +234,23 @@ async function startServer(bundleStats, opts) {
   };
 }
 
+/**
+ * @typedef {object} GenerateReportOptions
+ * @property {boolean} openBrowser true when need to open browser, otherwise false
+ * @property {string} reportFilename report filename
+ * @property {ReportTitle} reportTitle report title
+ * @property {string | null} bundleDir bundle dir
+ * @property {Logger} logger logger
+ * @property {Sizes} defaultSizes default sizes
+ * @property {CompressionAlgorithm} compressionAlgorithm compression algorithm
+ * @property {ExcludeAssets} excludeAssets exclude assets
+ */
+
+/**
+ * @param {StatsCompilation} bundleStats bundle stats
+ * @param {GenerateReportOptions} opts opts
+ * @returns {Promise<void>}
+ */
 async function generateReport(bundleStats, opts) {
   const {
     openBrowser = true,
@@ -216,6 +298,20 @@ async function generateReport(bundleStats, opts) {
   }
 }
 
+/**
+ * @typedef {object} GenerateJSONReportOptions
+ * @property {string} reportFilename report filename
+ * @property {string | null} bundleDir bundle dir
+ * @property {Logger} logger logger
+ * @property {ExcludeAssets} excludeAssets exclude assets
+ * @property {CompressionAlgorithm} compressionAlgorithm compression algorithm
+ */
+
+/**
+ * @param {StatsCompilation} bundleStats bundle stats
+ * @param {GenerateJSONReportOptions} opts options
+ * @returns {Promise<void>}
+ */
 async function generateJSONReport(bundleStats, opts) {
   const {
     reportFilename,

@@ -4,10 +4,36 @@ import ConcatenatedModule from "./ConcatenatedModule.js";
 import Module from "./Module.js";
 import { getModulePathParts } from "./utils.js";
 
+/** @typedef {import("webpack").StatsModule} StatsModule */
+/** @typedef {import("../analyzer").AnalyzerOptions} AnalyzerOptions */
+/** @typedef {import("../analyzer").CompressionAlgorithm} CompressionAlgorithm */
+/** @typedef {import("./BaseFolder").BaseFolderChartData} BaseFolderChartData */
+
+/**
+ * @typedef {object} OwnFolderChartData
+ * @property {number} parsedSize parsed size
+ * @property {number | undefined} gzipSize gzip size
+ * @property {number | undefined} brotliSize brotli size
+ * @property {number | undefined} zstdSize zstd size
+ */
+
+/** @typedef {BaseFolderChartData & OwnFolderChartData} FolderChartData */
+
 export default class Folder extends BaseFolder {
+  /**
+   * @param {string} name name
+   * @param {AnalyzerOptions} opts options
+   */
   constructor(name, opts) {
     super(name);
+    /** @type {AnalyzerOptions} */
     this.opts = opts;
+    /** @type {number | undefined} */
+    this._gzipSize = undefined;
+    /** @type {number | undefined} */
+    this._brotliSize = undefined;
+    /** @type {number | undefined} */
+    this._zstdSize = undefined;
   }
 
   get parsedSize() {
@@ -32,8 +58,14 @@ export default class Folder extends BaseFolder {
       : undefined;
   }
 
+  /**
+   * @param {CompressionAlgorithm} compressionAlgorithm compression algorithm
+   * @returns {number | undefined} compressed size
+   */
   getCompressedSize(compressionAlgorithm) {
-    const key = `_${compressionAlgorithm}Size`;
+    const key =
+      /** @type {`_${CompressionAlgorithm}Size`} */
+      (`_${compressionAlgorithm}Size`);
 
     if (!Object.hasOwn(this, key)) {
       this[key] = this.src
@@ -44,6 +76,9 @@ export default class Folder extends BaseFolder {
     return this[key];
   }
 
+  /**
+   * @param {StatsModule} moduleData stats module
+   */
   addModule(moduleData) {
     const pathParts = getModulePathParts(moduleData);
 
@@ -55,6 +90,7 @@ export default class Folder extends BaseFolder {
       pathParts.slice(0, -1),
       pathParts[pathParts.length - 1],
     ];
+    /** @type {BaseFolder} */
     let currentFolder = this;
 
     for (const folderName of folders) {
@@ -82,6 +118,9 @@ export default class Folder extends BaseFolder {
     currentFolder.addChildModule(module);
   }
 
+  /**
+   * @returns {FolderChartData} chart data
+   */
   toChartData() {
     return {
       ...super.toChartData(),

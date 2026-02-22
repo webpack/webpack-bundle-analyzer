@@ -1,7 +1,13 @@
 const { createWriteStream } = require("node:fs");
 const { Readable } = require("node:stream");
 
+/** @typedef {import("./BundleAnalyzerPlugin").EXPECTED_ANY} EXPECTED_ANY */
+/** @typedef {import("webpack").StatsCompilation} StatsCompilation */
+
 class StatsSerializeStream extends Readable {
+  /**
+   * @param {StatsCompilation} stats stats
+   */
   constructor(stats) {
     super();
     this._indentLevel = 0;
@@ -27,6 +33,11 @@ class StatsSerializeStream extends Readable {
     }
   }
 
+  /**
+   * @param {EXPECTED_ANY} obj obj
+   * @returns {Generator<string, undefined, unknown>} stringified result
+   * @private
+   */
   *_stringify(obj) {
     if (
       typeof obj === "string" ||
@@ -74,6 +85,11 @@ class StatsSerializeStream extends Readable {
   }
 }
 
+/**
+ * @param {StatsCompilation} stats stats
+ * @param {string} filepath filepath file path
+ * @returns {Promise<void>}
+ */
 async function writeStats(stats, filepath) {
   return new Promise((resolve, reject) => {
     new StatsSerializeStream(stats)

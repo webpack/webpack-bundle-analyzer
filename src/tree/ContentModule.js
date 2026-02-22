@@ -1,8 +1,29 @@
 import Module from "./Module.js";
 
+/** @typedef {import("webpack").StatsModule} StatsModule */
+/** @typedef {import("./Node").default} NodeType */
+/** @typedef {import("./Module").ModuleChartData} ModuleChartData */
+/** @typedef {import("./Module").ModuleOptions} ModuleOptions */
+/** @typedef {import("./Module").SizeType} SizeType */
+/** @typedef {import("./ConcatenatedModule").default} ConcatenatedModule */
+
+/**
+ * @typedef {object} OwnContentModuleChartData
+ * @property {boolean} inaccurateSizes true when inaccurate sizes, otherwise false
+ */
+
+/** @typedef {ModuleChartData & OwnContentModuleChartData} ContentModuleChartData */
+
 export default class ContentModule extends Module {
-  constructor(name, data, ownerModule, parent) {
-    super(name, data, parent);
+  /**
+   * @param {string} name name
+   * @param {StatsModule} data data
+   * @param {ConcatenatedModule} ownerModule owner module
+   * @param {ModuleOptions} opts options
+   */
+  constructor(name, data, ownerModule, opts) {
+    super(name, data, undefined, opts);
+    /** @type {ConcatenatedModule} */
     this.ownerModule = ownerModule;
   }
 
@@ -22,6 +43,10 @@ export default class ContentModule extends Module {
     return this.getSize("zstdSize");
   }
 
+  /**
+   * @param {SizeType} sizeType size type
+   * @returns {number | undefined} size
+   */
   getSize(sizeType) {
     const ownerModuleSize = this.ownerModule[sizeType];
 
@@ -30,6 +55,9 @@ export default class ContentModule extends Module {
     }
   }
 
+  /**
+   * @returns {ContentModuleChartData} chart data
+   */
   toChartData() {
     return {
       ...super.toChartData(),

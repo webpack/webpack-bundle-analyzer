@@ -16,11 +16,20 @@ const COMPRESSION_ALGORITHMS = new Set(
   isZstdSupported ? ["gzip", "brotli", "zstd"] : ["gzip", "brotli"],
 );
 
+/**
+ * @param {string} str string
+ * @returns {string} break with string
+ */
 function br(str) {
   return `\n${" ".repeat(32)}${str}`;
 }
 
+/**
+ * @template T
+ * @returns {(val: T) => T[]} array
+ */
 function array() {
+  /** @type {T[]} */
   const arr = [];
   return (val) => {
     arr.push(val);
@@ -56,7 +65,7 @@ const program = commanderProgram
   .option(
     "-p, --port <n>",
     "Port that will be used in `server` mode to start HTTP server.",
-    8888,
+    "8888",
   )
   .option(
     "-r, --report <file>",
@@ -117,6 +126,9 @@ if (typeof reportTitle === "undefined") {
   reportTitle = utils.defaultTitle;
 }
 
+/**
+ * @param {string} error error message
+ */
 function showHelp(error) {
   if (error) console.log(`\n  ${magenta(error)}\n`);
   program.outputHelp();
@@ -152,6 +164,10 @@ bundleStatsFile = resolve(bundleStatsFile);
 
 if (!bundleDir) bundleDir = dirname(bundleStatsFile);
 
+/**
+ * @param {string} bundleStatsFile bundle stats file
+ * @returns {Promise<void>}
+ */
 async function parseAndAnalyse(bundleStatsFile) {
   try {
     const bundleStats = await analyzer.readStatsFromFile(bundleStatsFile);
@@ -192,7 +208,7 @@ async function parseAndAnalyse(bundleStatsFile) {
     logger.error(
       `Couldn't read webpack bundle stats from "${bundleStatsFile}":\n${err}`,
     );
-    logger.debug(err.stack);
+    logger.debug(/** @type {Error} */ (err).stack);
     process.exit(1);
   }
 }

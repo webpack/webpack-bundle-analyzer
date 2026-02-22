@@ -1,5 +1,12 @@
+/** @typedef {import("net").AddressInfo} AddressInfo */
+/** @typedef {import("webpack").StatsAsset} StatsAsset */
+
 const { inspect, types } = require("node:util");
 const opener = require("opener");
+
+/** @typedef {import("./BundleAnalyzerPlugin").ExcludeAssets} ExcludeAssets */
+/** @typedef {import("./BundleAnalyzerPlugin").AnalyzerUrl} AnalyzerUrl */
+/** @typedef {import("./Logger")} Logger */
 
 const MONTHS = [
   "Jan",
@@ -16,7 +23,12 @@ const MONTHS = [
   "Dec",
 ];
 
+/**
+ * @param {ExcludeAssets} excludePatterns exclude patterns
+ * @returns {(asset: string) => boolean} function to filter
+ */
 function createAssetsFilter(excludePatterns) {
+  /** @type {((asset: string) => void | boolean)[]} */
   const excludeFunctions = (
     Array.isArray(excludePatterns) ? excludePatterns : [excludePatterns]
   )
@@ -27,7 +39,13 @@ function createAssetsFilter(excludePatterns) {
       }
 
       if (types.isRegExp(pattern)) {
-        return (asset) => pattern.test(asset);
+        return (
+          /**
+           * @param {string} asset asset
+           * @returns {boolean} true when need to exclude, otherwise false
+           */
+          (asset) => pattern.test(asset)
+        );
       }
 
       if (typeof pattern !== "function") {
@@ -46,15 +64,16 @@ function createAssetsFilter(excludePatterns) {
   return () => true;
 }
 
+/** @type {AnalyzerUrl} */
 function defaultAnalyzerUrl(options) {
   const { listenHost, boundAddress } = options;
-  return `http://${listenHost}:${boundAddress.port}`;
+  return `http://${listenHost}:${/** @type {AddressInfo} */ (boundAddress).port}`;
 }
 
 /**
- * @desc get string of current time
- * format: dd/MMM HH:mm
- * */
+ * get string of current time, format: dd/MMM HH:mm
+ * @returns {string} default title
+ */
 function defaultTitle() {
   const time = new Date();
   const year = time.getFullYear();
@@ -70,6 +89,8 @@ function defaultTitle() {
 
 /**
  * Calls opener on a URI, but silently try / catches it.
+ * @param {string} uri URI
+ * @param {Logger} logger logger
  */
 function open(uri, logger) {
   try {

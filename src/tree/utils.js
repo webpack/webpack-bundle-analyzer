@@ -1,8 +1,21 @@
 const MULTI_MODULE_REGEXP = /^multi /u;
 
+/** @typedef {import("webpack").StatsModule} StatsModule */
+
+/**
+ * @param {StatsModule} moduleData moduleData
+ * @returns {string[] | null} module path parts
+ */
 export function getModulePathParts(moduleData) {
-  if (MULTI_MODULE_REGEXP.test(moduleData.identifier)) {
+  if (
+    moduleData.identifier &&
+    MULTI_MODULE_REGEXP.test(moduleData.identifier)
+  ) {
     return [moduleData.identifier];
+  }
+
+  if (!moduleData.name) {
+    return null;
   }
 
   const loaders = moduleData.name.split("!");

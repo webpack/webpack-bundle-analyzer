@@ -6,13 +6,26 @@ const { escape } = require("html-escaper");
 const projectRoot = path.resolve(__dirname, "..");
 const assetsRoot = path.join(projectRoot, "public");
 
+/** @typedef {import("./BundleAnalyzerPlugin").EXPECTED_ANY} EXPECTED_ANY */
+/** @typedef {import("./BundleAnalyzerPlugin").Mode} Mode */
+/** @typedef {import("./BundleAnalyzerPlugin").Sizes} Sizes */
+/** @typedef {import("./BundleAnalyzerPlugin").CompressionAlgorithm} CompressionAlgorithm */
+/** @typedef {import("./analyzer").ChartData} ChartData */
+/** @typedef {import("./viewer").Entrypoints} Entrypoints */
+
 /**
  * Escapes `<` characters in JSON to safely use it in `<script>` tag.
+ * @param {EXPECTED_ANY} json json
+ * @returns {string} escaped json
  */
 function escapeJson(json) {
   return JSON.stringify(json).replaceAll("<", "\\u003c");
 }
 
+/**
+ * @param {string} filename filename
+ * @returns {string} content the text content of the specified file.
+ */
 function getAssetContent(filename) {
   const assetPath = path.join(assetsRoot, filename);
 
@@ -23,12 +36,23 @@ function getAssetContent(filename) {
   return fs.readFileSync(assetPath, "utf8");
 }
 
+/**
+ * @template {EXPECTED_ANY} T
+ * @param {TemplateStringsArray} strings strings
+ * @param {...T} values values
+ * @returns {string} HTML
+ */
 function html(strings, ...values) {
   return strings
     .map((string, index) => `${string}${values[index] || ""}`)
     .join("");
 }
 
+/**
+ * @param {string} filename filename
+ * @param {Mode} mode mode
+ * @returns {string} script tag
+ */
 function getScript(filename, mode) {
   if (mode === "static") {
     return `<!-- ${escape(filename)} -->
@@ -38,6 +62,21 @@ function getScript(filename, mode) {
   return `<script src="${escape(filename)}"></script>`;
 }
 
+/**
+ * @typedef {object} ViewerOptions
+ * @property {string} title title
+ * @property {boolean} enableWebSocket true when need to enable, otherwise false
+ * @property {ChartData} chartData chart data
+ * @property {Entrypoints} entrypoints entrypoints
+ * @property {Sizes} defaultSizes default sizes
+ * @property {CompressionAlgorithm} compressionAlgorithm compression algorithm
+ * @property {Mode} mode mode
+ */
+
+/**
+ * @param {ViewerOptions} options viewer Options
+ * @returns {string} content for viewer
+ */
 function renderViewer({
   title,
   enableWebSocket,
@@ -46,7 +85,7 @@ function renderViewer({
   defaultSizes,
   compressionAlgorithm,
   mode,
-} = {}) {
+}) {
   return html`<!DOCTYPE html>
     <html>
       <head>
