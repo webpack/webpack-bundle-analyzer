@@ -1,5 +1,10 @@
 import { Component } from "preact";
 
+/**
+ * @param {object} obj1 obj1
+ * @param {object} obj2 obj2
+ * @returns {boolean} true when the same, otherwise false
+ */
 function isEqual(obj1, obj2) {
   if (obj1 === obj2) return true;
   const keys = Object.keys(obj1);

@@ -5,6 +5,10 @@ const BundleAnalyzerPlugin = require("../src/BundleAnalyzerPlugin");
 
 /* global it */
 
+/**
+ * @param {number} ms ms
+ * @returns {Promise<void>} wait
+ */
 function wait(ms) {
   return new Promise((resolve) => {
     setTimeout(resolve, ms);
@@ -16,6 +20,11 @@ const webpackVersions = {
   5: path.resolve(__dirname, "../node_modules/webpack"),
 };
 
+/**
+ * @param {import("webpack").Configuration} config configuration
+ * @param {string} version version
+ * @returns {Promise<void>}
+ */
 async function webpackCompile(config, version) {
   if (version === undefined || version === null) {
     throw new Error("Webpack version is not specified");
@@ -56,6 +65,10 @@ async function webpackCompile(config, version) {
   await wait(1);
 }
 
+/**
+ * @param {{ minify: boolean, multipleChunks: boolean, analyzerOpts: import("../src/BundleAnalyzerPlugin").Options }} opts options
+ * @returns {import("webpack").Configuration} configuration
+ */
 function makeWebpackConfig(opts = {}) {
   opts = {
     ...opts,
@@ -106,6 +119,10 @@ function makeWebpackConfig(opts = {}) {
   };
 }
 
+/**
+ * @param {("4", "5")[] | (() => "4" | "5")} versions versions
+ * @param {() => void} cb callback
+ */
 function forEachWebpackVersion(versions, cb) {
   const availableVersions = Object.keys(webpackVersions);
 
