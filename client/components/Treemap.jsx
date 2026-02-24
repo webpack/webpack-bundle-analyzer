@@ -3,10 +3,17 @@ import { Component } from "preact";
 import PropTypes from "prop-types";
 import { SizeType, ViewerDataType } from "./types.js";
 
+/**
+ * @param {Event} event event
+ */
 function preventDefault(event) {
   event.preventDefault();
 }
 
+/**
+ * @param {string} str string
+ * @returns {number} hash
+ */
 function hashCode(str) {
   let hash = 0;
   for (let i = 0; i < str.length; i++) {
@@ -133,8 +140,7 @@ export default class Treemap extends Component {
       },
       /**
        * Handle Foamtree's "group clicked" event
-       * @param {FoamtreeEvent} event - Foamtree event object
-       *  (see https://get.carrotsearch.com/foamtree/demo/api/index.html#event-details)
+       * @param {FoamtreeEvent} event foamtree event object (see https://get.carrotsearch.com/foamtree/demo/api/index.html#event-details)
        * @returns {void}
        */
       onGroupClick(event) {

@@ -4,9 +4,30 @@ import ConcatenatedModule from "./ConcatenatedModule.js";
 import Module from "./Module.js";
 import { getModulePathParts } from "./utils.js";
 
+/** @typedef {import("webpack").StatsModule} StatsModule */
+/** @typedef {import("../analyzer").AnalyzerOptions} AnalyzerOptions */
+/** @typedef {import("../analyzer").CompressionAlgorithm} CompressionAlgorithm */
+/** @typedef {import("./Module").SizeFields} SizeFields */
+/** @typedef {import("./BaseFolder").BaseFolderChartData} BaseFolderChartData */
+
+/**
+ * @typedef {object} OwnFolderChartData
+ * @property {number} parsedSize parsed size
+ * @property {number | undefined} gzipSize gzip size
+ * @property {number | undefined} brotliSize brotli size
+ * @property {number | undefined} zstdSize zstd size
+ */
+
+/** @typedef {BaseFolderChartData & OwnFolderChartData} FolderChartData */
+
 export default class Folder extends BaseFolder {
+  /**
+   * @param {string} name name
+   * @param {AnalyzerOptions} opts options
+   */
   constructor(name, opts) {
     super(name);
+    /** @type {AnalyzerOptions} */
     this.opts = opts;
   }
 
@@ -32,18 +53,28 @@ export default class Folder extends BaseFolder {
       : undefined;
   }
 
+  /**
+   * @param {CompressionAlgorithm} compressionAlgorithm compression algorithm
+   * @returns {number | undefined} compressed size
+   */
   getCompressedSize(compressionAlgorithm) {
-    const key = `_${compressionAlgorithm}Size`;
+    const key =
+      /** @type {`_${CompressionAlgorithm}Size`} */
+      (`_${compressionAlgorithm}Size`);
 
     if (!Object.hasOwn(this, key)) {
-      this[key] = this.src
+      /** @type {Folder & SizeFields} */
+      (this)[key] = this.src
         ? getCompressedSize(compressionAlgorithm, this.src)
         : 0;
     }
 
-    return this[key];
+    return /** @type {Folder & SizeFields} */ (this)[key];
   }
 
+  /**
+   * @param {StatsModule} moduleData stats module
+   */
   addModule(moduleData) {
     const pathParts = getModulePathParts(moduleData);
 
@@ -55,6 +86,7 @@ export default class Folder extends BaseFolder {
       pathParts.slice(0, -1),
       pathParts[pathParts.length - 1],
     ];
+    /** @type {BaseFolder} */
     let currentFolder = this;
 
     for (const folderName of folders) {
@@ -82,6 +114,9 @@ export default class Folder extends BaseFolder {
     currentFolder.addChildModule(module);
   }
 
+  /**
+   * @returns {FolderChartData} chart data
+   */
   toChartData() {
     return {
       ...super.toChartData(),

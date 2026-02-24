@@ -18,6 +18,11 @@ import Switcher from "./Switcher.jsx";
 import Tooltip from "./Tooltip.jsx";
 import Treemap from "./Treemap.jsx";
 
+/** @typedef {"statSize" | "parsedSize" | "gzipSize" | "brotliSize" | "zstdSize"} PropSize */
+
+/**
+ * @returns {{ label: string, prop: PropSize }[]} sizes
+ */
 function getSizeSwitchItems() {
   const items = [
     { label: "Stat", prop: "statSize" },

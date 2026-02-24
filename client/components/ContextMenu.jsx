@@ -107,7 +107,7 @@ export default class ContextMenu extends PureComponent {
   /**
    * Handle document-wide `mousedown` events to detect clicks
    * outside the context menu.
-   * @param {MouseEvent} event - DOM mouse event object
+   * @param {MouseEvent} event DOM mouse event object
    * @returns {void}
    */
   handleDocumentMousedown = (event) => {

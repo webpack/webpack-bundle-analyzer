@@ -1,10 +1,44 @@
 import { getCompressedSize } from "../sizeUtils.js";
 import Node from "./Node.js";
 
+/** @typedef {import("webpack").StatsModule} StatsModule */
+/** @typedef {import("../sizeUtils").Algorithm} CompressionAlgorithm */
+
+/** @typedef {{ compressionAlgorithm: CompressionAlgorithm }} ModuleOptions */
+
+/** @typedef {"parsedSize" | "gzipSize" | "brotliSize" | "zstdSize"} SizeType */
+
+/**
+ * @typedef {object} ModuleChartData
+ * @property {string | number | undefined} id id
+ * @property {string} label label
+ * @property {string} path path
+ * @property {number | undefined} statSize stat size
+ * @property {number | undefined} parsedSize parsed size
+ * @property {number | undefined} gzipSize gzip size
+ * @property {number | undefined} brotliSize brotli size
+ * @property {number | undefined} zstdSize zstd size
+ */
+
+/**
+ * @typedef {object} SizeFields
+ * @property {number=} _gzipSize gzip size
+ * @property {number=} _brotliSize brotli size
+ * @property {number=} _zstdSize zstd size
+ */
+
 export default class Module extends Node {
+  /**
+   * @param {string} name name
+   * @param {StatsModule} data data
+   * @param {Node | undefined} parent parent
+   * @param {ModuleOptions} opts options
+   */
   constructor(name, data, parent, opts) {
     super(name, parent);
+    /** @type {StatsModule} */
     this.data = data;
+    /** @type {ModuleOptions} */
     this.opts = opts;
   }
 
@@ -14,13 +48,17 @@ export default class Module extends Node {
 
   set src(value) {
     this.data.parsedSrc = value;
-    delete this._gzipSize;
-    delete this._brotliSize;
-    delete this._zstdSize;
+
+    delete (/** @type {Module & SizeFields} */ (this)._gzipSize);
+    delete (/** @type {Module & SizeFields} */ (this)._brotliSize);
+    delete (/** @type {Module & SizeFields} */ (this)._zstdSize);
   }
 
+  /**
+   * @returns {number} size
+   */
   get size() {
-    return this.data.size;
+    return /** @type {number} */ (this.data.size);
   }
 
   set size(value) {
@@ -65,20 +103,31 @@ export default class Module extends Node {
       : undefined;
   }
 
+  /**
+   * @param {CompressionAlgorithm} compressionAlgorithm compression algorithm
+   * @returns {number | undefined} compressed size
+   */
   getCompressedSize(compressionAlgorithm) {
-    const key = `_${compressionAlgorithm}Size`;
+    const key =
+      /** @type {`_${CompressionAlgorithm}Size`} */
+      (`_${compressionAlgorithm}Size`);
     if (!(key in this)) {
-      this[key] = this.src
+      /** @type {Module & SizeFields} */
+      (this)[key] = this.src
         ? getCompressedSize(compressionAlgorithm, this.src)
         : undefined;
     }
 
-    return this[key];
+    return /** @type {Module & SizeFields} */ (this)[key];
   }
 
+  /**
+   * @param {StatsModule} data data
+   */
   mergeData(data) {
     if (data.size) {
-      this.size += data.size;
+      /** @type {number} */
+      (this.size) += data.size;
     }
 
     if (data.parsedSrc) {
@@ -86,6 +135,9 @@ export default class Module extends Node {
     }
   }
 
+  /**
+   * @returns {ModuleChartData} module chart data
+   */
   toChartData() {
     return {
       id: this.data.id,
