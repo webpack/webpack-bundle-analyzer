@@ -107,6 +107,7 @@ function getChartData(analyzerOpts, bundleStats, bundleDir) {
  * @property {string} host host
  * @property {boolean} openBrowser true when need to open browser, otherwise false
  * @property {string | null} bundleDir bundle dir
+ * @property {import("webpack").OutputFileSystem | null=} outputFs filesystem for reading bundle files
  * @property {Logger} logger logger
  * @property {Sizes} defaultSizes default sizes
  * @property {CompressionAlgorithm} compressionAlgorithm compression algorithm
@@ -128,6 +129,7 @@ async function startServer(bundleStats, opts) {
     host = "127.0.0.1",
     openBrowser = true,
     bundleDir = null,
+    outputFs,
     logger = new Logger(),
     defaultSizes = "parsed",
     compressionAlgorithm,
@@ -136,7 +138,7 @@ async function startServer(bundleStats, opts) {
     analyzerUrl,
   } = opts || {};
 
-  const analyzerOpts = { logger, excludeAssets, compressionAlgorithm };
+  const analyzerOpts = { logger, excludeAssets, compressionAlgorithm, outputFs };
 
   let chartData = getChartData(analyzerOpts, bundleStats, bundleDir);
 
@@ -240,6 +242,7 @@ async function startServer(bundleStats, opts) {
  * @property {string} reportFilename report filename
  * @property {ReportTitle} reportTitle report title
  * @property {string | null} bundleDir bundle dir
+ * @property {import("webpack").OutputFileSystem | null=} outputFs filesystem for reading bundle files
  * @property {Logger} logger logger
  * @property {Sizes} defaultSizes default sizes
  * @property {CompressionAlgorithm} compressionAlgorithm compression algorithm
@@ -257,6 +260,7 @@ async function generateReport(bundleStats, opts) {
     reportFilename,
     reportTitle,
     bundleDir = null,
+    outputFs,
     logger = new Logger(),
     defaultSizes = "parsed",
     compressionAlgorithm,
@@ -264,7 +268,7 @@ async function generateReport(bundleStats, opts) {
   } = opts || {};
 
   const chartData = getChartData(
-    { logger, excludeAssets, compressionAlgorithm },
+    { logger, excludeAssets, compressionAlgorithm, outputFs },
     bundleStats,
     bundleDir,
   );
@@ -302,6 +306,7 @@ async function generateReport(bundleStats, opts) {
  * @typedef {object} GenerateJSONReportOptions
  * @property {string} reportFilename report filename
  * @property {string | null} bundleDir bundle dir
+ * @property {import("webpack").OutputFileSystem | null=} outputFs filesystem for reading bundle files
  * @property {Logger} logger logger
  * @property {ExcludeAssets} excludeAssets exclude assets
  * @property {CompressionAlgorithm} compressionAlgorithm compression algorithm
@@ -316,13 +321,14 @@ async function generateJSONReport(bundleStats, opts) {
   const {
     reportFilename,
     bundleDir = null,
+    outputFs,
     logger = new Logger(),
     excludeAssets = null,
     compressionAlgorithm,
   } = opts || {};
 
   const chartData = getChartData(
-    { logger, excludeAssets, compressionAlgorithm },
+    { logger, excludeAssets, compressionAlgorithm, outputFs },
     bundleStats,
     bundleDir,
   );

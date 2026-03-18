@@ -323,13 +323,13 @@ function isAsyncWebWorkerChunkExpression(node) {
 
 /**
  * @param {string} bundlePath bundle path
- * @param {{ sourceType: "script" | "module" }} opts options
+ * @param {{ sourceType: "script" | "module", fs?: import("webpack").OutputFileSystem }} opts options
  * @returns {{ modules: Modules, src: string, runtimeSrc: string }} parsed result
  */
 module.exports.parseBundle = function parseBundle(bundlePath, opts) {
-  const { sourceType = "script" } = opts || {};
+  const { sourceType = "script", fs: bundleFs = fs } = opts || {};
 
-  const content = fs.readFileSync(bundlePath, "utf8");
+  const content = /** @type {string} */ (bundleFs.readFileSync(bundlePath, "utf8"));
   const ast = acorn.parse(content, {
     sourceType,
     ecmaVersion: "latest",
