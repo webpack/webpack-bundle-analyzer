@@ -1,20 +1,5 @@
 # Changelog
 
-> **Tags:**
-> - [Breaking Change]
-> - [New Feature]
-> - [Improvement]
-> - [Bug Fix]
-> - [Internal]
-> - [Documentation]
-
-_Note: Gaps between patch versions are faulty, broken or test releases._
-
-## UNRELEASED
-
-* **Bug Fix**
-  * Fix a race condition in `writeStats` that could lead to incorrect content in `stats.json` ([#711](https://github.com/webpack/webpack-bundle-analyzer/pull/711) by [@colinaaa](https://github.com/colinaaa))
-
 ## 5.2.0
 
 * **New Feature**
