@@ -181,6 +181,7 @@ class BundleAnalyzerPlugin {
         reportTitle: this.opts.reportTitle,
         compressionAlgorithm: this.opts.compressionAlgorithm,
         bundleDir: this.getBundleDirFromCompiler(),
+        outputFs: this.getOutputFsFromCompiler(),
         logger: this.logger,
         defaultSizes: this.opts.defaultSizes,
         excludeAssets: this.opts.excludeAssets,
@@ -202,6 +203,7 @@ class BundleAnalyzerPlugin {
       ),
       compressionAlgorithm: this.opts.compressionAlgorithm,
       bundleDir: this.getBundleDirFromCompiler(),
+      outputFs: this.getOutputFsFromCompiler(),
       logger: this.logger,
       excludeAssets: this.opts.excludeAssets,
     });
@@ -222,6 +224,7 @@ class BundleAnalyzerPlugin {
       reportTitle: this.opts.reportTitle,
       compressionAlgorithm: this.opts.compressionAlgorithm,
       bundleDir: this.getBundleDirFromCompiler(),
+      outputFs: this.getOutputFsFromCompiler(),
       logger: this.logger,
       defaultSizes: this.opts.defaultSizes,
       excludeAssets: this.opts.excludeAssets,
@@ -229,23 +232,26 @@ class BundleAnalyzerPlugin {
   }
 
   getBundleDirFromCompiler() {
-    const outputFileSystemConstructor =
-      /** @type {OutputFileSystem} */
-      (/** @type {Compiler} */ (this.compiler).outputFileSystem).constructor;
+    return /** @type {Compiler} */ (this.compiler).outputPath;
+  }
 
-    if (typeof outputFileSystemConstructor === "undefined") {
-      return /** @type {Compiler} */ (this.compiler).outputPath;
+  /**
+   * Returns the compiler's outputFileSystem if it differs from the native fs
+   * and supports reading files (e.g. memfs used by webpack-dev-server),
+   * otherwise returns null to fall back to the native fs.
+   *
+   * @returns {OutputFileSystem | null}
+   */
+  getOutputFsFromCompiler() {
+    const outputFs = /** @type {Compiler} */ (this.compiler).outputFileSystem;
+    if (
+      outputFs &&
+      outputFs !== fs &&
+      typeof /** @type {EXPECTED_ANY} */ (outputFs).readFileSync === "function"
+    ) {
+      return /** @type {OutputFileSystem} */ (outputFs);
     }
-    switch (outputFileSystemConstructor.name) {
-      case "MemoryFileSystem":
-        return null;
-      // Detect AsyncMFS used by Nuxt 2.5 that replaces webpack's MFS during development
-      // Related: #274
-      case "AsyncMFS":
-        return null;
-      default:
-        return /** @type {Compiler} */ (this.compiler).outputPath;
-    }
+    return null;
   }
 }
 
