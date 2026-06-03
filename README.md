@@ -70,6 +70,26 @@ new BundleAnalyzerPlugin(options?: object)
 |    **`excludeAssets`**     |                                                  `{null\|pattern\|pattern[]}` where `pattern` equals to `{String\|RegExp\|function}`                                                   | Default: `null`. Patterns that will be used to match against asset names to exclude them from the report. If pattern is a string it will be converted to RegExp via `new RegExp(str)`. If pattern is a function it should have the following signature `(assetName: string) => boolean` and should return `true` to _exclude_ matching asset. If multiple patterns are provided asset should match at least one of them to be excluded. |
 |       **`logLevel`**       |                                                                       One of: `info`, `warn`, `error`, `silent`                                                                        | Default: `info`. Used to control how much details the plugin outputs.                                                                                                                                                                                                                                                                                                                                                                   |
 
+### Absolute output paths
+
+`reportFilename` and `statsFilename` can be absolute paths. Use absolute paths when you want the generated report or stats file to be written outside webpack's `output.path`. Relative paths are resolved against the bundle output directory.
+
+```js
+const path = require("node:path");
+const { BundleAnalyzerPlugin } = require("webpack-bundle-analyzer");
+
+module.exports = {
+  plugins: [
+    new BundleAnalyzerPlugin({
+      analyzerMode: "static",
+      reportFilename: path.resolve(__dirname, "reports/report.html"),
+      generateStatsFile: true,
+      statsFilename: path.resolve(__dirname, "reports/stats.json"),
+    }),
+  ],
+};
+```
+
 <h2 align="center">Usage (as a CLI utility)</h2>
 
 You can analyze an existing bundle if you have a webpack stats JSON file.
