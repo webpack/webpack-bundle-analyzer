@@ -230,6 +230,7 @@ function getViewerData(bundleStats, bundleDir, opts) {
   ) {
     const { children } = bundleStats;
     [bundleStats] = bundleStats.children;
+    bundleStats.assets ||= [];
     // Sometimes if there are additional child chunks produced add them as child assets,
     // leave the 1st one as that is considered the 'root' asset.
     for (let i = 1; i < children.length; i++) {
