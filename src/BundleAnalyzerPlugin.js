@@ -30,6 +30,32 @@ const viewer = require("./viewer");
 /** @typedef {string | (() => string)} ReportTitle */
 /** @typedef {(options: { listenHost: string, listenPort: number, boundAddress: string | AddressInfo | null }) => string} AnalyzerUrl */
 
+/** @type {StatsOptions} */
+const analyzerStatsOptions = {
+  all: false,
+  assets: true,
+  cachedAssets: true,
+  cachedModules: true,
+  cached: true,
+  children: true,
+  chunks: true,
+  chunkModules: true,
+  chunkModulesSpace: Number.POSITIVE_INFINITY,
+  depth: true,
+  entrypoints: true,
+  errors: false,
+  errorsCount: false,
+  ids: true,
+  modules: true,
+  modulesSpace: Number.POSITIVE_INFINITY,
+  nestedModules: true,
+  nestedModulesSpace: Number.POSITIVE_INFINITY,
+  runtimeModules: false,
+  source: false,
+  warnings: false,
+  warningsCount: false,
+};
+
 /**
  * @typedef {object} Options
  * @property {Mode=} analyzerMode analyzer mode
@@ -111,11 +137,17 @@ class BundleAnalyzerPlugin {
       }
 
       if (this.opts.analyzerMode === "server") {
-        actions.push(() => this.startAnalyzerServer(stats.toJson()));
+        actions.push(() =>
+          this.startAnalyzerServer(stats.toJson(analyzerStatsOptions)),
+        );
       } else if (this.opts.analyzerMode === "static") {
-        actions.push(() => this.generateStaticReport(stats.toJson()));
+        actions.push(() =>
+          this.generateStaticReport(stats.toJson(analyzerStatsOptions)),
+        );
       } else if (this.opts.analyzerMode === "json") {
-        actions.push(() => this.generateJSONReport(stats.toJson()));
+        actions.push(() =>
+          this.generateJSONReport(stats.toJson(analyzerStatsOptions)),
+        );
       }
 
       if (actions.length) {
