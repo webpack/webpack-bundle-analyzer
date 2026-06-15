@@ -2,4 +2,4 @@
 "webpack-bundle-analyzer": patch
 ---
 
-Ensure analyzer modes request the stats fields needed for bundle analysis.
+Explicitly define `stats.toJson()` options for bundle analysis to support Rspack 2.0 with minimal code changes needed.
