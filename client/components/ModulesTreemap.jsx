@@ -331,7 +331,7 @@ class ModulesTreemap extends Component {
   };
 
   handleSelectedChunksChange = (selectedChunks) => {
-    store.setSelectedSize(selectedChunks);
+    store.setSelectedChunks(selectedChunks);
   };
 
   handleMouseLeaveTreemap = () => {

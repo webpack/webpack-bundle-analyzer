@@ -125,6 +125,59 @@ describe("Analyzer", () => {
     });
   });
 
+  it("should update the treemap when a chunk is deselected", async () => {
+    generateReportFrom("with-worker-loader-dynamic-import/stats.json");
+    const page = await browser.newPage();
+    await page.goto(
+      url.pathToFileURL(path.resolve(__dirname, "./output/report.html")),
+    );
+
+    const { chunkLabel, initialTreemapChunks } = await page.evaluate(() => {
+      const modulesTreemap = document
+        .querySelector("#app")
+        .__k.__k.find(
+          (vnode) => vnode.__c && vnode.__c.handleSelectedChunksChange,
+        ).__c;
+
+      return {
+        chunkLabel: globalThis.chartData[0].label,
+        initialTreemapChunks: modulesTreemap.treemap.props.data.map(
+          (chunk) => chunk.label,
+        ),
+      };
+    });
+
+    const checkboxChecked = await page.evaluate((label) => {
+      const checkboxLabel = [...document.querySelectorAll("label")].find(
+        (node) => node.textContent.trim().startsWith(`${label} (`),
+      );
+      const checkbox = checkboxLabel.querySelector('input[type="checkbox"]');
+      checkbox.click();
+      return checkbox.checked;
+    }, chunkLabel);
+
+    await page.evaluate(
+      () =>
+        new Promise((resolve) => {
+          setTimeout(resolve);
+        }),
+    );
+
+    const updatedTreemapChunks = await page.evaluate(() => {
+      const modulesTreemap = document
+        .querySelector("#app")
+        .__k.__k.find(
+          (vnode) => vnode.__c && vnode.__c.handleSelectedChunksChange,
+        ).__c;
+
+      return modulesTreemap.treemap.props.data.map((chunk) => chunk.label);
+    });
+
+    expect(checkboxChecked).toBe(false);
+    expect(initialTreemapChunks).toContain(chunkLabel);
+    expect(updatedTreemapChunks).not.toContain(chunkLabel);
+  });
+
   it("should support stats files with modules inside `chunks` array", async () => {
     generateReportFrom("with-modules-in-chunks/stats.json");
     const chartData = await getChartData();
