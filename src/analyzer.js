@@ -155,8 +155,8 @@ function getModulesByChunk(modules) {
   /** @type {Map<string | number, IndexedModule[]>} */
   const modulesByChunk = new Map();
 
-  for (const [index, module] of modules.entries()) {
-    for (const chunk of module.chunks || []) {
+  for (const [index, statsModule] of modules.entries()) {
+    for (const chunk of statsModule.chunks || []) {
       let chunkModules = modulesByChunk.get(chunk);
 
       if (!chunkModules) {
@@ -164,7 +164,7 @@ function getModulesByChunk(modules) {
         modulesByChunk.set(chunk, chunkModules);
       }
 
-      chunkModules.push({ module, index });
+      chunkModules.push({ module: statsModule, index });
     }
   }
 
