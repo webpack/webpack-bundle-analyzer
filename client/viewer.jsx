@@ -5,6 +5,10 @@ import { store } from "./store.js";
 
 import "./viewer.css";
 
+if (globalThis.webpackBundleAnalyzerTest) {
+  globalThis.webpackBundleAnalyzerStore = store;
+}
+
 // Initializing WebSocket for live treemap updates
 let ws;
 try {

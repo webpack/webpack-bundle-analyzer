@@ -129,24 +129,20 @@ describe("Analyzer", () => {
     generateReportFrom("with-worker-loader-dynamic-import/stats.json");
     const page = await browser.newPage();
     try {
+      await page.evaluateOnNewDocument(() => {
+        globalThis.webpackBundleAnalyzerTest = true;
+      });
       await page.goto(
         url.pathToFileURL(path.resolve(__dirname, "./output/report.html")),
       );
 
-      const { chunkLabel, initialTreemapChunks } = await page.evaluate(() => {
-        const modulesTreemap = document
-          .querySelector("#app")
-          .__k.__k.find(
-            (vnode) => vnode.__c && vnode.__c.handleSelectedChunksChange,
-          ).__c;
-
-        return {
-          chunkLabel: globalThis.chartData[0].label,
-          initialTreemapChunks: modulesTreemap.treemap.props.data.map(
+      const { chunkLabel, initialTreemapChunks } = await page.evaluate(() => ({
+        chunkLabel: globalThis.chartData[0].label,
+        initialTreemapChunks:
+          globalThis.webpackBundleAnalyzerStore.visibleChunks.map(
             (chunk) => chunk.label,
           ),
-        };
-      });
+      }));
 
       const checkboxChecked = await page.evaluate((label) => {
         const checkboxLabel = [...document.querySelectorAll("label")].find(
@@ -158,34 +154,28 @@ describe("Analyzer", () => {
       }, chunkLabel);
 
       await page.waitForFunction(
-        (label) => {
-          const modulesTreemap = document
-            .querySelector("#app")
-            .__k.__k.find(
-              (vnode) => vnode.__c && vnode.__c.handleSelectedChunksChange,
-            ).__c;
-
-          return !modulesTreemap.treemap.props.data.some(
+        (label) =>
+          !globalThis.webpackBundleAnalyzerStore.visibleChunks.some(
             (chunk) => chunk.label === label,
-          );
-        },
+          ),
         {},
         chunkLabel,
       );
 
-      const updatedTreemapChunks = await page.evaluate(() => {
-        const modulesTreemap = document
-          .querySelector("#app")
-          .__k.__k.find(
-            (vnode) => vnode.__c && vnode.__c.handleSelectedChunksChange,
-          ).__c;
-
-        return modulesTreemap.treemap.props.data.map((chunk) => chunk.label);
-      });
+      const { selectedChunks, visibleChunks } = await page.evaluate(() => ({
+        selectedChunks:
+          globalThis.webpackBundleAnalyzerStore.selectedChunks.map(
+            (chunk) => chunk.label,
+          ),
+        visibleChunks: globalThis.webpackBundleAnalyzerStore.visibleChunks.map(
+          (chunk) => chunk.label,
+        ),
+      }));
 
       expect(checkboxChecked).toBe(false);
       expect(initialTreemapChunks).toContain(chunkLabel);
-      expect(updatedTreemapChunks).not.toContain(chunkLabel);
+      expect(selectedChunks).not.toContain(chunkLabel);
+      expect(visibleChunks).not.toContain(chunkLabel);
     } finally {
       await page.close();
     }
