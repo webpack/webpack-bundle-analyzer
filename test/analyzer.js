@@ -3,6 +3,7 @@ const fs = require("node:fs");
 const path = require("node:path");
 const url = require("node:url");
 const puppeteer = require("puppeteer");
+const { getViewerData } = require("../lib/analyzer");
 const { isZstdSupported } = require("../src/sizeUtils");
 
 let browser;
@@ -131,6 +132,74 @@ describe("Analyzer", () => {
     expect(chartData).toMatchObject(
       require("./stats/with-modules-in-chunks/expected-chart-data"),
     );
+  });
+
+  it("should preserve module order and deduplicate modules for multi-chunk assets", () => {
+    const chartData = getViewerData(
+      {
+        assets: [
+          {
+            name: "multi-chunk.js",
+            size: 5,
+            chunks: ["string-chunk", 1],
+          },
+        ],
+        chunks: [],
+        entrypoints: {},
+        modules: [
+          {
+            id: 1,
+            identifier: "./numeric.js",
+            name: "./numeric.js",
+            size: 1,
+            chunks: [1],
+          },
+          {
+            id: 2,
+            identifier: "./shared.js",
+            name: "./shared.js",
+            size: 1,
+            chunks: [1, "string-chunk"],
+          },
+          {
+            id: 3,
+            identifier: "./string.js",
+            name: "./string.js",
+            size: 1,
+            chunks: ["string-chunk"],
+          },
+          {
+            id: 4,
+            identifier: "./unchunked.js",
+            name: "./unchunked.js",
+            size: 1,
+            chunks: [],
+          },
+          {
+            id: 1,
+            identifier: "./duplicate-id.js",
+            name: "./duplicate-id.js",
+            size: 1,
+            chunks: ["string-chunk"],
+          },
+          {
+            id: 5,
+            identifier: "webpack/runtime/test",
+            name: "webpack/runtime/test",
+            moduleType: "runtime",
+            size: 1,
+            chunks: [1],
+          },
+        ],
+      },
+      null,
+    );
+
+    expect(chartData[0].groups.map((group) => group.label)).toEqual([
+      "numeric.js",
+      "shared.js",
+      "string.js",
+    ]);
   });
 
   it("should record accurate byte lengths for sources with special chars", async () => {
