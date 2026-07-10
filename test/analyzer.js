@@ -3,7 +3,7 @@ const fs = require("node:fs");
 const path = require("node:path");
 const url = require("node:url");
 const puppeteer = require("puppeteer");
-const { getViewerData } = require("../lib/analyzer");
+const { getViewerData } = require("../src/analyzer");
 const { isZstdSupported } = require("../src/sizeUtils");
 
 let browser;
