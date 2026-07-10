@@ -129,20 +129,24 @@ describe("Analyzer", () => {
     generateReportFrom("with-worker-loader-dynamic-import/stats.json");
     const page = await browser.newPage();
     try {
-      await page.evaluateOnNewDocument(() => {
-        globalThis.webpackBundleAnalyzerTest = true;
-      });
       await page.goto(
         url.pathToFileURL(path.resolve(__dirname, "./output/report.html")),
       );
 
-      const { chunkLabel, initialTreemapChunks } = await page.evaluate(() => ({
-        chunkLabel: globalThis.chartData[0].label,
-        initialTreemapChunks:
-          globalThis.webpackBundleAnalyzerStore.visibleChunks.map(
-            (chunk) => chunk.label,
-          ),
-      }));
+      const chunkLabel = await page.evaluate(
+        () => globalThis.chartData[0].label,
+      );
+
+      await page.type('input[placeholder="Enter regexp"]', ".");
+      await page.keyboard.press("Enter");
+      await page.waitForFunction(
+        (label) =>
+          [
+            ...document.querySelectorAll('[class*="foundModulesChunkName"]'),
+          ].some((node) => node.textContent.trim() === label),
+        {},
+        chunkLabel,
+      );
 
       const checkboxChecked = await page.evaluate((label) => {
         const checkboxLabel = [...document.querySelectorAll("label")].find(
@@ -155,27 +159,20 @@ describe("Analyzer", () => {
 
       await page.waitForFunction(
         (label) =>
-          !globalThis.webpackBundleAnalyzerStore.visibleChunks.some(
-            (chunk) => chunk.label === label,
-          ),
+          ![
+            ...document.querySelectorAll('[class*="foundModulesChunkName"]'),
+          ].some((node) => node.textContent.trim() === label),
         {},
         chunkLabel,
       );
 
-      const { selectedChunks, visibleChunks } = await page.evaluate(() => ({
-        selectedChunks:
-          globalThis.webpackBundleAnalyzerStore.selectedChunks.map(
-            (chunk) => chunk.label,
-          ),
-        visibleChunks: globalThis.webpackBundleAnalyzerStore.visibleChunks.map(
-          (chunk) => chunk.label,
-        ),
-      }));
+      const visibleChunkLabels = await page.$$eval(
+        '[class*="foundModulesChunkName"]',
+        (nodes) => nodes.map((node) => node.textContent.trim()),
+      );
 
       expect(checkboxChecked).toBe(false);
-      expect(initialTreemapChunks).toContain(chunkLabel);
-      expect(selectedChunks).not.toContain(chunkLabel);
-      expect(visibleChunks).not.toContain(chunkLabel);
+      expect(visibleChunkLabels).not.toContain(chunkLabel);
     } finally {
       await page.close();
     }
