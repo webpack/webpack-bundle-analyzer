@@ -143,6 +143,54 @@ function getBundleModules(bundleStats) {
   });
 }
 
+/**
+ * @typedef {{ module: StatsModule, index: number }} IndexedModule
+ */
+
+/**
+ * @param {StatsModule[]} modules modules
+ * @returns {Map<string | number, IndexedModule[]>} modules indexed by chunk ID
+ */
+function getModulesByChunk(modules) {
+  /** @type {Map<string | number, IndexedModule[]>} */
+  const modulesByChunk = new Map();
+
+  for (const [index, statsModule] of modules.entries()) {
+    for (const chunk of statsModule.chunks || []) {
+      let chunkModules = modulesByChunk.get(chunk);
+
+      if (!chunkModules) {
+        chunkModules = [];
+        modulesByChunk.set(chunk, chunkModules);
+      }
+
+      chunkModules.push({ module: statsModule, index });
+    }
+  }
+
+  return modulesByChunk;
+}
+
+/**
+ * @param {StatsAsset} statsAsset stats asset
+ * @param {Map<string | number, IndexedModule[]>} modulesByChunk modules indexed by chunk ID
+ * @returns {StatsModule[]} modules belonging to the asset in their original order
+ */
+function getAssetModulesByChunk(statsAsset, modulesByChunk) {
+  /** @type {Map<StatsModule, IndexedModule>} */
+  const indexedModules = new Map();
+
+  for (const chunk of statsAsset.chunks || []) {
+    for (const indexedModule of modulesByChunk.get(chunk) || []) {
+      indexedModules.set(indexedModule.module, indexedModule);
+    }
+  }
+
+  return [...indexedModules.values()]
+    .toSorted((a, b) => a.index - b.index)
+    .map(({ module }) => module);
+}
+
 /** @typedef {Record<string, Record<string, boolean>>} ChunkToInitialByEntrypoint */
 
 /**
@@ -316,16 +364,28 @@ function getViewerData(bundleStats, bundleDir, opts) {
 
   /** @typedef {{ size: number, parsedSize?: number, gzipSize?: number, brotliSize?: number, zstdSize?: number, modules: StatsModule[], tree: Folder }} Asset */
 
+  const rootModules = getBundleModules(bundleStats);
+  const rootModulesByChunk = getModulesByChunk(rootModules);
+
   const assets = bundleStats.assets.reduce((result, statAsset) => {
-    // If asset is a childAsset, then calculate appropriate bundle modules by looking through stats.children
-    const assetBundles = statAsset.isChild
-      ? getChildAssetBundles(bundleStats, statAsset.name)
-      : bundleStats;
     /** @type {StatsModule[]} */
-    const modules = assetBundles
-      ? // @ts-expect-error TODO looks like we have a bug with child compilation parsing, need to add test cases
-        getBundleModules(assetBundles)
-      : [];
+    let assetModules;
+
+    if (statAsset.isChild) {
+      // Preserve child-compilation matching because child assets use a different module list.
+      const assetBundles = getChildAssetBundles(bundleStats, statAsset.name);
+      /** @type {StatsModule[]} */
+      const modules = assetBundles
+        ? // @ts-expect-error TODO looks like we have a bug with child compilation parsing, need to add test cases
+          getBundleModules(assetBundles)
+        : [];
+      assetModules = modules.filter((statModule) =>
+        assetHasModule(statAsset, statModule),
+      );
+    } else {
+      assetModules = getAssetModulesByChunk(statAsset, rootModulesByChunk);
+    }
+
     const asset = (result[statAsset.name] = /** @type {Asset} */ ({
       size: statAsset.size,
     }));
@@ -349,12 +409,6 @@ function getViewerData(bundleStats, bundleDir, opts) {
         asset.zstdSize = getCompressedSize("zstd", assetSources.src);
       }
     }
-
-    // Picking modules from current bundle script
-    /** @type {StatsModule[]} */
-    let assetModules = (modules || []).filter((statModule) =>
-      assetHasModule(statAsset, statModule),
-    );
 
     // Adding parsed sources
     if (parsedModules) {
