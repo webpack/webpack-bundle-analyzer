@@ -1,5 +1,13 @@
 # Changelog
 
+## 5.3.1
+
+### Patch Changes
+
+- Explicitly define `stats.toJson()` options for bundle analysis to support Rspack 2.0 with minimal code changes needed. (by [@SyMind](https://github.com/SyMind) in [#718](https://github.com/webpack/webpack-bundle-analyzer/pull/718))
+
+- Fix the treemap not reflecting chunk checkbox selections. (by [@christiango](https://github.com/christiango) in [#722](https://github.com/webpack/webpack-bundle-analyzer/pull/722))
+
 ## 5.3.0
 
 ### Minor Changes
