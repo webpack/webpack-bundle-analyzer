@@ -125,6 +125,59 @@ describe("Analyzer", () => {
     });
   });
 
+  it("should update the treemap when a chunk is deselected", async () => {
+    generateReportFrom("with-worker-loader-dynamic-import/stats.json");
+    const page = await browser.newPage();
+    try {
+      await page.goto(
+        url.pathToFileURL(path.resolve(__dirname, "./output/report.html")),
+      );
+
+      const chunkLabel = await page.evaluate(
+        () => globalThis.chartData[0].label,
+      );
+
+      await page.type('input[placeholder="Enter regexp"]', ".");
+      await page.keyboard.press("Enter");
+      await page.waitForFunction(
+        (label) =>
+          [
+            ...document.querySelectorAll('[class*="foundModulesChunkName"]'),
+          ].some((node) => node.textContent.trim() === label),
+        {},
+        chunkLabel,
+      );
+
+      const checkboxChecked = await page.evaluate((label) => {
+        const checkboxLabel = [...document.querySelectorAll("label")].find(
+          (node) => node.textContent.trim().startsWith(`${label} (`),
+        );
+        const checkbox = checkboxLabel.querySelector('input[type="checkbox"]');
+        checkbox.click();
+        return checkbox.checked;
+      }, chunkLabel);
+
+      await page.waitForFunction(
+        (label) =>
+          ![
+            ...document.querySelectorAll('[class*="foundModulesChunkName"]'),
+          ].some((node) => node.textContent.trim() === label),
+        {},
+        chunkLabel,
+      );
+
+      const visibleChunkLabels = await page.$$eval(
+        '[class*="foundModulesChunkName"]',
+        (nodes) => nodes.map((node) => node.textContent.trim()),
+      );
+
+      expect(checkboxChecked).toBe(false);
+      expect(visibleChunkLabels).not.toContain(chunkLabel);
+    } finally {
+      await page.close();
+    }
+  });
+
   it("should support stats files with modules inside `chunks` array", async () => {
     generateReportFrom("with-modules-in-chunks/stats.json");
     const chartData = await getChartData();
