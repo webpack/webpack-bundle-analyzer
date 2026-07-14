@@ -180,6 +180,7 @@ function isEntryModule(statsModule) {
  * @property {Logger} logger logger
  * @property {CompressionAlgorithm} compressionAlgorithm compression algorithm
  * @property {ExcludeAssets} excludeAssets exclude assets
+ * @property {import("webpack").OutputFileSystem | null=} outputFs non-default filesystem for reading bundle files
  */
 
 /** @typedef {import("./tree/Module").ModuleChartData} ModuleChartData */
@@ -216,6 +217,7 @@ function getViewerData(bundleStats, bundleDir, opts) {
     logger = new Logger(),
     compressionAlgorithm = "gzip",
     excludeAssets = null,
+    outputFs = null,
   } = opts || {};
 
   const isAssetIncluded = createAssetsFilter(excludeAssets);
@@ -286,6 +288,7 @@ function getViewerData(bundleStats, bundleDir, opts) {
       try {
         bundleInfo = parseBundle(assetFile, {
           sourceType: statAsset.info.javascriptModule ? "module" : "script",
+          ...(outputFs && { fs: outputFs }),
         });
       } catch (err) {
         const msg =
