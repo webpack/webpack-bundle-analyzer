@@ -211,6 +211,12 @@ No bundles were parsed. Analyzer will show only original module sizes from stats
 
 To get more information about it you can read [issue #147](https://github.com/webpack/webpack-bundle-analyzer/issues/147).
 
+### Cannot display report in Jenkins due to sandboxed iframe
+
+When viewing a static HTML report through Jenkins (for example with the HTML Publisher plugin), the page can appear blank. Jenkins serves HTML inside a sandboxed iframe that blocks scripts by default, and the report needs JavaScript to render.
+
+This is a Jenkins Content Security Policy restriction, not a bug in webpack-bundle-analyzer. To view the report you need to relax Jenkins CSP for Directory Browser Support. See [issue #168](https://github.com/webpack/webpack-bundle-analyzer/issues/168#issuecomment-381748354) for details and an example `hudson.model.DirectoryBrowserSupport.CSP` setting.
+
 <h2 align="center">Other tools</h2>
 
 - [Statoscope](https://github.com/smelukov/statoscope/blob/master/packages/ui-webpack/README.md) - Webpack bundle analyzing tool to find out why a certain module was bundled (and more features, including interactive treemap)
