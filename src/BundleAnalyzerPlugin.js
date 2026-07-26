@@ -127,7 +127,10 @@ class BundleAnalyzerPlugin {
 
       if (this.opts.generateStatsFile) {
         actions.push(() =>
-          this.generateStatsFile(stats.toJson(this.opts.statsOptions)),
+          this.generateStatsFile(
+            stats.toJson(this.opts.statsOptions),
+            compiler,
+          ),
         );
       }
 
@@ -138,15 +141,21 @@ class BundleAnalyzerPlugin {
 
       if (this.opts.analyzerMode === "server") {
         actions.push(() =>
-          this.startAnalyzerServer(stats.toJson(analyzerStatsOptions)),
+          this.startAnalyzerServer(
+            stats.toJson(analyzerStatsOptions),
+            compiler,
+          ),
         );
       } else if (this.opts.analyzerMode === "static") {
         actions.push(() =>
-          this.generateStaticReport(stats.toJson(analyzerStatsOptions)),
+          this.generateStaticReport(
+            stats.toJson(analyzerStatsOptions),
+            compiler,
+          ),
         );
       } else if (this.opts.analyzerMode === "json") {
         actions.push(() =>
-          this.generateJSONReport(stats.toJson(analyzerStatsOptions)),
+          this.generateJSONReport(stats.toJson(analyzerStatsOptions), compiler),
         );
       }
 
@@ -175,12 +184,15 @@ class BundleAnalyzerPlugin {
 
   /**
    * @param {StatsCompilation} stats stats
+   * @param {Compiler=} compiler compiler
    * @returns {Promise<void>}
    */
-  async generateStatsFile(stats) {
+  async generateStatsFile(
+    stats,
+    compiler = /** @type {Compiler} */ (this.compiler),
+  ) {
     const statsFilepath = path.resolve(
-      /** @type {Compiler} */
-      (this.compiler).outputPath,
+      compiler.outputPath,
       this.opts.statsFilename,
     );
     await fs.promises.mkdir(path.dirname(statsFilepath), { recursive: true });
@@ -200,11 +212,18 @@ class BundleAnalyzerPlugin {
 
   /**
    * @param {StatsCompilation} stats stats
+   * @param {Compiler=} compiler compiler
    * @returns {Promise<void>}
    */
-  async startAnalyzerServer(stats) {
+  async startAnalyzerServer(
+    stats,
+    compiler = /** @type {Compiler} */ (this.compiler),
+  ) {
     if (this.server) {
-      (await this.server).updateChartData(stats);
+      (await this.server).updateChartData(
+        stats,
+        this.getBundleDirFromCompiler(compiler),
+      );
     } else {
       this.server = viewer.startServer(stats, {
         openBrowser: this.opts.openAnalyzer,
@@ -212,7 +231,7 @@ class BundleAnalyzerPlugin {
         port: this.opts.analyzerPort,
         reportTitle: this.opts.reportTitle,
         compressionAlgorithm: this.opts.compressionAlgorithm,
-        bundleDir: this.getBundleDirFromCompiler(),
+        bundleDir: this.getBundleDirFromCompiler(compiler),
         logger: this.logger,
         defaultSizes: this.opts.defaultSizes,
         excludeAssets: this.opts.excludeAssets,
@@ -223,17 +242,20 @@ class BundleAnalyzerPlugin {
 
   /**
    * @param {StatsCompilation} stats stats
+   * @param {Compiler=} compiler compiler
    * @returns {Promise<void>}
    */
-  async generateJSONReport(stats) {
+  async generateJSONReport(
+    stats,
+    compiler = /** @type {Compiler} */ (this.compiler),
+  ) {
     await viewer.generateJSONReport(stats, {
       reportFilename: path.resolve(
-        /** @type {Compiler} */
-        (this.compiler).outputPath,
+        compiler.outputPath,
         this.opts.reportFilename || "report.json",
       ),
       compressionAlgorithm: this.opts.compressionAlgorithm,
-      bundleDir: this.getBundleDirFromCompiler(),
+      bundleDir: this.getBundleDirFromCompiler(compiler),
       logger: this.logger,
       excludeAssets: this.opts.excludeAssets,
     });
@@ -241,32 +263,39 @@ class BundleAnalyzerPlugin {
 
   /**
    * @param {StatsCompilation} stats stats
+   * @param {Compiler=} compiler compiler
    * @returns {Promise<void>}
    */
-  async generateStaticReport(stats) {
+  async generateStaticReport(
+    stats,
+    compiler = /** @type {Compiler} */ (this.compiler),
+  ) {
     await viewer.generateReport(stats, {
       openBrowser: this.opts.openAnalyzer,
       reportFilename: path.resolve(
-        /** @type {Compiler} */
-        (this.compiler).outputPath,
+        compiler.outputPath,
         this.opts.reportFilename || "report.html",
       ),
       reportTitle: this.opts.reportTitle,
       compressionAlgorithm: this.opts.compressionAlgorithm,
-      bundleDir: this.getBundleDirFromCompiler(),
+      bundleDir: this.getBundleDirFromCompiler(compiler),
       logger: this.logger,
       defaultSizes: this.opts.defaultSizes,
       excludeAssets: this.opts.excludeAssets,
     });
   }
 
-  getBundleDirFromCompiler() {
+  /**
+   * @param {Compiler=} compiler compiler
+   * @returns {string | null} bundle directory
+   */
+  getBundleDirFromCompiler(compiler = /** @type {Compiler} */ (this.compiler)) {
     const outputFileSystemConstructor =
       /** @type {OutputFileSystem} */
-      (/** @type {Compiler} */ (this.compiler).outputFileSystem).constructor;
+      (compiler.outputFileSystem).constructor;
 
     if (typeof outputFileSystemConstructor === "undefined") {
-      return /** @type {Compiler} */ (this.compiler).outputPath;
+      return compiler.outputPath;
     }
     switch (outputFileSystemConstructor.name) {
       case "MemoryFileSystem":
@@ -276,7 +305,7 @@ class BundleAnalyzerPlugin {
       case "AsyncMFS":
         return null;
       default:
-        return /** @type {Compiler} */ (this.compiler).outputPath;
+        return compiler.outputPath;
     }
   }
 }

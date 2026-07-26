@@ -115,7 +115,7 @@ function getChartData(analyzerOpts, bundleStats, bundleDir) {
  * @property {AnalyzerUrl} analyzerUrl analyzer url
  */
 
-/** @typedef {{ ws: WebSocketServer, http: Server, updateChartData: (bundleStats: StatsCompilation) => void }} ViewerServerObj */
+/** @typedef {{ ws: WebSocketServer, http: Server, updateChartData: (bundleStats: StatsCompilation, bundleDir?: string | null) => void }} ViewerServerObj */
 
 /**
  * @param {StatsCompilation} bundleStats bundle stats
@@ -207,9 +207,14 @@ async function startServer(bundleStats, opts) {
 
   /**
    * @param {StatsCompilation} bundleStats bundle stats
+   * @param {string | null=} updatedBundleDir bundle directory
    */
-  function updateChartData(bundleStats) {
-    const newChartData = getChartData(analyzerOpts, bundleStats, bundleDir);
+  function updateChartData(bundleStats, updatedBundleDir = bundleDir) {
+    const newChartData = getChartData(
+      analyzerOpts,
+      bundleStats,
+      updatedBundleDir,
+    );
 
     if (!newChartData) return;
 

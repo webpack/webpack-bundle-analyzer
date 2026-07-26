@@ -129,6 +129,31 @@ describe("Plugin", () => {
       expect(chartData).toBeDefined();
     });
 
+    it("should use each compiler output path when a plugin instance is reused", async () => {
+      const plugin = new BundleAnalyzerPlugin({
+        analyzerMode: "json",
+        logLevel: "error",
+      });
+      const firstConfig = makeWebpackConfig();
+      const secondConfig = makeWebpackConfig();
+
+      firstConfig.output.path = path.resolve(__dirname, "./output/first");
+      firstConfig.plugins = [plugin];
+      secondConfig.output.path = path.resolve(__dirname, "./output/second");
+      secondConfig.plugins = [plugin];
+
+      await webpackCompile([firstConfig, secondConfig]);
+
+      for (const output of ["first", "second"]) {
+        const reportPath = path.resolve(
+          __dirname,
+          `./output/${output}/report.json`,
+        );
+        expect(fs.existsSync(reportPath)).toBe(true);
+        expect(JSON.parse(fs.readFileSync(reportPath, "utf8"))).not.toEqual([]);
+      }
+    });
+
     it("should support webpack config with `multi` module", async () => {
       const config = makeWebpackConfig();
 
