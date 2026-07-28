@@ -129,6 +129,40 @@ describe("Plugin", () => {
       expect(chartData).toBeDefined();
     });
 
+    it("should start a server without opening a browser", async () => {
+      const analyzerUrl = jest.fn(() => "http://analyzer.test");
+      const config = makeWebpackConfig({
+        analyzerOpts: {
+          analyzerMode: "server",
+          analyzerPort: "auto",
+          analyzerUrl,
+          openAnalyzer: false,
+        },
+      });
+      const [plugin] = config.plugins;
+
+      try {
+        await webpackCompile(config);
+
+        const server = await plugin.server;
+        expect(server.http.listening).toBe(true);
+        expect(analyzerUrl).toHaveBeenCalledWith(
+          expect.objectContaining({
+            listenHost: "127.0.0.1",
+            listenPort: 0,
+          }),
+        );
+      } finally {
+        if (plugin.server) {
+          const server = await plugin.server;
+          server.ws.close();
+          await new Promise((resolve) => {
+            server.http.close(() => resolve());
+          });
+        }
+      }
+    });
+
     it("should use each compiler output path when a plugin instance is reused", async () => {
       const plugin = new BundleAnalyzerPlugin({
         analyzerMode: "json",
