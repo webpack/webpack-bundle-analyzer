@@ -184,13 +184,10 @@ class BundleAnalyzerPlugin {
 
   /**
    * @param {StatsCompilation} stats stats
-   * @param {Compiler=} compiler compiler
+   * @param {Compiler} compiler compiler
    * @returns {Promise<void>}
    */
-  async generateStatsFile(
-    stats,
-    compiler = /** @type {Compiler} */ (this.compiler),
-  ) {
+  async generateStatsFile(stats, compiler) {
     const statsFilepath = path.resolve(
       compiler.outputPath,
       this.opts.statsFilename,
@@ -212,13 +209,10 @@ class BundleAnalyzerPlugin {
 
   /**
    * @param {StatsCompilation} stats stats
-   * @param {Compiler=} compiler compiler
+   * @param {Compiler} compiler compiler
    * @returns {Promise<void>}
    */
-  async startAnalyzerServer(
-    stats,
-    compiler = /** @type {Compiler} */ (this.compiler),
-  ) {
+  async startAnalyzerServer(stats, compiler) {
     if (this.server) {
       (await this.server).updateChartData(
         stats,
@@ -242,13 +236,10 @@ class BundleAnalyzerPlugin {
 
   /**
    * @param {StatsCompilation} stats stats
-   * @param {Compiler=} compiler compiler
+   * @param {Compiler} compiler compiler
    * @returns {Promise<void>}
    */
-  async generateJSONReport(
-    stats,
-    compiler = /** @type {Compiler} */ (this.compiler),
-  ) {
+  async generateJSONReport(stats, compiler) {
     await viewer.generateJSONReport(stats, {
       reportFilename: path.resolve(
         compiler.outputPath,
@@ -263,13 +254,10 @@ class BundleAnalyzerPlugin {
 
   /**
    * @param {StatsCompilation} stats stats
-   * @param {Compiler=} compiler compiler
+   * @param {Compiler} compiler compiler
    * @returns {Promise<void>}
    */
-  async generateStaticReport(
-    stats,
-    compiler = /** @type {Compiler} */ (this.compiler),
-  ) {
+  async generateStaticReport(stats, compiler) {
     await viewer.generateReport(stats, {
       openBrowser: this.opts.openAnalyzer,
       reportFilename: path.resolve(
@@ -286,10 +274,10 @@ class BundleAnalyzerPlugin {
   }
 
   /**
-   * @param {Compiler=} compiler compiler
+   * @param {Compiler} compiler compiler
    * @returns {string | null} bundle directory
    */
-  getBundleDirFromCompiler(compiler = /** @type {Compiler} */ (this.compiler)) {
+  getBundleDirFromCompiler(compiler) {
     const outputFileSystemConstructor =
       /** @type {OutputFileSystem} */
       (compiler.outputFileSystem).constructor;
