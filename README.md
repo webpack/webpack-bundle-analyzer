@@ -211,6 +211,16 @@ No bundles were parsed. Analyzer will show only original module sizes from stats
 
 To get more information about it you can read [issue #147](https://github.com/webpack/webpack-bundle-analyzer/issues/147).
 
+### The static report is blank when viewed in Jenkins
+
+Jenkins' HTML Publisher Plugin renders reports inside a sandboxed `iframe`, which blocks the inline `<script>` tags that `webpack-bundle-analyzer` uses to render the treemap. This shows up in the browser console as errors like:
+
+```
+Blocked script execution in '<URL>' because the document's frame is sandboxed and the 'allow-scripts' permission is not set.
+```
+
+This is a Jenkins configuration issue rather than something `webpack-bundle-analyzer` can fix on its own. It can be resolved by relaxing Jenkins' Content-Security-Policy for the report directory, for example by setting the `hudson.model.DirectoryBrowserSupport.CSP` system property. See [issue #168](https://github.com/webpack/webpack-bundle-analyzer/issues/168#issuecomment-381748354) for the full details and the exact property value that fixes this.
+
 <h2 align="center">Other tools</h2>
 
 - [Statoscope](https://github.com/smelukov/statoscope/blob/master/packages/ui-webpack/README.md) - Webpack bundle analyzing tool to find out why a certain module was bundled (and more features, including interactive treemap)
