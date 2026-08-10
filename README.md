@@ -217,6 +217,12 @@ When viewing a static HTML report through Jenkins (for example with the HTML Pub
 
 This is a Jenkins Content Security Policy restriction, not a bug in webpack-bundle-analyzer. To view the report you need to relax Jenkins CSP for Directory Browser Support. See [issue #168](https://github.com/webpack/webpack-bundle-analyzer/issues/168#issuecomment-381748354) for details and an example `hudson.model.DirectoryBrowserSupport.CSP` setting.
 
+### `stats.json` has limited output
+
+If your generated `stats.json` contains limited information, check your Webpack configuration. Using `stats: 'error-only'` limits the information included in the generated stats file.
+
+Remove `stats: 'error-only'` or use a more detailed stats configuration when generating the stats file for `webpack-bundle-analyzer`.
+
 <h2 align="center">Other tools</h2>
 
 - [Statoscope](https://github.com/smelukov/statoscope/blob/master/packages/ui-webpack/README.md) - Webpack bundle analyzing tool to find out why a certain module was bundled (and more features, including interactive treemap)
