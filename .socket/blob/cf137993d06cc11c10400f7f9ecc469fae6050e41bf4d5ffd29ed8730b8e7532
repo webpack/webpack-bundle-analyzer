@@ -1,0 +1,66 @@
+// Socket Community Patch: https://socket.dev
+// Date: Thu, 23 Jul 2026 16:13:01 GMT
+// For more information see https://socket.dev/patch/7e947070-90ed-4a05-988b-19b2efa7e40f
+// This file includes modifications made by Socket, Inc. on Thu, 23 Jul 2026; these modifications are called the "Patch". In some cases, Socket may be required to make the Patch available to you under specific terms, or may be prohibited from restricting certain rights you may have. For example, the terms of another applicable license may require Socket to make the Patch available under specific terms. In those cases, the Patch is made available to you under the required terms, and Socket does not seek to restrict your rights relative to the Patch where prohibited. In all other cases, the Patch is available to you exclusively under the PolyForm Shield License 1.0.0 (https://polyformproject.org/licenses/shield/1.0.0/). The Patch was distributed by Socket with additional information concerning licensing, attribution, and limitation of liability which may be relevant to you and your use of the Patch. As far as the law allows, the Patch and the software including the patch come as is, without any warranty or condition, and Socket will not be liable to you for any damages arising out of the applicable license terms or the use or nature of the Patch or the software including the patch, under any kind of legal claim.
+
+'use strict';
+
+var OPS = [
+	'||',
+	'&&',
+	';;',
+	'|&',
+	'<(',
+	'<<<',
+	'>>',
+	'>&',
+	'<&',
+	'&',
+	';',
+	'(',
+	')',
+	'|',
+	'<',
+	'>'
+];
+var LINE_TERMINATORS = /[\n\r\u2028\u2029]/;
+var GLOB_SHELL_SPECIAL = /[\s#!"$&'():;<=>@\\^`|]/g;
+
+module.exports = function quote(xs) {
+	return xs.map(function (s) {
+		if (s === '') {
+			return '\'\'';
+		}
+		if (s && typeof s === 'object') {
+			if (s.op === 'glob') {
+				if (typeof s.pattern !== 'string') {
+					throw new TypeError('glob token requires a string `pattern`');
+				}
+				if (LINE_TERMINATORS.test(s.pattern)) {
+					throw new TypeError('glob `pattern` must not contain line terminators');
+				}
+				return s.pattern.replace(GLOB_SHELL_SPECIAL, '\\$&');
+			}
+			if (typeof s.op === 'string') {
+				if (OPS.indexOf(s.op) < 0) {
+					throw new TypeError('invalid `op` value: ' + JSON.stringify(s.op));
+				}
+				return s.op.replace(/[\s\S]/g, '\\$&');
+			}
+			if (typeof s.comment === 'string') {
+				if (LINE_TERMINATORS.test(s.comment)) {
+					throw new TypeError('`comment` must not contain line terminators');
+				}
+				return '#' + s.comment;
+			}
+			throw new TypeError('unrecognized object token shape');
+		}
+		if ((/["\s\\]/).test(s) && !(/'/).test(s)) {
+			return "'" + s.replace(/(['])/g, '\\$1') + "'";
+		}
+		if ((/["'\s]/).test(s)) {
+			return '"' + s.replace(/(["\\$`!])/g, '\\$1') + '"';
+		}
+		return String(s).replace(/([A-Za-z]:)?([#!"$&'()*,:;<=>?@[\\\]^`{|}])/g, '$1\\$2');
+	}).join(' ');
+};
