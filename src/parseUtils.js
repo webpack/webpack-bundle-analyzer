@@ -151,6 +151,7 @@ function getModuleLocation(node) {
 }
 
 /** @typedef {Record<number, Location>} ModulesLocations */
+/** @typedef {{ locations: ModulesLocations, hasWebpackRuntime: boolean, isTopLevel: boolean, start: number }} Webpack5IIFECandidate */
 
 /**
  * @param {Expression | SpreadElement} node node
@@ -216,27 +217,186 @@ function getModulesLocations(node) {
 
 /**
  * @param {ExpressionStatement} node node
- * @returns {boolean} true when IIFE, otherwise false
+ * @returns {CallExpression | null} IIFE call expression
  */
-function isIIFE(node) {
+function getIIFECallExpression(node) {
+  if (node.expression.type === "CallExpression") {
+    return node.expression;
+  }
+
+  if (
+    node.expression.type === "UnaryExpression" &&
+    node.expression.argument.type === "CallExpression"
+  ) {
+    return node.expression.argument;
+  }
+
+  return null;
+}
+
+/**
+ * @param {Node} node node
+ * @param {string} modulesVariableName modules variable name
+ * @returns {boolean} true when the node calls a module wrapper
+ */
+function callsModulesMap(node, modulesVariableName) {
+  let callsModule = false;
+
+  walk.simple(node, {
+    CallExpression(callExpression) {
+      const { callee } = callExpression;
+
+      if (
+        callee.type === "MemberExpression" &&
+        ((callee.object.type === "Identifier" &&
+          callee.object.name === modulesVariableName) ||
+          (callee.object.type === "MemberExpression" &&
+            callee.object.object.type === "Identifier" &&
+            callee.object.object.name === modulesVariableName))
+      ) {
+        callsModule = true;
+      }
+    },
+  });
+
+  return callsModule;
+}
+
+/**
+ * @param {import("acorn").BlockStatement} body body
+ * @param {import("acorn").VariableDeclaration} modulesDeclaration modules declaration
+ * @param {string} modulesVariableName modules variable name
+ * @returns {boolean} true when the candidate contains Webpack module loading
+ */
+function hasWebpackModulesRuntime(
+  body,
+  modulesDeclaration,
+  modulesVariableName,
+) {
+  const declarationIndex = body.body.indexOf(modulesDeclaration);
+
+  return body.body
+    .slice(declarationIndex + 1)
+    .some((statement) => callsModulesMap(statement, modulesVariableName));
+}
+
+/**
+ * @param {CallExpression} node node
+ * @param {boolean} isTopLevel is top-level IIFE
+ * @returns {Webpack5IIFECandidate | null} modules candidate
+ */
+function getWebpack5IIFEModulesCandidate(node, isTopLevel) {
+  if (
+    node.arguments.length !== 0 ||
+    (node.callee.type !== "FunctionExpression" &&
+      node.callee.type !== "ArrowFunctionExpression") ||
+    node.callee.params.length !== 0 ||
+    node.callee.body.type !== "BlockStatement"
+  ) {
+    return null;
+  }
+
+  const firstVariableDeclaration = node.callee.body.body.find(
+    (node) => node.type === "VariableDeclaration",
+  );
+
+  if (firstVariableDeclaration) {
+    for (const declaration of firstVariableDeclaration.declarations) {
+      if (declaration.init && isModulesList(declaration.init)) {
+        const locations = getModulesLocations(declaration.init);
+
+        if (Object.keys(locations).length === 0) {
+          continue;
+        }
+
+        return {
+          locations,
+          hasWebpackRuntime:
+            declaration.id.type === "Identifier" &&
+            hasWebpackModulesRuntime(
+              node.callee.body,
+              firstVariableDeclaration,
+              declaration.id.name,
+            ),
+          isTopLevel,
+          start: node.start,
+        };
+      }
+    }
+  }
+
+  return null;
+}
+
+/**
+ * @param {Webpack5IIFECandidate} candidateA first candidate
+ * @param {Webpack5IIFECandidate} candidateB second candidate
+ * @returns {number} candidate sort order
+ */
+function compareWebpack5IIFECandidates(candidateA, candidateB) {
   return (
-    node.type === "ExpressionStatement" &&
-    (node.expression.type === "CallExpression" ||
-      (node.expression.type === "UnaryExpression" &&
-        node.expression.argument.type === "CallExpression"))
+    Number(candidateB.hasWebpackRuntime) -
+      Number(candidateA.hasWebpackRuntime) ||
+    Number(candidateB.isTopLevel) - Number(candidateA.isTopLevel) ||
+    Object.keys(candidateB.locations).length -
+      Object.keys(candidateA.locations).length ||
+    candidateA.start - candidateB.start
   );
 }
 
 /**
- * @param {ExpressionStatement} node node
- * @returns {Expression} IIFE call expression
+ * @param {Webpack5IIFECandidate[]} candidates candidates
+ * @param {(string | number)[] | undefined} expectedModuleIds expected module ids
+ * @returns {ModulesLocations | null} selected modules locations
  */
-function getIIFECallExpression(node) {
-  if (node.expression.type === "UnaryExpression") {
-    return node.expression.argument;
+function selectWebpack5IIFEModulesLocations(candidates, expectedModuleIds) {
+  if (candidates.length === 0) {
+    return null;
   }
 
-  return node.expression;
+  if (expectedModuleIds?.length) {
+    const expectedIds = new Set(expectedModuleIds.map(String));
+    const rankedCandidates = candidates
+      .map((candidate) => ({
+        candidate,
+        expectedIdsIntersection: Object.keys(candidate.locations).filter(
+          (moduleId) => expectedIds.has(moduleId),
+        ).length,
+      }))
+      .toSorted(
+        (candidateA, candidateB) =>
+          candidateB.expectedIdsIntersection -
+            candidateA.expectedIdsIntersection ||
+          compareWebpack5IIFECandidates(
+            candidateA.candidate,
+            candidateB.candidate,
+          ),
+      );
+
+    if (rankedCandidates[0].expectedIdsIntersection > 0) {
+      return rankedCandidates[0].candidate.locations;
+    }
+  }
+
+  const webpackCandidates = candidates
+    .filter((candidate) => candidate.hasWebpackRuntime)
+    .toSorted(
+      (candidateA, candidateB) =>
+        Number(candidateB.isTopLevel) - Number(candidateA.isTopLevel) ||
+        candidateA.start - candidateB.start ||
+        Object.keys(candidateB.locations).length -
+          Object.keys(candidateA.locations).length,
+    );
+
+  if (webpackCandidates.length > 0) {
+    return webpackCandidates[0].locations;
+  }
+
+  const topLevelCandidates = candidates
+    .filter((candidate) => candidate.isTopLevel)
+    .toSorted((candidateA, candidateB) => candidateA.start - candidateB.start);
+
+  return topLevelCandidates[0]?.locations || null;
 }
 
 /**
@@ -323,11 +483,11 @@ function isAsyncWebWorkerChunkExpression(node) {
 
 /**
  * @param {string} bundlePath bundle path
- * @param {{ sourceType: "script" | "module" }} opts options
+ * @param {{ sourceType?: "script" | "module", expectedModuleIds?: (string | number)[] }} opts options
  * @returns {{ modules: Modules, src: string, runtimeSrc: string }} parsed result
  */
 module.exports.parseBundle = function parseBundle(bundlePath, opts) {
-  const { sourceType = "script" } = opts || {};
+  const { sourceType = "script", expectedModuleIds } = opts || {};
 
   const content = fs.readFileSync(bundlePath, "utf8");
   const ast = acorn.parse(content, {
@@ -335,62 +495,26 @@ module.exports.parseBundle = function parseBundle(bundlePath, opts) {
     ecmaVersion: "latest",
   });
 
-  /** @type {{ locations: ModulesLocations | null, expressionStatementDepth: number }} */
+  /** @type {Set<CallExpression>} */
+  const topLevelIIFECalls = new Set();
+
+  for (const node of ast.body) {
+    if (node.type === "ExpressionStatement") {
+      const iifeCall = getIIFECallExpression(node);
+
+      if (iifeCall) {
+        topLevelIIFECalls.add(iifeCall);
+      }
+    }
+  }
+
+  /** @type {{ locations: ModulesLocations | null, webpack5IIFECandidates: Webpack5IIFECandidate[] }} */
   const walkState = {
     locations: null,
-    expressionStatementDepth: 0,
+    webpack5IIFECandidates: [],
   };
 
   walk.recursive(ast, walkState, {
-    ExpressionStatement(node, state, callback) {
-      if (state.locations) return;
-
-      state.expressionStatementDepth++;
-
-      if (
-        // Webpack 5 stores modules in the the top-level IIFE
-        state.expressionStatementDepth === 1 &&
-        ast.body.includes(node) &&
-        isIIFE(node)
-      ) {
-        const fn = getIIFECallExpression(node);
-
-        if (
-          fn.type === "CallExpression" &&
-          // It should not contain neither arguments
-          fn.arguments.length === 0 &&
-          (fn.callee.type === "FunctionExpression" ||
-            fn.callee.type === "ArrowFunctionExpression") &&
-          // ...nor parameters
-          fn.callee.params.length === 0 &&
-          fn.callee.body.type === "BlockStatement"
-        ) {
-          // Modules are stored in the very first variable declaration as hash
-          const firstVariableDeclaration = fn.callee.body.body.find(
-            (node) => node.type === "VariableDeclaration",
-          );
-
-          if (firstVariableDeclaration) {
-            for (const declaration of firstVariableDeclaration.declarations) {
-              if (declaration.init && isModulesList(declaration.init)) {
-                state.locations = getModulesLocations(declaration.init);
-
-                if (state.locations) {
-                  break;
-                }
-              }
-            }
-          }
-        }
-      }
-
-      if (!state.locations) {
-        callback(node.expression, state);
-      }
-
-      state.expressionStatementDepth--;
-    },
-
     AssignmentExpression(node, state) {
       if (state.locations) return;
 
@@ -417,6 +541,14 @@ module.exports.parseBundle = function parseBundle(bundlePath, opts) {
       if (state.locations) return;
 
       const args = node.arguments;
+      const webpack5IIFEModulesCandidate = getWebpack5IIFEModulesCandidate(
+        node,
+        topLevelIIFECalls.has(node),
+      );
+
+      if (webpack5IIFEModulesCandidate) {
+        state.webpack5IIFECandidates.push(webpack5IIFEModulesCandidate);
+      }
 
       // Main chunk with webpack loader.
       // Modules are stored in first argument:
@@ -472,11 +604,17 @@ module.exports.parseBundle = function parseBundle(bundlePath, opts) {
     },
   });
 
+  const modulesLocations =
+    walkState.locations ||
+    selectWebpack5IIFEModulesLocations(
+      walkState.webpack5IIFECandidates,
+      expectedModuleIds,
+    );
   /** @type {Modules} */
   const modules = {};
 
-  if (walkState.locations) {
-    for (const [id, loc] of Object.entries(walkState.locations)) {
+  if (modulesLocations) {
+    for (const [id, loc] of Object.entries(modulesLocations)) {
       modules[id] = content.slice(loc.start, loc.end);
     }
   }
@@ -484,6 +622,6 @@ module.exports.parseBundle = function parseBundle(bundlePath, opts) {
   return {
     modules,
     src: content,
-    runtimeSrc: getBundleRuntime(content, walkState.locations),
+    runtimeSrc: getBundleRuntime(content, modulesLocations),
   };
 };

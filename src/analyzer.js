@@ -191,6 +191,29 @@ function getAssetModulesByChunk(statsAsset, modulesByChunk) {
     .map(({ module }) => module);
 }
 
+/**
+ * @param {StatsCompilation} bundleStats bundle stats
+ * @param {StatsAsset} statAsset stats asset
+ * @param {Map<string | number, IndexedModule[]>} rootModulesByChunk root modules indexed by chunk ID
+ * @returns {StatsModule[]} modules in asset
+ */
+function getAssetModules(bundleStats, statAsset, rootModulesByChunk) {
+  if (!statAsset.isChild) {
+    return getAssetModulesByChunk(statAsset, rootModulesByChunk);
+  }
+
+  const assetBundles = getChildAssetBundles(bundleStats, statAsset.name);
+  /** @type {StatsModule[]} */
+  const modules = assetBundles
+    ? // @ts-expect-error TODO looks like we have a bug with child compilation parsing, need to add test cases
+      getBundleModules(assetBundles)
+    : [];
+
+  return modules.filter((statsModule) =>
+    assetHasModule(statAsset, statsModule),
+  );
+}
+
 /** @typedef {Record<string, Record<string, boolean>>} ChunkToInitialByEntrypoint */
 
 /**
@@ -317,6 +340,32 @@ function getViewerData(bundleStats, bundleDir, opts) {
     );
   });
 
+  const rootModules = getBundleModules(bundleStats);
+  const rootModulesByChunk = getModulesByChunk(rootModules);
+
+  /** @type {Map<StatsAsset, { modules: StatsModule[], expectedModuleIds: (string | number)[] }>} */
+  const assetModuleInfo = new Map();
+
+  for (const statAsset of bundleStats.assets) {
+    const modules = getAssetModules(
+      bundleStats,
+      statAsset,
+      rootModulesByChunk,
+    );
+    const expectedModuleIds = modules.reduce((moduleIds, statsModule) => {
+      if (
+        typeof statsModule.id === "string" ||
+        typeof statsModule.id === "number"
+      ) {
+        moduleIds.push(statsModule.id);
+      }
+
+      return moduleIds;
+    }, /** @type {(string | number)[]} */ ([]));
+
+    assetModuleInfo.set(statAsset, { modules, expectedModuleIds });
+  }
+
   // Trying to parse bundle assets and get real module sizes if `bundleDir` is provided
   /** @type {Record<string, { src: string, runtimeSrc: string }> | null} */
   let bundlesSources = null;
@@ -329,11 +378,14 @@ function getViewerData(bundleStats, bundleDir, opts) {
 
     for (const statAsset of bundleStats.assets) {
       const assetFile = path.join(bundleDir, statAsset.name);
+      const expectedModuleIds =
+        assetModuleInfo.get(statAsset)?.expectedModuleIds || [];
       let bundleInfo;
 
       try {
         bundleInfo = parseBundle(assetFile, {
           sourceType: statAsset.info.javascriptModule ? "module" : "script",
+          expectedModuleIds,
         });
       } catch (err) {
         const msg =
@@ -364,28 +416,7 @@ function getViewerData(bundleStats, bundleDir, opts) {
 
   /** @typedef {{ size: number, parsedSize?: number, gzipSize?: number, brotliSize?: number, zstdSize?: number, modules: StatsModule[], tree: Folder }} Asset */
 
-  const rootModules = getBundleModules(bundleStats);
-  const rootModulesByChunk = getModulesByChunk(rootModules);
-
   const assets = bundleStats.assets.reduce((result, statAsset) => {
-    /** @type {StatsModule[]} */
-    let assetModules;
-
-    if (statAsset.isChild) {
-      // Preserve child-compilation matching because child assets use a different module list.
-      const assetBundles = getChildAssetBundles(bundleStats, statAsset.name);
-      /** @type {StatsModule[]} */
-      const modules = assetBundles
-        ? // @ts-expect-error TODO looks like we have a bug with child compilation parsing, need to add test cases
-          getBundleModules(assetBundles)
-        : [];
-      assetModules = modules.filter((statModule) =>
-        assetHasModule(statAsset, statModule),
-      );
-    } else {
-      assetModules = getAssetModulesByChunk(statAsset, rootModulesByChunk);
-    }
-
     const asset = (result[statAsset.name] = /** @type {Asset} */ ({
       size: statAsset.size,
     }));
@@ -409,6 +440,10 @@ function getViewerData(bundleStats, bundleDir, opts) {
         asset.zstdSize = getCompressedSize("zstd", assetSources.src);
       }
     }
+
+    // Picking modules from current bundle script
+    /** @type {StatsModule[]} */
+    let assetModules = assetModuleInfo.get(statAsset)?.modules || [];
 
     // Adding parsed sources
     if (parsedModules) {
