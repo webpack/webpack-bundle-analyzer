@@ -47,6 +47,22 @@ describe("parseBundle", () => {
     });
   }
 
+  it("should preserve the top-level Webpack 5 module-map fallback", () => {
+    const bundleName = "webpack5TopLevelModulesWithoutRuntime";
+    const bundleFile = `${BUNDLES_DIR}/${bundleName}.js`;
+    const expectedModules = JSON.parse(
+      fs.readFileSync(`${BUNDLES_DIR}/${bundleName}.modules.json`),
+    );
+
+    expect(parseBundle(bundleFile).modules).toEqual(expectedModules.modules);
+  });
+
+  it("should ignore nested module maps without a Webpack runtime", () => {
+    const bundleFile = `${BUNDLES_DIR}/webpack5NestedModulesWithoutRuntime.js`;
+
+    expect(parseBundle(bundleFile).modules).toEqual({});
+  });
+
   it("should parse invalid bundle and return it's content and empty modules hash", () => {
     const bundleFile = `${BUNDLES_DIR}/invalidBundle.js`;
     const bundle = parseBundle(bundleFile);

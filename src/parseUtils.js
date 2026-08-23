@@ -151,7 +151,7 @@ function getModuleLocation(node) {
 }
 
 /** @typedef {Record<number, Location>} ModulesLocations */
-/** @typedef {{ locations: ModulesLocations, hasWebpackRuntime: boolean, isTopLevel: boolean, start: number }} Webpack5IIFECandidate */
+/** @typedef {{ locations: ModulesLocations, hasWebpackRuntime: boolean, isTopLevel: boolean }} Webpack5IIFECandidate */
 
 /**
  * @param {Expression | SpreadElement} node node
@@ -319,7 +319,6 @@ function getWebpack5IIFEModulesCandidate(node, isTopLevel) {
               declaration.id.name,
             ),
           isTopLevel,
-          start: node.start,
         };
       }
     }
@@ -329,18 +328,17 @@ function getWebpack5IIFEModulesCandidate(node, isTopLevel) {
 }
 
 /**
- * @param {Webpack5IIFECandidate} candidateA first candidate
- * @param {Webpack5IIFECandidate} candidateB second candidate
- * @returns {number} candidate sort order
+ * @param {Webpack5IIFECandidate[]} candidates candidates
+ * @returns {Webpack5IIFECandidate | null} selected candidate
  */
-function compareWebpack5IIFECandidates(candidateA, candidateB) {
+function selectWebpack5IIFECandidate(candidates) {
   return (
-    Number(candidateB.hasWebpackRuntime) -
-      Number(candidateA.hasWebpackRuntime) ||
-    Number(candidateB.isTopLevel) - Number(candidateA.isTopLevel) ||
-    Object.keys(candidateB.locations).length -
-      Object.keys(candidateA.locations).length ||
-    candidateA.start - candidateB.start
+    candidates.find(
+      (candidate) => candidate.hasWebpackRuntime && candidate.isTopLevel,
+    ) ||
+    candidates.find((candidate) => candidate.hasWebpackRuntime) ||
+    candidates.find((candidate) => candidate.isTopLevel) ||
+    null
   );
 }
 
@@ -366,37 +364,23 @@ function selectWebpack5IIFEModulesLocations(candidates, expectedModuleIds) {
       .toSorted(
         (candidateA, candidateB) =>
           candidateB.expectedIdsIntersection -
-            candidateA.expectedIdsIntersection ||
-          compareWebpack5IIFECandidates(
-            candidateA.candidate,
-            candidateB.candidate,
-          ),
+          candidateA.expectedIdsIntersection,
       );
 
     if (rankedCandidates[0].expectedIdsIntersection > 0) {
-      return rankedCandidates[0].candidate.locations;
+      const bestCandidates = rankedCandidates
+        .filter(
+          (rankedCandidate) =>
+            rankedCandidate.expectedIdsIntersection ===
+            rankedCandidates[0].expectedIdsIntersection,
+        )
+        .map((rankedCandidate) => rankedCandidate.candidate);
+
+      return selectWebpack5IIFECandidate(bestCandidates)?.locations || null;
     }
   }
 
-  const webpackCandidates = candidates
-    .filter((candidate) => candidate.hasWebpackRuntime)
-    .toSorted(
-      (candidateA, candidateB) =>
-        Number(candidateB.isTopLevel) - Number(candidateA.isTopLevel) ||
-        candidateA.start - candidateB.start ||
-        Object.keys(candidateB.locations).length -
-          Object.keys(candidateA.locations).length,
-    );
-
-  if (webpackCandidates.length > 0) {
-    return webpackCandidates[0].locations;
-  }
-
-  const topLevelCandidates = candidates
-    .filter((candidate) => candidate.isTopLevel)
-    .toSorted((candidateA, candidateB) => candidateA.start - candidateB.start);
-
-  return topLevelCandidates[0]?.locations || null;
+  return selectWebpack5IIFECandidate(candidates)?.locations || null;
 }
 
 /**

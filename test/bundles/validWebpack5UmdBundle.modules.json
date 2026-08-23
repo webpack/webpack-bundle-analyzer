@@ -1,0 +1,6 @@
+{
+  "modules": {
+    "447": "(module) {\n\nmodule.exports = \"fixture-dependency\";\n\n\n/***/ }",
+    "956": "(module, __unused_webpack_exports, __webpack_require__) {\n\nconst dependency = __webpack_require__(447);\n\nmodule.exports = { dependency };\n\n\n/***/ }"
+  }
+}

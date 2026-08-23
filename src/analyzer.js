@@ -347,11 +347,7 @@ function getViewerData(bundleStats, bundleDir, opts) {
   const assetModuleInfo = new Map();
 
   for (const statAsset of bundleStats.assets) {
-    const modules = getAssetModules(
-      bundleStats,
-      statAsset,
-      rootModulesByChunk,
-    );
+    const modules = getAssetModules(bundleStats, statAsset, rootModulesByChunk);
     const expectedModuleIds = modules.reduce((moduleIds, statsModule) => {
       if (
         typeof statsModule.id === "string" ||
