@@ -1,0 +1,37 @@
+{
+  "assets": [
+    { "name": "main.js", "size": 300, "chunks": [0], "info": {} },
+    { "name": "bridge.js", "size": 320, "chunks": [1], "info": {} }
+  ],
+  "chunks": [],
+  "entrypoints": {
+    "main": { "name": "main", "assets": [{ "name": "main.js" }] },
+    "bridge": { "name": "bridge", "assets": [{ "name": "bridge.js" }] }
+  },
+  "modules": [
+    {
+      "id": 1,
+      "identifier": "./src/shared.js",
+      "name": "./src/shared.js",
+      "size": 20,
+      "depth": 1,
+      "chunks": [0, 1]
+    },
+    {
+      "id": 2,
+      "identifier": "./src/main.js",
+      "name": "./src/main.js",
+      "size": 30,
+      "depth": 1,
+      "chunks": [0]
+    },
+    {
+      "id": 3,
+      "identifier": "./src/bridge.js",
+      "name": "./src/bridge.js",
+      "size": 30,
+      "depth": 1,
+      "chunks": [1]
+    }
+  ]
+}

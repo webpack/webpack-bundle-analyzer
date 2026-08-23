@@ -155,9 +155,46 @@ describe("Analyzer", () => {
     const rootAsset = chartData.find((asset) => asset.label === "bundle.js");
 
     expect(rootAsset.groups).toHaveLength(1);
-    expect(rootAsset.groups[0].parsedSize).toBe(
-      Buffer.byteLength(rootModuleSrc),
+    // Module `parsedSize` is the length of the parsed source.
+    expect(rootAsset.groups[0].parsedSize).toBe(rootModuleSrc.length);
+  });
+
+  it("should not attribute parsed sources across assets sharing a module", () => {
+    const statsDir = path.resolve(
+      __dirname,
+      "./stats/with-module-in-multiple-assets",
     );
+    // Reading the stats file instead of `require`ing it because `getViewerData` mutates it.
+    const stats = JSON.parse(
+      fs.readFileSync(path.join(statsDir, "stats.json"), "utf8"),
+    );
+
+    // `./src/shared.js` is a single stats module belonging to both assets, but each asset
+    // embeds its own copy of it, so both assets have a different parsed source for module ID `1`.
+    const sharedModuleId = "1";
+    // Module `parsedSize` is the length of the parsed source.
+    const expectedParsedSizes = {
+      "main.js": parseBundle(path.join(statsDir, "main.js")).modules[
+        sharedModuleId
+      ].length,
+      "bridge.js": parseBundle(path.join(statsDir, "bridge.js")).modules[
+        sharedModuleId
+      ].length,
+    };
+    expect(expectedParsedSizes["main.js"]).not.toBe(
+      expectedParsedSizes["bridge.js"],
+    );
+
+    const chartData = getViewerData(stats, statsDir);
+    const sharedModuleSizes = Object.fromEntries(
+      chartData.map((asset) => [
+        asset.label,
+        asset.groups[0].groups.find((group) => group.label === "shared.js")
+          .parsedSize,
+      ]),
+    );
+
+    expect(sharedModuleSizes).toEqual(expectedParsedSizes);
   });
 
   it("should update the treemap when a chunk is deselected", async () => {

@@ -2,6 +2,7 @@ const fs = require("node:fs");
 const path = require("node:path");
 
 const { getViewerData } = require("../src/analyzer");
+const { getCompressedSize } = require("../src/sizeUtils");
 
 const BUNDLES_DIR = path.resolve(__dirname, "./bundles");
 
@@ -76,10 +77,22 @@ describe("getViewerData", () => {
       },
     };
 
-    getViewerData(stats, BUNDLES_DIR);
+    const chartData = getViewerData(stats, BUNDLES_DIR);
+    const modulesByPath = Object.fromEntries(
+      chartData[0].groups[0].groups.map((group) => [group.path, group]),
+    );
 
-    expect(dependencyModule.parsedSrc).toBe(expectedModules[447]);
-    expect(entryModule.parsedSrc).toBe(expectedModules[956]);
+    // Asserting on the returned chart data rather than on the input stats objects, because
+    // `getViewerData` copies the modules of every asset before attributing parsed sources to them.
+    // Module `parsedSize` is the source length, and the gzip size pins the source itself.
+    expect(modulesByPath["./src/dependency.js"]).toMatchObject({
+      parsedSize: expectedModules[447].length,
+      gzipSize: getCompressedSize("gzip", expectedModules[447]),
+    });
+    expect(modulesByPath["./src/entry.js"]).toMatchObject({
+      parsedSize: expectedModules[956].length,
+      gzipSize: getCompressedSize("gzip", expectedModules[956]),
+    });
     expect(chunksAccessCount).toBe(1);
   });
 });
