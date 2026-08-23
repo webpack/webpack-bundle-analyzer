@@ -334,12 +334,14 @@ function getViewerData(bundleStats, bundleDir, opts) {
   // Trying to parse bundle assets and get real module sizes if `bundleDir` is provided
   /** @type {Record<string, { src: string, runtimeSrc: string }> | null} */
   let bundlesSources = null;
-  /** @type {Record<string | number, boolean> | null} */
-  let parsedModules = null;
+  // Parsed sources are stored per asset because different assets can reuse the same module IDs
+  // (e.g. a root bundle and a worker bundle both numbering their modules from `0`).
+  /** @type {Record<string, import("./parseUtils").Modules> | null} */
+  let parsedModulesByAsset = null;
 
   if (bundleDir) {
     bundlesSources = {};
-    parsedModules = {};
+    parsedModulesByAsset = {};
 
     for (const statAsset of bundleStats.assets) {
       const assetFile = path.join(bundleDir, statAsset.name);
@@ -380,12 +382,12 @@ function getViewerData(bundleStats, bundleDir, opts) {
         src: bundleInfo.src,
         runtimeSrc: bundleInfo.runtimeSrc,
       };
-      Object.assign(parsedModules, bundleInfo.modules);
+      parsedModulesByAsset[statAsset.name] = bundleInfo.modules;
     }
 
     if (Object.keys(bundlesSources).length === 0) {
       bundlesSources = null;
-      parsedModules = null;
+      parsedModulesByAsset = null;
       logger.warn(
         "\nNo bundles were parsed. Analyzer will show only original module sizes from stats file.\n",
       );
@@ -422,6 +424,11 @@ function getViewerData(bundleStats, bundleDir, opts) {
       bundlesSources && Object.hasOwn(bundlesSources, statAsset.name)
         ? bundlesSources[statAsset.name]
         : null;
+    const assetParsedModules =
+      parsedModulesByAsset &&
+      Object.hasOwn(parsedModulesByAsset, statAsset.name)
+        ? parsedModulesByAsset[statAsset.name]
+        : null;
 
     if (assetSources) {
       asset.parsedSize = Buffer.byteLength(assetSources.src);
@@ -440,16 +447,16 @@ function getViewerData(bundleStats, bundleDir, opts) {
     }
 
     // Adding parsed sources
-    if (parsedModules) {
+    if (assetParsedModules) {
       /** @type {StatsModule[]} */
       const unparsedEntryModules = [];
 
       for (const statsModule of assetModules) {
         if (
           typeof statsModule.id !== "undefined" &&
-          parsedModules[statsModule.id]
+          Object.hasOwn(assetParsedModules, statsModule.id)
         ) {
-          statsModule.parsedSrc = parsedModules[statsModule.id];
+          statsModule.parsedSrc = assetParsedModules[statsModule.id];
         } else if (isEntryModule(statsModule)) {
           unparsedEntryModules.push(statsModule);
         }

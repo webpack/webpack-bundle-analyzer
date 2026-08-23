@@ -4,6 +4,7 @@ const path = require("node:path");
 const url = require("node:url");
 const puppeteer = require("puppeteer");
 const { getViewerData } = require("../src/analyzer");
+const { parseBundle } = require("../src/parseUtils");
 const { isZstdSupported } = require("../src/sizeUtils");
 
 let browser;
@@ -124,6 +125,39 @@ describe("Analyzer", () => {
     expect(chartData[1]).toMatchObject({
       label: "1.bundle.worker.js",
     });
+  });
+
+  it("should not attribute parsed sources across assets reusing module IDs", () => {
+    const statsDir = path.resolve(
+      __dirname,
+      "./stats/with-worker-loader-dynamic-import",
+    );
+    // Reading the stats file instead of `require`ing it because `getViewerData` mutates it.
+    const stats = JSON.parse(
+      fs.readFileSync(path.join(statsDir, "stats.json"), "utf8"),
+    );
+
+    // The root compilation and the worker child compilation both number their modules from `0`,
+    // so module ID `0` refers to a different module in each asset.
+    const duplicateModuleId = "0";
+    const { modules: rootModules } = parseBundle(
+      path.join(statsDir, "bundle.js"),
+    );
+    const { modules: workerModules } = parseBundle(
+      path.join(statsDir, "bundle.worker.js"),
+    );
+    const rootModuleSrc = rootModules[duplicateModuleId];
+
+    expect(rootModuleSrc).toEqual(expect.any(String));
+    expect(workerModules[duplicateModuleId]).not.toBe(rootModuleSrc);
+
+    const chartData = getViewerData(stats, statsDir);
+    const rootAsset = chartData.find((asset) => asset.label === "bundle.js");
+
+    expect(rootAsset.groups).toHaveLength(1);
+    expect(rootAsset.groups[0].parsedSize).toBe(
+      Buffer.byteLength(rootModuleSrc),
+    );
   });
 
   it("should update the treemap when a chunk is deselected", async () => {
