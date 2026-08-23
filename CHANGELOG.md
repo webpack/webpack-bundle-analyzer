@@ -1,5 +1,15 @@
 # Changelog
 
+## 5.3.2
+
+### Patch Changes
+
+- Parse Webpack 5 module maps nested in UMD wrappers, using bundle module IDs and Webpack runtime structure to choose among IIFE candidates. (by [@Menny1337](https://github.com/Menny1337) in [#733](https://github.com/webpack/webpack-bundle-analyzer/pull/733))
+
+- Improve report generation performance for compilations with many assets. (by [@christiango](https://github.com/christiango) in [#723](https://github.com/webpack/webpack-bundle-analyzer/pull/723))
+
+- Resolve bundle assets and report files against the correct compiler output path when a plugin instance is shared by multiple compilers. (by [@utkarshalpha](https://github.com/utkarshalpha) in [#725](https://github.com/webpack/webpack-bundle-analyzer/pull/725))
+
 ## 5.3.1
 
 ### Patch Changes
