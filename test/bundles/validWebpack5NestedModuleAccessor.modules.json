@@ -1,0 +1,5 @@
+{
+  "modules": {
+    "123": "() => \"nested-module-accessor\""
+  }
+}

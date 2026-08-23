@@ -61,6 +61,9 @@ describe("parseBundle", () => {
     const bundleFile = `${BUNDLES_DIR}/webpack5NestedModulesWithoutRuntime.js`;
 
     expect(parseBundle(bundleFile).modules).toEqual({});
+    expect(
+      parseBundle(bundleFile, { expectedModuleIds: [123] }).modules,
+    ).toEqual({});
   });
 
   it("should parse invalid bundle and return it's content and empty modules hash", () => {

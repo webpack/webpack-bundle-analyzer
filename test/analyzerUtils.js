@@ -28,11 +28,18 @@ describe("getViewerData", () => {
       chunks: [1],
       depth: 0,
     };
+    const moduleWithoutId = {
+      identifier: "./src/no-id.js",
+      name: "./src/no-id.js",
+      size: 20,
+      chunks: [1],
+      depth: 1,
+    };
     let chunksAccessCount = 0;
     const chunks = [
       {
         id: 1,
-        modules: [dependencyModule, entryModule],
+        modules: [dependencyModule, entryModule, moduleWithoutId],
       },
     ];
     const stats = {
@@ -45,6 +52,16 @@ describe("getViewerData", () => {
             javascriptModule: false,
           },
           chunks: [1],
+        },
+        {
+          type: "asset",
+          name: "validWebpack5UmdBundle.js",
+          size: fs.statSync(`${BUNDLES_DIR}/validWebpack5UmdBundle.js`).size,
+          info: {
+            javascriptModule: false,
+          },
+          chunks: [2],
+          isChild: true,
         },
       ],
       get chunks() {
