@@ -417,13 +417,11 @@ function getViewerData(bundleStats, bundleDir, opts) {
       );
     }
 
-    // A module that belongs to several assets is represented by a single stats object, and the
-    // module tree reads `parsedSrc` lazily, after every asset has been processed. Copying the
-    // modules per asset keeps attributing a parsed source to one asset from changing what the
-    // other assets containing that module report.
-    assetModules = (assetModules || []).map((statsModule) => ({
-      ...statsModule,
-    }));
+    // A module that is a part of more than one asset is one stats object. Every asset that
+    // contains that module gets the same object. The module tree reads `parsedSrc` late, after
+    // all assets are processed. Copy the modules for each asset. Then a parsed source that is
+    // set for one asset cannot change what another asset shows.
+    assetModules = assetModules.map((statsModule) => ({ ...statsModule }));
 
     const asset = (result[statAsset.name] = /** @type {Asset} */ ({
       size: statAsset.size,

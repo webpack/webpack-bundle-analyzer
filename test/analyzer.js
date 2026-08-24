@@ -3,6 +3,7 @@ const fs = require("node:fs");
 const path = require("node:path");
 const url = require("node:url");
 const puppeteer = require("puppeteer");
+const Logger = require("../src/Logger");
 const { getViewerData } = require("../src/analyzer");
 const { parseBundle } = require("../src/parseUtils");
 const { isZstdSupported } = require("../src/sizeUtils");
@@ -127,74 +128,96 @@ describe("Analyzer", () => {
     });
   });
 
-  it("should not attribute parsed sources across assets reusing module IDs", () => {
+  it("should not attribute parsed sources across assets that reuse module IDs", () => {
     const statsDir = path.resolve(
       __dirname,
       "./stats/with-worker-loader-dynamic-import",
     );
-    // Reading the stats file instead of `require`ing it because `getViewerData` mutates it.
+    // `getViewerData` changes the stats it receives, so read a new copy of them.
     const stats = JSON.parse(
       fs.readFileSync(path.join(statsDir, "stats.json"), "utf8"),
     );
 
-    // The root compilation and the worker child compilation both number their modules from `0`,
-    // so module ID `0` refers to a different module in each asset.
-    const duplicateModuleId = "0";
-    const { modules: rootModules } = parseBundle(
-      path.join(statsDir, "bundle.js"),
-    );
-    const { modules: workerModules } = parseBundle(
-      path.join(statsDir, "bundle.worker.js"),
-    );
-    const rootModuleSrc = rootModules[duplicateModuleId];
+    // Two compilations number their modules from `0`. Module ID `0` is a different module in
+    // each asset.
+    const moduleId = "0";
+    const rootSource = parseBundle(path.join(statsDir, "bundle.js")).modules[
+      moduleId
+    ];
+    const workerSource = parseBundle(path.join(statsDir, "bundle.worker.js"))
+      .modules[moduleId];
 
-    expect(rootModuleSrc).toEqual(expect.any(String));
-    expect(workerModules[duplicateModuleId]).not.toBe(rootModuleSrc);
+    expect(rootSource).toEqual(expect.any(String));
+    expect(workerSource).not.toBe(rootSource);
 
     const chartData = getViewerData(stats, statsDir);
     const rootAsset = chartData.find((asset) => asset.label === "bundle.js");
 
+    // `parsedSize` is the length of the parsed source.
     expect(rootAsset.groups).toHaveLength(1);
-    // Module `parsedSize` is the length of the parsed source.
-    expect(rootAsset.groups[0].parsedSize).toBe(rootModuleSrc.length);
+    expect(rootAsset.groups[0].parsedSize).toBe(rootSource.length);
   });
 
-  it("should not attribute parsed sources across assets sharing a module", () => {
+  it("should not attribute parsed sources across assets that share a module", () => {
     const statsDir = path.resolve(
       __dirname,
       "./stats/with-module-in-multiple-assets",
     );
-    // Reading the stats file instead of `require`ing it because `getViewerData` mutates it.
+    // `getViewerData` changes the stats it receives, so read a new copy of them.
     const stats = JSON.parse(
       fs.readFileSync(path.join(statsDir, "stats.json"), "utf8"),
     );
 
-    // `./src/shared.js` is a single stats module belonging to both assets, but each asset
-    // embeds its own copy of it, so both assets have a different parsed source for module ID `1`.
-    const sharedModuleId = "1";
-    // Module `parsedSize` is the length of the parsed source.
+    // `messages.js` is one source module used by two bundles. Each bundle uses a different
+    // export, so Webpack creates a different factory for the module in each bundle.
+    const sharedModuleId = "906";
     const expectedParsedSizes = {
-      "main.js": parseBundle(path.join(statsDir, "main.js")).modules[
-        sharedModuleId
-      ].length,
-      "bridge.js": parseBundle(path.join(statsDir, "bridge.js")).modules[
-        sharedModuleId
-      ].length,
+      "long-message.js": parseBundle(path.join(statsDir, "long-message.js"))
+        .modules[sharedModuleId].length,
+      "short-message.js": parseBundle(path.join(statsDir, "short-message.js"))
+        .modules[sharedModuleId].length,
     };
-    expect(expectedParsedSizes["main.js"]).not.toBe(
-      expectedParsedSizes["bridge.js"],
+
+    expect(expectedParsedSizes["long-message.js"]).not.toBe(
+      expectedParsedSizes["short-message.js"],
     );
 
     const chartData = getViewerData(stats, statsDir);
-    const sharedModuleSizes = Object.fromEntries(
+    const parsedSizes = Object.fromEntries(
       chartData.map((asset) => [
         asset.label,
-        asset.groups[0].groups.find((group) => group.label === "shared.js")
+        asset.groups[0].groups.find((group) => group.label === "messages.js")
           .parsedSize,
       ]),
     );
 
-    expect(sharedModuleSizes).toEqual(expectedParsedSizes);
+    expect(parsedSizes).toEqual(expectedParsedSizes);
+  });
+
+  it("should show only stat sizes when no bundle can be parsed", () => {
+    const statsDir = path.resolve(
+      __dirname,
+      "./stats/with-module-in-multiple-assets",
+    );
+    const stats = JSON.parse(
+      fs.readFileSync(path.join(statsDir, "stats.json"), "utf8"),
+    );
+    const logger = new Logger("silent");
+    const warn = jest.spyOn(logger, "warn");
+
+    // No asset file is in this directory, so every asset fails to parse.
+    const chartData = getViewerData(stats, path.join(statsDir, "src"), {
+      logger,
+    });
+
+    expect(warn).toHaveBeenCalledWith(
+      expect.stringContaining("No bundles were parsed"),
+    );
+
+    for (const asset of chartData) {
+      expect(asset.parsedSize).toBeUndefined();
+      expect(asset.statSize).toBeGreaterThan(0);
+    }
   });
 
   it("should update the treemap when a chunk is deselected", async () => {
