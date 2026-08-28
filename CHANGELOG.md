@@ -1,5 +1,11 @@
 # Changelog
 
+## 5.3.3
+
+### Patch Changes
+
+- Scope parsed module sources to the asset they were parsed from, so assets that reuse the same module IDs, or that share a module, no longer report each other's parsed and compressed sizes. (by [@Menny1337](https://github.com/Menny1337) in [#734](https://github.com/webpack/webpack-bundle-analyzer/pull/734))
+
 ## 5.3.2
 
 ### Patch Changes
