@@ -206,6 +206,94 @@ describe("Plugin", () => {
       });
     });
 
+    describe("generateStatsFile", () => {
+      function readStats(statsFilename = "stats.json") {
+        return JSON.parse(
+          fs.readFileSync(
+            path.resolve(__dirname, `./output/${statsFilename}`),
+            "utf8",
+          ),
+        );
+      }
+
+      forEachWebpackVersion(({ it, webpackCompile }) => {
+        it("should generate a stats file", async () => {
+          const config = makeWebpackConfig({
+            analyzerOpts: {
+              analyzerMode: "disabled",
+              generateStatsFile: true,
+            },
+          });
+
+          await webpackCompile(config);
+
+          expect(readStats().assets.map((asset) => asset.name)).toContain(
+            "bundle.js",
+          );
+        });
+      });
+
+      it("should not generate a stats file by default", async () => {
+        const config = makeWebpackConfig({
+          analyzerOpts: {
+            analyzerMode: "disabled",
+          },
+        });
+
+        await webpackCompile(config, "4");
+
+        expect(
+          fs.existsSync(path.resolve(__dirname, "./output/stats.json")),
+        ).toBe(false);
+      });
+
+      it("should support a custom `statsFilename`", async () => {
+        const config = makeWebpackConfig({
+          analyzerOpts: {
+            analyzerMode: "disabled",
+            generateStatsFile: true,
+            statsFilename: "custom-stats.json",
+          },
+        });
+
+        await webpackCompile(config, "4");
+
+        expect(readStats("custom-stats.json").assets).toBeDefined();
+      });
+
+      it("should create missing directories for a nested `statsFilename`", async () => {
+        const config = makeWebpackConfig({
+          analyzerOpts: {
+            analyzerMode: "disabled",
+            generateStatsFile: true,
+            statsFilename: "nested/dir/stats.json",
+          },
+        });
+
+        await webpackCompile(config, "4");
+
+        expect(readStats("nested/dir/stats.json").assets).toBeDefined();
+      });
+
+      it("should support an absolute `statsFilename`", async () => {
+        const statsFilepath = path.resolve(
+          __dirname,
+          "./output/absolute/stats.json",
+        );
+        const config = makeWebpackConfig({
+          analyzerOpts: {
+            analyzerMode: "disabled",
+            generateStatsFile: true,
+            statsFilename: statsFilepath,
+          },
+        });
+
+        await webpackCompile(config, "4");
+
+        expect(fs.existsSync(statsFilepath)).toBe(true);
+      });
+    });
+
     describe("reportTitle", () => {
       it("should have a sensible default", async () => {
         const config = makeWebpackConfig();
