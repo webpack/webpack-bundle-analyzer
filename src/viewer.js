@@ -21,6 +21,7 @@ const { open } = require("./utils");
 /** @typedef {import("./BundleAnalyzerPlugin").ExcludeAssets} ExcludeAssets */
 /** @typedef {import("./analyzer").ViewerDataOptions} ViewerDataOptions */
 /** @typedef {import("./analyzer").ChartData} ChartData */
+/** @typedef {ReturnType<import("webpack").Compiler["getInfrastructureLogger"]>} WebpackLogger */
 
 const projectRoot = path.resolve(__dirname, "..");
 
@@ -107,7 +108,7 @@ function getChartData(analyzerOpts, bundleStats, bundleDir) {
  * @property {string} host host
  * @property {boolean} openBrowser true when need to open browser, otherwise false
  * @property {string | null} bundleDir bundle dir
- * @property {Logger} logger logger
+ * @property {Logger | WebpackLogger} logger logger
  * @property {Sizes} defaultSizes default sizes
  * @property {CompressionAlgorithm} compressionAlgorithm compression algorithm
  * @property {ExcludeAssets | null} excludeAssets exclude assets
@@ -245,7 +246,7 @@ async function startServer(bundleStats, opts) {
  * @property {string} reportFilename report filename
  * @property {ReportTitle} reportTitle report title
  * @property {string | null} bundleDir bundle dir
- * @property {Logger} logger logger
+ * @property {Logger | WebpackLogger} logger logger
  * @property {Sizes} defaultSizes default sizes
  * @property {CompressionAlgorithm} compressionAlgorithm compression algorithm
  * @property {ExcludeAssets} excludeAssets exclude assets
@@ -307,7 +308,7 @@ async function generateReport(bundleStats, opts) {
  * @typedef {object} GenerateJSONReportOptions
  * @property {string} reportFilename report filename
  * @property {string | null} bundleDir bundle dir
- * @property {Logger} logger logger
+ * @property {Logger | WebpackLogger} logger logger
  * @property {ExcludeAssets} excludeAssets exclude assets
  * @property {CompressionAlgorithm} compressionAlgorithm compression algorithm
  */

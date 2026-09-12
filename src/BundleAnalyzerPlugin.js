@@ -16,6 +16,7 @@ const viewer = require("./viewer");
 /** @typedef {import("webpack").StatsCompilation} StatsCompilation */
 /** @typedef {import("./sizeUtils").Algorithm} CompressionAlgorithm */
 /** @typedef {import("./Logger").Level} LogLever */
+/** @typedef {ReturnType<import("webpack").Compiler["getInfrastructureLogger"]>} WebpackLogger */
 /** @typedef {import("./viewer").ViewerServerObj} ViewerServerObj */
 
 /** @typedef {string | boolean | StatsOptions} PluginStatsOptions */
@@ -70,7 +71,7 @@ const analyzerStatsOptions = {
  * @property {string=} statsFilename stats filename
  * @property {PluginStatsOptions=} statsOptions stats options
  * @property {ExcludeAssets=} excludeAssets exclude assets
- * @property {LogLever=} logLevel exclude assets
+ * @property {LogLever=} logLevel (deprecated) log level
  * @property {boolean=} startAnalyzer start analyzer
  * @property {AnalyzerUrl=} analyzerUrl start analyzer
  */
@@ -80,6 +81,8 @@ class BundleAnalyzerPlugin {
    * @param {Options=} opts options
    */
   constructor(opts = {}) {
+    const hasCustomLogLevel = typeof opts.logLevel !== "undefined";
+
     /** @type {Required<Omit<Options, "analyzerPort" | "statsOptions">> & { analyzerPort: number, statsOptions: undefined | PluginStatsOptions }} */
     this.opts = {
       analyzerMode: "server",
@@ -102,10 +105,13 @@ class BundleAnalyzerPlugin {
         opts.analyzerPort === "auto" ? 0 : (opts.analyzerPort ?? 8888),
     };
 
+    /** @type {boolean} */
+    this.hasCustomLogLevel = hasCustomLogLevel;
     /** @type {Compiler | null} */
     this.compiler = null;
     /** @type {Promise<ViewerServerObj> | null} */
     this.server = null;
+    /** @type {Logger | WebpackLogger} */
     this.logger = new Logger(this.opts.logLevel);
   }
 
@@ -114,6 +120,18 @@ class BundleAnalyzerPlugin {
    */
   apply(compiler) {
     this.compiler = compiler;
+
+    if (compiler.getInfrastructureLogger) {
+      const infraLogger = compiler.getInfrastructureLogger(
+        "webpack-bundle-analyzer",
+      );
+      this.logger = Logger.createInfrastructureLoggerAdapter(
+        infraLogger,
+        this.hasCustomLogLevel ? this.opts.logLevel : undefined,
+      );
+    } else {
+      this.logger = new Logger(this.opts.logLevel);
+    }
 
     /**
      * @param {Stats} stats stats

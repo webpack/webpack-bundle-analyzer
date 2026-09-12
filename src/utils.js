@@ -6,7 +6,7 @@ const opener = require("opener");
 
 /** @typedef {import("./BundleAnalyzerPlugin").ExcludeAssets} ExcludeAssets */
 /** @typedef {import("./BundleAnalyzerPlugin").AnalyzerUrl} AnalyzerUrl */
-/** @typedef {import("./Logger")} Logger */
+/** @typedef {import("./Logger") | ReturnType<import("webpack").Compiler["getInfrastructureLogger"]>} Logger */
 
 const MONTHS = [
   "Jan",

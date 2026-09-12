@@ -3,6 +3,7 @@ const path = require("node:path");
 const url = require("node:url");
 const puppeteer = require("puppeteer");
 const BundleAnalyzerPlugin = require("../src/BundleAnalyzerPlugin");
+const Logger = require("../src/Logger");
 const { isZstdSupported } = require("../src/sizeUtils");
 const {
   forEachWebpackVersion,
@@ -127,6 +128,40 @@ describe("Plugin", () => {
 
       const chartData = await getChartDataFromJSONReport();
       expect(chartData).toBeDefined();
+    });
+
+    it("should start a server without opening a browser", async () => {
+      const analyzerUrl = jest.fn(() => "http://analyzer.test");
+      const config = makeWebpackConfig({
+        analyzerOpts: {
+          analyzerMode: "server",
+          analyzerPort: "auto",
+          analyzerUrl,
+          openAnalyzer: false,
+        },
+      });
+      const [plugin] = config.plugins;
+
+      try {
+        await webpackCompile(config);
+
+        const server = await plugin.server;
+        expect(server.http.listening).toBe(true);
+        expect(analyzerUrl).toHaveBeenCalledWith(
+          expect.objectContaining({
+            listenHost: "127.0.0.1",
+            listenPort: 0,
+          }),
+        );
+      } finally {
+        if (plugin.server) {
+          const server = await plugin.server;
+          server.ws.close();
+          await new Promise((resolve) => {
+            server.http.close(() => resolve());
+          });
+        }
+      }
     });
 
     it("should use each compiler output path when a plugin instance is reused", async () => {
@@ -302,6 +337,70 @@ describe("Plugin", () => {
           });
         });
       }
+
+      describe("logLevel", () => {
+        it("should use compiler.getInfrastructureLogger directly when logLevel is not provided", () => {
+          const plugin = new BundleAnalyzerPlugin();
+          const mockInfraLogger = {
+            warn: jest.fn(),
+            info: jest.fn(),
+            error: jest.fn(),
+          };
+          const mockCompiler = {
+            getInfrastructureLogger: jest.fn(() => mockInfraLogger),
+            hooks: {
+              done: { tapAsync: jest.fn() },
+            },
+          };
+
+          plugin.apply(mockCompiler);
+
+          expect(mockCompiler.getInfrastructureLogger).toHaveBeenCalledWith(
+            "webpack-bundle-analyzer",
+          );
+          expect(plugin.logger).toBe(mockInfraLogger);
+        });
+
+        it("should wrap infrastructure logger and emit deprecation warning when logLevel is provided", () => {
+          const plugin = new BundleAnalyzerPlugin({ logLevel: "info" });
+          const mockInfraLogger = {
+            warn: jest.fn(),
+            info: jest.fn(),
+            error: jest.fn(),
+          };
+          const mockCompiler = {
+            getInfrastructureLogger: jest.fn(() => mockInfraLogger),
+            hooks: {
+              done: { tapAsync: jest.fn() },
+            },
+          };
+
+          plugin.apply(mockCompiler);
+
+          expect(mockCompiler.getInfrastructureLogger).toHaveBeenCalledWith(
+            "webpack-bundle-analyzer",
+          );
+          expect(mockInfraLogger.warn).toHaveBeenCalledWith(
+            expect.stringContaining("The 'logLevel' option is deprecated"),
+          );
+          expect(plugin.logger).not.toBe(mockInfraLogger);
+        });
+
+        it("should fall back to Logger when compiler.getInfrastructureLogger is undefined", () => {
+          const plugin = new BundleAnalyzerPlugin({ logLevel: "warn" });
+          const mockCompiler = {
+            hooks: {
+              done: { tapAsync: jest.fn() },
+            },
+          };
+
+          plugin.apply(mockCompiler);
+
+          expect(plugin.logger).toBeInstanceOf(Logger);
+          expect(plugin.logger.activeLevels.has("warn")).toBe(true);
+          expect(plugin.logger.activeLevels.has("info")).toBe(false);
+        });
+      });
     });
   });
 });

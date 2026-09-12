@@ -17,6 +17,7 @@ const FILENAME_EXTENSIONS = /\.(js|mjs|cjs|bundle)$/iu;
 /** @typedef {import("webpack").StatsAsset} StatsAsset */
 /** @typedef {import("./BundleAnalyzerPlugin").CompressionAlgorithm} CompressionAlgorithm */
 /** @typedef {import("./BundleAnalyzerPlugin").ExcludeAssets} ExcludeAssets */
+/** @typedef {ReturnType<import("webpack").Compiler["getInfrastructureLogger"]>} WebpackLogger */
 
 /**
  * @typedef {object} AnalyzerOptions
@@ -225,7 +226,7 @@ function isEntryModule(statsModule) {
 
 /**
  * @typedef {object} ViewerDataOptions
- * @property {Logger} logger logger
+ * @property {Logger | WebpackLogger} logger logger
  * @property {CompressionAlgorithm} compressionAlgorithm compression algorithm
  * @property {ExcludeAssets} excludeAssets exclude assets
  */
