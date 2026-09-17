@@ -1,6 +1,6 @@
 {
   "name": "webpack-bundle-analyzer",
-  "version": "5.3.3",
+  "version": "5.4.0",
   "description": "Webpack plugin and CLI utility that represents bundle content as convenient interactive zoomable treemap",
   "keywords": [
     "webpack",

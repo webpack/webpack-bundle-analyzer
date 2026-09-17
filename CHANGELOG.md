@@ -1,5 +1,11 @@
 # Changelog
 
+## 5.4.0
+
+### Minor Changes
+
+- Use Webpack's infrastructure logger when available (`compiler.getInfrastructureLogger('webpack-bundle-analyzer')`) and deprecate the plugin's `logLevel` option in favor of Webpack's native `infrastructureLogging` configuration. (by [@ronakmaheshwari](https://github.com/ronakmaheshwari) in [#738](https://github.com/webpack/webpack-bundle-analyzer/pull/738))
+
 ## 5.3.3
 
 ### Patch Changes
