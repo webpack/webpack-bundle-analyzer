@@ -144,22 +144,71 @@ describe("Plugin", () => {
 
       try {
         await webpackCompile(config);
-
         const server = await plugin.server;
         expect(server.http.listening).toBe(true);
         expect(analyzerUrl).toHaveBeenCalledWith(
           expect.objectContaining({
             listenHost: "127.0.0.1",
             listenPort: 0,
+            boundAddress: expect.objectContaining({
+              address: "127.0.0.1",
+              port: expect.any(Number),
+            }),
           }),
         );
       } finally {
         if (plugin.server) {
-          const server = await plugin.server;
-          server.ws.close();
-          await new Promise((resolve) => {
-            server.http.close(() => resolve());
-          });
+          try {
+            const server = await plugin.server;
+            server.ws.close();
+            await new Promise((resolve) => {
+              server.http.close(resolve);
+            });
+          } catch {
+            // Ignore server cleanup error
+          }
+        }
+      }
+    });
+
+    it("should update chart data when a plugin instance is reused in server mode", async () => {
+      const plugin = new BundleAnalyzerPlugin({
+        analyzerMode: "server",
+        analyzerPort: "auto",
+        openAnalyzer: false,
+        logLevel: "error",
+      });
+      const firstConfig = makeWebpackConfig();
+      const secondConfig = makeWebpackConfig();
+
+      firstConfig.output.path = path.resolve(__dirname, "./output/first");
+      firstConfig.plugins = [plugin];
+      secondConfig.output.path = path.resolve(__dirname, "./output/second");
+      secondConfig.plugins = [plugin];
+
+      try {
+        await webpackCompile(firstConfig);
+        const server = await plugin.server;
+        const updateChartDataSpy = jest.spyOn(server, "updateChartData");
+
+        await webpackCompile(secondConfig);
+
+        expect(updateChartDataSpy).toHaveBeenCalledTimes(1);
+        expect(updateChartDataSpy).toHaveBeenCalledWith(
+          expect.any(Object),
+          path.resolve(__dirname, "./output/second"),
+        );
+      } finally {
+        if (plugin.server) {
+          try {
+            const server = await plugin.server;
+            server.ws.close();
+            await new Promise((resolve) => {
+              server.http.close(resolve);
+            });
+          } catch {
+            // Ignore server cleanup error
+          }
         }
       }
     });
