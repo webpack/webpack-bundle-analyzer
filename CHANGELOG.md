@@ -1,5 +1,13 @@
 # Changelog
 
+## 5.4.1
+
+### Patch Changes
+
+- Fix `TypeError: Cannot read property 'forEach' of undefined` when child compilations or entrypoints have undefined or missing assets. (by [@ronakmaheshwari](https://github.com/ronakmaheshwari) in [#741](https://github.com/webpack/webpack-bundle-analyzer/pull/741))
+
+- Fix the search results total size counting modules twice when both a directory and modules inside it match the search. (by [@GM-Andy](https://github.com/GM-Andy) in [#743](https://github.com/webpack/webpack-bundle-analyzer/pull/743))
+
 ## 5.4.0
 
 ### Minor Changes
