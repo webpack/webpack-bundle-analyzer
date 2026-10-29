@@ -96,6 +96,64 @@ describe("getViewerData", () => {
     expect(chunksAccessCount).toBe(1);
   });
 
+  it("handles modules whose names use Windows path separators", () => {
+    const stats = {
+      assets: [
+        {
+          name: "bundle.js",
+          size: 150,
+          chunks: [1],
+        },
+      ],
+      chunks: [
+        {
+          id: 1,
+          modules: [
+            {
+              id: 1,
+              identifier: "./src/index.js",
+              name: "./src/index.js",
+              size: 100,
+              chunks: [1],
+              depth: 0,
+            },
+            {
+              // Webpack keeps the absolute path in module names when the module is
+              // located on another drive, so the name keeps the Windows separator.
+              id: 2,
+              identifier: "D:\\shared\\lib\\util.js",
+              name: "D:\\shared\\lib\\util.js",
+              size: 50,
+              chunks: [1],
+              depth: 1,
+            },
+          ],
+        },
+      ],
+    };
+
+    const chartData = getViewerData(stats);
+    const modulePaths = [];
+    const collectModulePaths = (groups) => {
+      for (const group of groups) {
+        if (group.groups) {
+          collectModulePaths(group.groups);
+        } else {
+          modulePaths.push(group.path);
+        }
+      }
+    };
+
+    collectModulePaths(chartData[0].groups);
+
+    expect(modulePaths).toEqual([
+      "./src/index.js",
+      // The drive letter is cut off by the same rule that cuts off the leading `.`
+      "./shared/lib/util.js",
+    ]);
+    expect(chartData[0].statSize).toBe(150);
+  });
+
   it("handles child compilations with missing or undefined assets without throwing", () => {
     const stats = {
       children: [
