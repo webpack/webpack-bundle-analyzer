@@ -21,8 +21,8 @@ export function getModulePathParts(moduleData) {
   const loaders = moduleData.name.split("!");
   // Removing loaders from module path: they're joined by `!` and the last part is a raw module path
   const parsedPath = loaders[loaders.length - 1]
-    // Splitting module path into parts
-    .split("/")
+    // Splitting module path into parts, module names use both `/` and `\` separators
+    .split(/[\\/]/u)
     // Removing first `.`
     .slice(1)
     // Replacing `~` with `node_modules`
