@@ -3,8 +3,8 @@
   position: absolute;
   padding: 0;
   border-radius: 4px;
-  background: #fff;
-  border: 1px solid #aaa;
+  background: var(--bg-primary);
+  border: 1px solid var(--border-color);
   list-style: none;
   opacity: 1;
   white-space: nowrap;
