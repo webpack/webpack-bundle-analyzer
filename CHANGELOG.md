@@ -1,5 +1,17 @@
 # Changelog
 
+## 5.4.1
+
+### Patch Changes
+
+- Fix `TypeError: Cannot read property 'forEach' of undefined` when child compilations or entrypoints have undefined or missing assets. (by [@ronakmaheshwari](https://github.com/ronakmaheshwari) in [#741](https://github.com/webpack/webpack-bundle-analyzer/pull/741))
+
+- Fix context menu background and border colors in dark mode. (by [@ronakmaheshwari](https://github.com/ronakmaheshwari) in [#744](https://github.com/webpack/webpack-bundle-analyzer/pull/744))
+
+- Fix the search results total size counting modules twice when both a directory and modules inside it match the search. (by [@GM-Andy](https://github.com/GM-Andy) in [#743](https://github.com/webpack/webpack-bundle-analyzer/pull/743))
+
+- Keep modules in the report when their names use Windows path separators, which happens when a module is resolved from another drive and Webpack keeps its absolute path as the module name. (by [@PerryLink](https://github.com/PerryLink) in [#745](https://github.com/webpack/webpack-bundle-analyzer/pull/745))
+
 ## 5.4.0
 
 ### Minor Changes
