@@ -6,6 +6,24 @@ const { getCompressedSize } = require("../src/sizeUtils");
 
 const BUNDLES_DIR = path.resolve(__dirname, "./bundles");
 
+/**
+ * @param {import("../src/analyzer").ChartData} groups chart data groups
+ * @returns {string[]} paths of the modules in the groups
+ */
+function getModulePaths(groups) {
+  const modulePaths = [];
+
+  for (const group of groups) {
+    if (group.groups) {
+      modulePaths.push(...getModulePaths(group.groups));
+    } else {
+      modulePaths.push(group.path);
+    }
+  }
+
+  return modulePaths;
+}
+
 describe("getViewerData", () => {
   it("passes asset module ids when parsing competing Webpack 5 IIFEs", () => {
     const bundleName = "webpack5UmdBundleWithDecoyIIFE";
@@ -96,7 +114,7 @@ describe("getViewerData", () => {
     expect(chunksAccessCount).toBe(1);
   });
 
-  it("handles modules whose names use Windows path separators", () => {
+  it("keeps the drive letter of modules whose names use Windows path separators", () => {
     const stats = {
       assets: [
         {
@@ -133,25 +151,117 @@ describe("getViewerData", () => {
     };
 
     const chartData = getViewerData(stats);
-    const modulePaths = [];
-    const collectModulePaths = (groups) => {
-      for (const group of groups) {
-        if (group.groups) {
-          collectModulePaths(group.groups);
-        } else {
-          modulePaths.push(group.path);
-        }
-      }
-    };
 
-    collectModulePaths(chartData[0].groups);
-
-    expect(modulePaths).toEqual([
+    expect(getModulePaths(chartData[0].groups)).toEqual([
       "./src/index.js",
-      // The drive letter is cut off by the same rule that cuts off the leading `.`
-      "./shared/lib/util.js",
+      // The drive letter stays, so this module cannot be merged with `./shared/lib/util.js`
+      "./D:/shared/lib/util.js",
     ]);
     expect(chartData[0].statSize).toBe(150);
+  });
+
+  it("does not merge modules from different drives or from a relative path", () => {
+    const stats = {
+      assets: [
+        {
+          name: "bundle.js",
+          size: 175,
+          chunks: [1],
+        },
+      ],
+      chunks: [
+        {
+          id: 1,
+          modules: [
+            {
+              id: 1,
+              identifier: "C:\\shared\\lib\\util.js",
+              name: "C:\\shared\\lib\\util.js",
+              size: 100,
+              chunks: [1],
+              depth: 1,
+            },
+            {
+              id: 2,
+              identifier: "D:\\shared\\lib\\util.js",
+              name: "D:\\shared\\lib\\util.js",
+              size: 50,
+              chunks: [1],
+              depth: 1,
+            },
+            {
+              id: 3,
+              identifier: "./shared/lib/util.js",
+              name: "./shared/lib/util.js",
+              size: 25,
+              chunks: [1],
+              depth: 1,
+            },
+          ],
+        },
+      ],
+    };
+
+    const chartData = getViewerData(stats);
+
+    expect(getModulePaths(chartData[0].groups)).toEqual([
+      "./C:/shared/lib/util.js",
+      "./D:/shared/lib/util.js",
+      "./shared/lib/util.js",
+    ]);
+    expect(chartData[0].statSize).toBe(175);
+  });
+
+  it("drops the leading separators of absolute and UNC module names", () => {
+    const stats = {
+      assets: [
+        {
+          name: "bundle.js",
+          size: 175,
+          chunks: [1],
+        },
+      ],
+      chunks: [
+        {
+          id: 1,
+          modules: [
+            {
+              id: 1,
+              identifier: "/app/src/index.js",
+              name: "/app/src/index.js",
+              size: 100,
+              chunks: [1],
+              depth: 1,
+            },
+            {
+              id: 2,
+              identifier: "\\\\server\\share\\lib\\util.js",
+              name: "\\\\server\\share\\lib\\util.js",
+              size: 50,
+              chunks: [1],
+              depth: 1,
+            },
+            {
+              id: 3,
+              identifier: "//mirror/share/lib/other.js",
+              name: "//mirror/share/lib/other.js",
+              size: 25,
+              chunks: [1],
+              depth: 1,
+            },
+          ],
+        },
+      ],
+    };
+
+    const chartData = getViewerData(stats);
+
+    expect(getModulePaths(chartData[0].groups)).toEqual([
+      "./app/src/index.js",
+      "./server/share/lib/util.js",
+      "./mirror/share/lib/other.js",
+    ]);
+    expect(chartData[0].statSize).toBe(175);
   });
 
   it("handles child compilations with missing or undefined assets without throwing", () => {
