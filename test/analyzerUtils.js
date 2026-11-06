@@ -212,7 +212,7 @@ describe("getViewerData", () => {
     expect(chartData[0].statSize).toBe(175);
   });
 
-  it("drops the leading separators of absolute and UNC module names", () => {
+  it("drops the leading separators of absolute names and keeps the UNC server", () => {
     const stats = {
       assets: [
         {
@@ -258,10 +258,53 @@ describe("getViewerData", () => {
 
     expect(getModulePaths(chartData[0].groups)).toEqual([
       "./app/src/index.js",
-      "./server/share/lib/util.js",
-      "./mirror/share/lib/other.js",
+      "./UNC:server/share/lib/util.js",
+      "./UNC:mirror/share/lib/other.js",
     ]);
     expect(chartData[0].statSize).toBe(175);
+  });
+
+  it("does not merge a UNC module with a relative module of the same path", () => {
+    const stats = {
+      assets: [
+        {
+          name: "bundle.js",
+          size: 150,
+          chunks: [1],
+        },
+      ],
+      chunks: [
+        {
+          id: 1,
+          modules: [
+            {
+              id: 1,
+              identifier: "\\\\server\\share\\lib\\util.js",
+              name: "\\\\server\\share\\lib\\util.js",
+              size: 100,
+              chunks: [1],
+              depth: 1,
+            },
+            {
+              id: 2,
+              identifier: "./server/share/lib/util.js",
+              name: "./server/share/lib/util.js",
+              size: 50,
+              chunks: [1],
+              depth: 1,
+            },
+          ],
+        },
+      ],
+    };
+
+    const chartData = getViewerData(stats);
+
+    expect(getModulePaths(chartData[0].groups)).toEqual([
+      "./UNC:server/share/lib/util.js",
+      "./server/share/lib/util.js",
+    ]);
+    expect(chartData[0].statSize).toBe(150);
   });
 
   it("handles child compilations with missing or undefined assets without throwing", () => {

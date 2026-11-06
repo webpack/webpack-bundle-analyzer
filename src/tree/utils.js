@@ -28,6 +28,8 @@ export function getModulePathParts(moduleData) {
   // A drive letter is kept: the same relative path on another drive is a different
   // module, and cutting the drive letter off merges both modules into a single node.
   let start = 1;
+  /** @type {string[]} */
+  let uncPrefix = [];
 
   if (/^[A-Za-z]:$/u.test(parts[0])) {
     start = 0;
@@ -35,12 +37,20 @@ export function getModulePathParts(moduleData) {
     const firstNamedPart = parts.findIndex((part) => part !== "");
 
     start = firstNamedPart === -1 ? parts.length : firstNamedPart;
+
+    // A UNC name has two leading separators. Keep its server as a marker, otherwise
+    // `\\server\share\x.js` and `./server/share/x.js` would produce the same path.
+    if (start === 2 && parts[2] !== "?") {
+      uncPrefix = [`UNC:${parts[2]}`];
+      start = 3;
+    }
   }
 
   // Replacing `~` with `node_modules`
-  const parsedPath = parts
-    .slice(start)
-    .map((part) => (part === "~" ? "node_modules" : part));
+  const parsedPath = [
+    ...uncPrefix,
+    ...parts.slice(start).map((part) => (part === "~" ? "node_modules" : part)),
+  ];
 
   return parsedPath.length ? parsedPath : null;
 }
