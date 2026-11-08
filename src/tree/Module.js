@@ -82,7 +82,7 @@ export default class Module extends Node {
   }
 
   getParsedSize() {
-    return this.src ? this.src.length : undefined;
+    return this.src ? Buffer.byteLength(this.src) : undefined;
   }
 
   getGzipSize() {

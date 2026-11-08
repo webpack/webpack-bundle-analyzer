@@ -32,7 +32,7 @@ export default class Folder extends BaseFolder {
   }
 
   get parsedSize() {
-    return this.src ? this.src.length : 0;
+    return this.src ? Buffer.byteLength(this.src) : 0;
   }
 
   get gzipSize() {
