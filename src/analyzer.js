@@ -70,7 +70,9 @@ function flatten(arr) {
   for (let i = 0; i < len; i++) {
     cur = arr[i];
     if (Array.isArray(cur)) {
-      res.push(...cur);
+      for (const item of cur) {
+        res.push(item);
+      }
     } else {
       res.push(cur);
     }
