@@ -42,18 +42,6 @@ function createModulesTree(modules, options) {
 }
 
 /**
- * arr-flatten <https://github.com/jonschlinkert/arr-flatten>
- *
- * Copyright (c) 2014-2017, Jon Schlinkert.
- * Released under the MIT License.
- *
- * Modified by Sukka <https://skk.moe>
- *
- * Replace recursively flatten with one-level deep flatten to match lodash.flatten
- *
- * TODO: replace with Array.prototype.flat once Node.js 10 support is dropped
- */
-/**
  * Flattens an array by one level.
  * @template T
  * @param {(T | T[])[]} arr the array to flatten
@@ -61,21 +49,7 @@ function createModulesTree(modules, options) {
  */
 function flatten(arr) {
   if (!arr) return [];
-  const len = arr.length;
-  if (!len) return [];
-
-  let cur;
-
-  const res = [];
-  for (let i = 0; i < len; i++) {
-    cur = arr[i];
-    if (Array.isArray(cur)) {
-      res.push(...cur);
-    } else {
-      res.push(cur);
-    }
-  }
-  return res;
+  return /** @type {T[]} */ (arr.flat());
 }
 
 /**

@@ -799,4 +799,22 @@ describe("getViewerData", () => {
     expect(chartData[2].label).toBe("worker.js");
     expect(chartData[2].isInitialByEntrypoint).toEqual({ workerEntry: true });
   });
+
+  it("handles a chunk with 200,000 modules without overflowing the call stack", () => {
+    const modules = Array.from({ length: 200_000 }, (_, id) => ({
+      id,
+      identifier: `./src/m${id}.js`,
+      name: `./src/m${id}.js`,
+      size: 10,
+      chunks: [0],
+    }));
+    const stats = {
+      assets: [{ name: "bundle.js", chunks: [0], size: 10 }],
+      chunks: [{ id: 0, modules }],
+    };
+
+    const chartData = getViewerData(stats);
+    expect(chartData).toHaveLength(1);
+    expect(chartData[0].statSize).toBe(2_000_000);
+  });
 });
