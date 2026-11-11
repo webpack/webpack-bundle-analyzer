@@ -53,6 +53,14 @@ async function getCompressionAlgorithm() {
   return await page.evaluate(() => globalThis.compressionAlgorithm);
 }
 
+async function getDefaultSizes() {
+  const page = await browser.newPage();
+  await page.goto(
+    url.pathToFileURL(path.resolve(__dirname, "./output/report.html")),
+  );
+  return await page.evaluate(() => globalThis.defaultSizes);
+}
+
 async function expectValidReport(opts) {
   const { bundleLabel = "bundle.js", statSize = 141 } = opts || {};
 
@@ -580,6 +588,16 @@ describe("Analyzer", () => {
       it("should default to gzip", async () => {
         generateReportFrom("with-modules-chunk.json");
         expect(await getCompressionAlgorithm()).toBe("gzip");
+      });
+    });
+
+    describe("default sizes", () => {
+      it("should accept --default-sizes brotli", async () => {
+        generateReportFrom(
+          "with-modules-chunk.json",
+          "--compression-algorithm brotli --default-sizes brotli",
+        );
+        expect(await getDefaultSizes()).toBe("brotli");
       });
     });
   });

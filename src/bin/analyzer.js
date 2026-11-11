@@ -11,10 +11,10 @@ const { isZstdSupported } = require("../sizeUtils");
 const utils = require("../utils");
 const viewer = require("../viewer");
 
-const SIZES = new Set(["stat", "parsed", "gzip"]);
 const COMPRESSION_ALGORITHMS = new Set(
   isZstdSupported ? ["gzip", "brotli", "zstd"] : ["gzip", "brotli"],
 );
+const SIZES = new Set(["stat", "parsed", ...COMPRESSION_ALGORITHMS]);
 
 /**
  * @param {string} str string
