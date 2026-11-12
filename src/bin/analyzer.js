@@ -159,6 +159,13 @@ if (!SIZES.has(defaultSizes)) {
     `Invalid default sizes option. Possible values are: ${[...SIZES].join(", ")}`,
   );
 }
+// `-s brotli` alone should show brotli sizes, not the default gzip ones
+if (
+  COMPRESSION_ALGORITHMS.has(defaultSizes) &&
+  program.getOptionValueSource("compressionAlgorithm") === "default"
+) {
+  compressionAlgorithm = defaultSizes;
+}
 
 bundleStatsFile = resolve(bundleStatsFile);
 

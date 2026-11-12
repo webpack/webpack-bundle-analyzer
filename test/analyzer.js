@@ -592,11 +592,17 @@ describe("Analyzer", () => {
     });
 
     describe("default sizes", () => {
-      it("should accept --default-sizes brotli", async () => {
+      it("should keep an explicit --compression-algorithm", async () => {
         generateReportFrom(
           "with-modules-chunk.json",
-          "--compression-algorithm brotli --default-sizes brotli",
+          "--compression-algorithm gzip --default-sizes brotli",
         );
+        expect(await getCompressionAlgorithm()).toBe("gzip");
+      });
+
+      it("should use the --default-sizes algorithm when --compression-algorithm is not given", async () => {
+        generateReportFrom("with-modules-chunk.json", "--default-sizes brotli");
+        expect(await getCompressionAlgorithm()).toBe("brotli");
         expect(await getDefaultSizes()).toBe("brotli");
       });
     });
