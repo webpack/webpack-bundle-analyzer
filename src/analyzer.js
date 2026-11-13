@@ -363,7 +363,7 @@ function getViewerData(bundleStats, bundleDir, opts) {
 
       try {
         bundleInfo = parseBundle(assetFile, {
-          sourceType: statAsset.info.javascriptModule ? "module" : "script",
+          sourceType: statAsset.info?.javascriptModule ? "module" : "script",
           expectedModuleIds,
         });
       } catch (err) {

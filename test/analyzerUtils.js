@@ -25,6 +25,39 @@ function getModulePaths(groups) {
 }
 
 describe("getViewerData", () => {
+  it("parses an asset whose stats object has no info block (webpack 4.35)", () => {
+    const bundleFilename = "validBundleWithIIFE.js";
+    const stats = {
+      assets: [
+        {
+          name: bundleFilename,
+          size: fs.statSync(`${BUNDLES_DIR}/${bundleFilename}`).size,
+          chunks: [1],
+        },
+      ],
+      chunks: [
+        {
+          id: 1,
+          modules: [
+            {
+              id: 0,
+              identifier: "./src/entry.js",
+              name: "./src/entry.js",
+              size: 10,
+              chunks: [1],
+              depth: 0,
+            },
+          ],
+        },
+      ],
+      entrypoints: { main: { name: "main", assets: [bundleFilename] } },
+    };
+
+    const chartData = getViewerData(stats, BUNDLES_DIR);
+
+    expect(chartData[0].parsedSize).toBeGreaterThan(0);
+  });
+
   it("passes asset module ids when parsing competing Webpack 5 IIFEs", () => {
     const bundleName = "webpack5UmdBundleWithDecoyIIFE";
     const bundleFilename = `${bundleName}.js`;
