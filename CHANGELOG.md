@@ -1,5 +1,15 @@
 # Changelog
 
+## 5.4.3
+
+### Patch Changes
+
+- Accept `brotli` and `zstd` in the CLI `--default-sizes` option, as the README documents. Without `--compression-algorithm`, they also select that compression algorithm. (by [@G26karthik](https://github.com/G26karthik) in [#755](https://github.com/webpack/webpack-bundle-analyzer/pull/755))
+
+- Fix `RangeError: Maximum call stack size exceeded` when a chunk contains a very large number of modules (around 130,000 or more). (by [@G26karthik](https://github.com/G26karthik) in [#753](https://github.com/webpack/webpack-bundle-analyzer/pull/753))
+
+- Count module and folder parsed sizes in UTF-8 bytes instead of UTF-16 code units, using the same units as asset parsed size and compressed sizes. (by [@PerryLink](https://github.com/PerryLink) in [#750](https://github.com/webpack/webpack-bundle-analyzer/pull/750))
+
 ## 5.4.2
 
 ### Patch Changes
