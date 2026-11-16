@@ -1,5 +1,11 @@
 # Changelog
 
+## 5.4.4
+
+### Patch Changes
+
+- Fix parsed and compressed sizes disappearing when a stats entry has no `info` object, as webpack 4.35 and hand-built stats objects produce. (by [@PerryLink](https://github.com/PerryLink) in [#754](https://github.com/webpack/webpack-bundle-analyzer/pull/754))
+
 ## 5.4.3
 
 ### Patch Changes
