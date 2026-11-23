@@ -263,7 +263,7 @@ function callsModulesMap(node, modulesVariableName) {
 }
 
 /**
- * @param {import("acorn").BlockStatement} body body
+ * @param {{ body: (import("acorn").Statement | import("acorn").ModuleDeclaration)[] }} body block or program body
  * @param {import("acorn").VariableDeclaration} modulesDeclaration modules declaration
  * @param {string} modulesVariableName modules variable name
  * @returns {boolean} true when the candidate contains Webpack module loading
@@ -278,6 +278,43 @@ function hasWebpackModulesRuntime(
   return body.body
     .slice(declarationIndex + 1)
     .some((statement) => callsModulesMap(statement, modulesVariableName));
+}
+
+/**
+ * @param {{ body: (import("acorn").Statement | import("acorn").ModuleDeclaration)[] }} body block or program body
+ * @param {boolean} isTopLevel is top-level
+ * @returns {Webpack5IIFECandidate | null} modules candidate
+ */
+function getWebpack5ModulesCandidate(body, isTopLevel) {
+  const firstVariableDeclaration = body.body.find(
+    (node) => node.type === "VariableDeclaration",
+  );
+
+  if (firstVariableDeclaration) {
+    for (const declaration of firstVariableDeclaration.declarations) {
+      if (declaration.init && isModulesList(declaration.init)) {
+        const locations = getModulesLocations(declaration.init);
+
+        if (Object.keys(locations).length === 0) {
+          continue;
+        }
+
+        return {
+          locations,
+          hasWebpackRuntime:
+            declaration.id.type === "Identifier" &&
+            hasWebpackModulesRuntime(
+              body,
+              firstVariableDeclaration,
+              declaration.id.name,
+            ),
+          isTopLevel,
+        };
+      }
+    }
+  }
+
+  return null;
 }
 
 /**
@@ -296,35 +333,7 @@ function getWebpack5IIFEModulesCandidate(node, isTopLevel) {
     return null;
   }
 
-  const firstVariableDeclaration = node.callee.body.body.find(
-    (node) => node.type === "VariableDeclaration",
-  );
-
-  if (firstVariableDeclaration) {
-    for (const declaration of firstVariableDeclaration.declarations) {
-      if (declaration.init && isModulesList(declaration.init)) {
-        const locations = getModulesLocations(declaration.init);
-
-        if (Object.keys(locations).length === 0) {
-          continue;
-        }
-
-        return {
-          locations,
-          hasWebpackRuntime:
-            declaration.id.type === "Identifier" &&
-            hasWebpackModulesRuntime(
-              node.callee.body,
-              firstVariableDeclaration,
-              declaration.id.name,
-            ),
-          isTopLevel,
-        };
-      }
-    }
-  }
-
-  return null;
+  return getWebpack5ModulesCandidate(node.callee.body, isTopLevel);
 }
 
 /**
@@ -463,6 +472,13 @@ function isAsyncWebWorkerChunkExpression(node) {
   );
 }
 
+// Names of the exported modules map in the Webpack 5 ESM chunk format (`output.module`).
+// `modules` is used by older Webpack 5 releases, `__webpack_esm_modules__` by newer ones.
+const ESM_MODULES_EXPORT_NAMES = new Set([
+  "modules",
+  "__webpack_esm_modules__",
+]);
+
 /** @typedef {Record<string, string>} Modules */
 
 /**
@@ -498,7 +514,45 @@ module.exports.parseBundle = function parseBundle(bundlePath, opts) {
     webpack5IIFECandidates: [],
   };
 
+  // Webpack 5 ESM output (`output.module`) has no wrapping IIFE, the module map is a variable
+  // declared at the top level of the entry chunk.
+  const topLevelCandidate = getWebpack5ModulesCandidate(
+    /** @type {{ body: (import("acorn").Statement | import("acorn").ModuleDeclaration)[] }} */ (
+      ast
+    ),
+    true,
+  );
+
+  if (topLevelCandidate && topLevelCandidate.hasWebpackRuntime) {
+    walkState.webpack5IIFECandidates.push(topLevelCandidate);
+  }
+
   walk.recursive(ast, walkState, {
+    // ESM chunk format (`output.module`), the modules are stored in an exported constant:
+    // export const __webpack_esm_modules__ = {};
+    ExportNamedDeclaration(node, state, callback) {
+      if (state.locations) return;
+
+      if (node.declaration && node.declaration.type === "VariableDeclaration") {
+        for (const declaration of node.declaration.declarations) {
+          if (
+            declaration.id.type === "Identifier" &&
+            ESM_MODULES_EXPORT_NAMES.has(declaration.id.name) &&
+            isSimpleModulesList(declaration.init || null)
+          ) {
+            state.locations = getModulesLocations(
+              /** @type {Expression} */ (declaration.init),
+            );
+            return;
+          }
+        }
+      }
+
+      if (node.declaration) {
+        callback(node.declaration, state);
+      }
+    },
+
     AssignmentExpression(node, state) {
       if (state.locations) return;
 
