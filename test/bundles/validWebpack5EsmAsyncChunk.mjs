@@ -1,0 +1,1 @@
+export const __webpack_esm_id__="src_b_js";export const __webpack_esm_ids__=["src_b_js"];export const __webpack_esm_modules__={170(_){_.exports="module b"}};

@@ -1,0 +1,6 @@
+{
+  "modules": {
+    "0": "_=>{_.exports=\"module a\"}",
+    "1": "_=>{_.exports=\"module b\"}"
+  }
+}

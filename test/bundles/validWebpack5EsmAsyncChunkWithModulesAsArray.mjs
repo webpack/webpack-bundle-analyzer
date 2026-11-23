@@ -1,0 +1,1 @@
+export const __webpack_esm_id__=1;export const __webpack_esm_ids__=[1];export const __webpack_esm_modules__=[_=>{_.exports="module a"},_=>{_.exports="module b"}];

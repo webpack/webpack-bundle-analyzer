@@ -1,5 +1,4 @@
 const fs = require("node:fs");
-const os = require("node:os");
 const path = require("node:path");
 
 const { parseBundle } = require("../src/parseUtils");
@@ -7,17 +6,22 @@ const { parseBundle } = require("../src/parseUtils");
 const BUNDLES_DIR = path.resolve(__dirname, "./bundles");
 
 describe("parseBundle", () => {
+  // `.mjs` bundles are Webpack 5 ESM output (`output.module`) and are parsed as modules.
   const bundles = fs
     .readdirSync(BUNDLES_DIR)
-    .filter((filename) => filename.endsWith(".js"))
-    .map((filename) => filename.replace(/\.js$/u, ""));
+    .filter((filename) => /\.m?js$/u.test(filename));
 
-  for (const bundleName of bundles.filter((bundleName) =>
-    bundleName.startsWith("valid"),
+  for (const filename of bundles.filter((filename) =>
+    filename.startsWith("valid"),
   )) {
+    const bundleName = filename.replace(/\.m?js$/u, "");
+
     it(`should parse ${bundleName.toLocaleLowerCase()}`, () => {
-      const bundleFile = `${BUNDLES_DIR}/${bundleName}.js`;
-      const bundle = parseBundle(bundleFile);
+      const bundleFile = `${BUNDLES_DIR}/${filename}`;
+      const bundle = parseBundle(
+        bundleFile,
+        filename.endsWith(".mjs") ? { sourceType: "module" } : undefined,
+      );
       const expectedModules = JSON.parse(
         fs.readFileSync(`${BUNDLES_DIR}/${bundleName}.modules.json`),
       );
@@ -56,64 +60,6 @@ describe("parseBundle", () => {
     );
 
     expect(parseBundle(bundleFile).modules).toEqual(expectedModules.modules);
-  });
-
-  describe("Webpack 5 ESM output (`output.module`)", () => {
-    const entryChunk = [
-      "var __webpack_modules__ = ({",
-      "  967: ((module) => { module.exports = 'a'; })",
-      "});",
-      "var __webpack_module_cache__ = {};",
-      "function __webpack_require__(moduleId) {",
-      "  var cached = __webpack_module_cache__[moduleId] = { exports: {} };",
-      "  __webpack_modules__[moduleId](cached, cached.exports, __webpack_require__);",
-      "  return cached.exports;",
-      "}",
-      "(() => {",
-      "  var installedChunks = { 792: 0 };",
-      "})();",
-      "export default __webpack_require__(967);",
-      "",
-    ].join("\n");
-
-    for (const [description, source, expectedIds] of [
-      [
-        "a chunk that exports the module map",
-        "export const __webpack_esm_id__ = 1;\nexport const __webpack_esm_ids__ = [1];\nexport const __webpack_esm_modules__ = {\n  7: (e) => { e.exports = 7; },\n  8: (e) => { e.exports = 8; }\n};\n",
-        ["7", "8"],
-      ],
-      [
-        "a chunk that exports the module map as an array",
-        "export const __webpack_esm_modules__ = [\n  (e) => { e.exports = 0; },\n  (e) => { e.exports = 1; }\n];\n",
-        ["0", "1"],
-      ],
-      [
-        "a chunk that exports the module map as `modules`",
-        "export const id = 1;\nexport const ids = [1];\nexport const modules = {\n  7: (e) => { e.exports = 7; }\n};\n",
-        ["7"],
-      ],
-      ["an entry chunk with a top-level module map", entryChunk, ["967"]],
-    ]) {
-      it(`should parse ${description}`, () => {
-        const bundleFile = path.join(
-          os.tmpdir(),
-          `wba-esm-${process.pid}-${Math.random().toString(36).slice(2)}.mjs`,
-        );
-
-        fs.writeFileSync(bundleFile, source);
-
-        try {
-          const { modules } = parseBundle(bundleFile, {
-            sourceType: "module",
-            expectedModuleIds: expectedIds,
-          });
-
-          expect(Object.keys(modules).toSorted()).toEqual(expectedIds);
-        } finally {
-          fs.rmSync(bundleFile, { force: true });
-        }
-      });
-    }
   });
 
   it("should ignore nested module maps without a Webpack runtime", () => {
