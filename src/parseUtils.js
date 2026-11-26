@@ -283,9 +283,10 @@ function hasWebpackModulesRuntime(
 /**
  * @param {{ body: (import("acorn").Statement | import("acorn").ModuleDeclaration)[] }} body block or program body
  * @param {boolean} isTopLevel is top-level
+ * @param {boolean=} requireRuntime skip declarations the Webpack runtime never calls
  * @returns {Webpack5IIFECandidate | null} modules candidate
  */
-function getWebpack5ModulesCandidate(body, isTopLevel) {
+function getWebpack5ModulesCandidate(body, isTopLevel, requireRuntime = false) {
   // The module map is usually the first variable declaration, but ESM output with a
   // `node-commonjs` external declares `createRequire(import.meta.url)` before it.
   for (const variableDeclaration of body.body) {
@@ -299,17 +300,21 @@ function getWebpack5ModulesCandidate(body, isTopLevel) {
           continue;
         }
 
-        return {
-          locations,
-          hasWebpackRuntime:
-            declaration.id.type === "Identifier" &&
-            hasWebpackModulesRuntime(
-              body,
-              variableDeclaration,
-              declaration.id.name,
-            ),
-          isTopLevel,
-        };
+        const hasWebpackRuntime =
+          declaration.id.type === "Identifier" &&
+          hasWebpackModulesRuntime(
+            body,
+            variableDeclaration,
+            declaration.id.name,
+          );
+
+        // At the top level, a declaration the runtime never calls is not the module map
+        // (a banner such as `const metadata = {version: "1"};`), so keep looking.
+        if (requireRuntime && !hasWebpackRuntime) {
+          continue;
+        }
+
+        return { locations, hasWebpackRuntime, isTopLevel };
       }
     }
   }
@@ -520,6 +525,7 @@ module.exports.parseBundle = function parseBundle(bundlePath, opts) {
     /** @type {{ body: (import("acorn").Statement | import("acorn").ModuleDeclaration)[] }} */ (
       ast
     ),
+    true,
     true,
   );
 
