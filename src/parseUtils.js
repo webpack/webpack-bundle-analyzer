@@ -283,10 +283,12 @@ function hasWebpackModulesRuntime(
 /**
  * @param {{ body: (import("acorn").Statement | import("acorn").ModuleDeclaration)[] }} body block or program body
  * @param {boolean} isTopLevel is top-level
- * @param {boolean=} requireRuntime skip declarations the Webpack runtime never calls
- * @returns {Webpack5IIFECandidate | null} modules candidate
+ * @returns {Webpack5IIFECandidate[]} module map candidates, in source order
  */
-function getWebpack5ModulesCandidate(body, isTopLevel, requireRuntime = false) {
+function getWebpack5ModulesCandidates(body, isTopLevel) {
+  /** @type {Webpack5IIFECandidate[]} */
+  const candidates = [];
+
   // The module map is usually the first variable declaration, but ESM output with a
   // `node-commonjs` external declares `createRequire(import.meta.url)` before it.
   for (const variableDeclaration of body.body) {
@@ -300,26 +302,22 @@ function getWebpack5ModulesCandidate(body, isTopLevel, requireRuntime = false) {
           continue;
         }
 
-        const hasWebpackRuntime =
-          declaration.id.type === "Identifier" &&
-          hasWebpackModulesRuntime(
-            body,
-            variableDeclaration,
-            declaration.id.name,
-          );
-
-        // At the top level, a declaration the runtime never calls is not the module map
-        // (a banner such as `const metadata = {version: "1"};`), so keep looking.
-        if (requireRuntime && !hasWebpackRuntime) {
-          continue;
-        }
-
-        return { locations, hasWebpackRuntime, isTopLevel };
+        candidates.push({
+          locations,
+          hasWebpackRuntime:
+            declaration.id.type === "Identifier" &&
+            hasWebpackModulesRuntime(
+              body,
+              variableDeclaration,
+              declaration.id.name,
+            ),
+          isTopLevel,
+        });
       }
     }
   }
 
-  return null;
+  return candidates;
 }
 
 /**
@@ -338,7 +336,7 @@ function getWebpack5IIFEModulesCandidate(node, isTopLevel) {
     return null;
   }
 
-  return getWebpack5ModulesCandidate(node.callee.body, isTopLevel);
+  return getWebpack5ModulesCandidates(node.callee.body, isTopLevel)[0] || null;
 }
 
 /**
@@ -521,16 +519,17 @@ module.exports.parseBundle = function parseBundle(bundlePath, opts) {
 
   // Webpack 5 ESM output (`output.module`) has no wrapping IIFE, the module map is a variable
   // declared at the top level of the entry chunk.
-  const topLevelCandidate = getWebpack5ModulesCandidate(
+  // Keep every top-level map the runtime calls (a banner may declare one before it), so the
+  // expected module ids can pick between them.
+  for (const topLevelCandidate of getWebpack5ModulesCandidates(
     /** @type {{ body: (import("acorn").Statement | import("acorn").ModuleDeclaration)[] }} */ (
       ast
     ),
     true,
-    true,
-  );
-
-  if (topLevelCandidate && topLevelCandidate.hasWebpackRuntime) {
-    walkState.webpack5IIFECandidates.push(topLevelCandidate);
+  )) {
+    if (topLevelCandidate.hasWebpackRuntime) {
+      walkState.webpack5IIFECandidates.push(topLevelCandidate);
+    }
   }
 
   walk.recursive(ast, walkState, {

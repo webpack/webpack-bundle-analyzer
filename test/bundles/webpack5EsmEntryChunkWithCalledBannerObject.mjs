@@ -1,0 +1,3 @@
+const metadata = {version: () => "1"};
+metadata.version();
+var r={967(r,e,o){o.d(e,{A:()=>t});const t="module a"}},e={};function o(t){var n=e[t];if(void 0!==n)return n.exports;var a=e[t]={exports:{}};return r[t](a,a.exports,o),a.exports}o.d=(r,e)=>{for(var t in e)o.o(e,t)&&!o.o(r,t)&&Object.defineProperty(r,t,{enumerable:!0,get:e[t]})},o.o=(r,e)=>Object.prototype.hasOwnProperty.call(r,e);var t=o(967);console.log(t.A);

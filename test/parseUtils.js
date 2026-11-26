@@ -62,6 +62,20 @@ describe("parseBundle", () => {
     expect(parseBundle(bundleFile).modules).toEqual(expectedModules.modules);
   });
 
+  it("should rank every top-level module map the runtime calls by the expected module ids", () => {
+    // Real Webpack 5.105.2 ESM entry chunk with a raw banner that declares and calls an object of functions
+    const bundleFile = `${BUNDLES_DIR}/webpack5EsmEntryChunkWithCalledBannerObject.mjs`;
+
+    expect(
+      Object.keys(
+        parseBundle(bundleFile, {
+          sourceType: "module",
+          expectedModuleIds: [967],
+        }).modules,
+      ),
+    ).toEqual(["967"]);
+  });
+
   it("should ignore nested module maps without a Webpack runtime", () => {
     const bundleFile = `${BUNDLES_DIR}/webpack5NestedModulesWithoutRuntime.js`;
 
