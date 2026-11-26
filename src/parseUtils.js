@@ -235,49 +235,72 @@ function getIIFECallExpression(node) {
 }
 
 /**
- * @param {Node} node node
- * @param {string} modulesVariableName modules variable name
- * @returns {boolean} true when the node calls a module wrapper
+ * @param {{ body: (import("acorn").Statement | import("acorn").ModuleDeclaration)[] }} body block or program body
+ * @returns {Map<string, number>} for each name, the index of the last statement that calls a module wrapper on it
  */
-function callsModulesMap(node, modulesVariableName) {
-  let callsModule = false;
+function getModulesMapLastCallIndexes(body) {
+  /** @type {Map<string, number>} */
+  const lastCallIndexes = new Map();
 
-  walk.simple(node, {
-    CallExpression(callExpression) {
-      const { callee } = callExpression;
+  for (const [index, statement] of body.body.entries()) {
+    walk.simple(statement, {
+      CallExpression(callExpression) {
+        const { callee } = callExpression;
 
-      if (
-        callee.type === "MemberExpression" &&
-        ((callee.object.type === "Identifier" &&
-          callee.object.name === modulesVariableName) ||
-          (callee.object.type === "MemberExpression" &&
-            callee.object.object.type === "Identifier" &&
-            callee.object.object.name === modulesVariableName))
-      ) {
-        callsModule = true;
-      }
-    },
-  });
+        if (callee.type !== "MemberExpression") return;
 
-  return callsModule;
+        // `modules[id](...)` or `modules[id].call(...)`
+        const object =
+          callee.object.type === "MemberExpression"
+            ? callee.object.object
+            : callee.object;
+
+        if (object.type === "Identifier") {
+          lastCallIndexes.set(object.name, index);
+        }
+      },
+    });
+  }
+
+  return lastCallIndexes;
 }
 
 /**
- * @param {import("acorn").BlockStatement} body body
- * @param {import("acorn").VariableDeclaration} modulesDeclaration modules declaration
- * @param {string} modulesVariableName modules variable name
- * @returns {boolean} true when the candidate contains Webpack module loading
+ * @param {{ body: (import("acorn").Statement | import("acorn").ModuleDeclaration)[] }} body block or program body
+ * @param {boolean} isTopLevel is top-level
+ * @returns {Generator<Webpack5IIFECandidate>} module map candidates, in source order
  */
-function hasWebpackModulesRuntime(
-  body,
-  modulesDeclaration,
-  modulesVariableName,
-) {
-  const declarationIndex = body.body.indexOf(modulesDeclaration);
+function* getWebpack5ModulesCandidates(body, isTopLevel) {
+  // Walk the body once, on the first candidate, so many candidates stay linear
+  /** @type {Map<string, number> | undefined} */
+  let lastCallIndexes;
 
-  return body.body
-    .slice(declarationIndex + 1)
-    .some((statement) => callsModulesMap(statement, modulesVariableName));
+  // The module map is usually the first variable declaration, but ESM output with a
+  // `node-commonjs` external declares `createRequire(import.meta.url)` before it.
+  for (const [index, variableDeclaration] of body.body.entries()) {
+    if (variableDeclaration.type !== "VariableDeclaration") continue;
+
+    for (const declaration of variableDeclaration.declarations) {
+      if (declaration.init && isModulesList(declaration.init)) {
+        const locations = getModulesLocations(declaration.init);
+
+        if (Object.keys(locations).length === 0) {
+          continue;
+        }
+
+        lastCallIndexes ||= getModulesMapLastCallIndexes(body);
+
+        yield {
+          locations,
+          // The runtime calls the module map after declaring it
+          hasWebpackRuntime:
+            declaration.id.type === "Identifier" &&
+            (lastCallIndexes.get(declaration.id.name) ?? -1) > index,
+          isTopLevel,
+        };
+      }
+    }
+  }
 }
 
 /**
@@ -296,35 +319,12 @@ function getWebpack5IIFEModulesCandidate(node, isTopLevel) {
     return null;
   }
 
-  const firstVariableDeclaration = node.callee.body.body.find(
-    (node) => node.type === "VariableDeclaration",
-  );
+  const { value } = getWebpack5ModulesCandidates(
+    node.callee.body,
+    isTopLevel,
+  ).next();
 
-  if (firstVariableDeclaration) {
-    for (const declaration of firstVariableDeclaration.declarations) {
-      if (declaration.init && isModulesList(declaration.init)) {
-        const locations = getModulesLocations(declaration.init);
-
-        if (Object.keys(locations).length === 0) {
-          continue;
-        }
-
-        return {
-          locations,
-          hasWebpackRuntime:
-            declaration.id.type === "Identifier" &&
-            hasWebpackModulesRuntime(
-              node.callee.body,
-              firstVariableDeclaration,
-              declaration.id.name,
-            ),
-          isTopLevel,
-        };
-      }
-    }
-  }
-
-  return null;
+  return value || null;
 }
 
 /**
@@ -463,6 +463,13 @@ function isAsyncWebWorkerChunkExpression(node) {
   );
 }
 
+// Names of the exported modules map in the Webpack 5 ESM chunk format (`output.module`).
+// `modules` is used by older Webpack 5 releases, `__webpack_esm_modules__` by newer ones.
+const ESM_MODULES_EXPORT_NAMES = new Set([
+  "modules",
+  "__webpack_esm_modules__",
+]);
+
 /** @typedef {Record<string, string>} Modules */
 
 /**
@@ -498,7 +505,47 @@ module.exports.parseBundle = function parseBundle(bundlePath, opts) {
     webpack5IIFECandidates: [],
   };
 
+  // Webpack 5 ESM output (`output.module`) has no wrapping IIFE, the module map is a variable
+  // declared at the top level of the entry chunk.
+  // Keep every top-level map the runtime calls (a banner may declare one before it), so the
+  // expected module ids can pick between them.
+  for (const topLevelCandidate of getWebpack5ModulesCandidates(
+    /** @type {{ body: (import("acorn").Statement | import("acorn").ModuleDeclaration)[] }} */ (
+      ast
+    ),
+    true,
+  )) {
+    if (topLevelCandidate.hasWebpackRuntime) {
+      walkState.webpack5IIFECandidates.push(topLevelCandidate);
+    }
+  }
+
   walk.recursive(ast, walkState, {
+    // ESM chunk format (`output.module`), the modules are stored in an exported constant:
+    // export const __webpack_esm_modules__ = {};
+    ExportNamedDeclaration(node, state, callback) {
+      if (state.locations) return;
+
+      if (node.declaration && node.declaration.type === "VariableDeclaration") {
+        for (const declaration of node.declaration.declarations) {
+          if (
+            declaration.id.type === "Identifier" &&
+            ESM_MODULES_EXPORT_NAMES.has(declaration.id.name) &&
+            isModulesList(declaration.init || null)
+          ) {
+            state.locations = getModulesLocations(
+              /** @type {Expression} */ (declaration.init),
+            );
+            return;
+          }
+        }
+      }
+
+      if (node.declaration) {
+        callback(node.declaration, state);
+      }
+    },
+
     AssignmentExpression(node, state) {
       if (state.locations) return;
 

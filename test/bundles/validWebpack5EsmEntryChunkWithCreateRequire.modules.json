@@ -1,0 +1,6 @@
+{
+  "modules": {
+    "1": "e=>{e.exports=r(\"fs\")}",
+    "2": "(e,r,o)=>{o.d(r,{A:()=>t});const t=\"module a\"}"
+  }
+}
