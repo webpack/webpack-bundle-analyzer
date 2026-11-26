@@ -44,7 +44,10 @@ function createAssetsFilter(excludePatterns) {
            * @param {string} asset asset
            * @returns {boolean} true when need to exclude, otherwise false
            */
-          (asset) => pattern.test(asset)
+          (asset) => {
+            pattern.lastIndex = 0;
+            return pattern.test(asset);
+          }
         );
       }
 
