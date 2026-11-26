@@ -235,63 +235,49 @@ function getIIFECallExpression(node) {
 }
 
 /**
- * @param {Node} node node
- * @param {string} modulesVariableName modules variable name
- * @returns {boolean} true when the node calls a module wrapper
- */
-function callsModulesMap(node, modulesVariableName) {
-  let callsModule = false;
-
-  walk.simple(node, {
-    CallExpression(callExpression) {
-      const { callee } = callExpression;
-
-      if (
-        callee.type === "MemberExpression" &&
-        ((callee.object.type === "Identifier" &&
-          callee.object.name === modulesVariableName) ||
-          (callee.object.type === "MemberExpression" &&
-            callee.object.object.type === "Identifier" &&
-            callee.object.object.name === modulesVariableName))
-      ) {
-        callsModule = true;
-      }
-    },
-  });
-
-  return callsModule;
-}
-
-/**
  * @param {{ body: (import("acorn").Statement | import("acorn").ModuleDeclaration)[] }} body block or program body
- * @param {import("acorn").VariableDeclaration} modulesDeclaration modules declaration
- * @param {string} modulesVariableName modules variable name
- * @returns {boolean} true when the candidate contains Webpack module loading
+ * @returns {Map<string, number>} for each name, the index of the last statement that calls a module wrapper on it
  */
-function hasWebpackModulesRuntime(
-  body,
-  modulesDeclaration,
-  modulesVariableName,
-) {
-  const declarationIndex = body.body.indexOf(modulesDeclaration);
+function getModulesMapLastCallIndexes(body) {
+  /** @type {Map<string, number>} */
+  const lastCallIndexes = new Map();
 
-  return body.body
-    .slice(declarationIndex + 1)
-    .some((statement) => callsModulesMap(statement, modulesVariableName));
+  for (const [index, statement] of body.body.entries()) {
+    walk.simple(statement, {
+      CallExpression(callExpression) {
+        const { callee } = callExpression;
+
+        if (callee.type !== "MemberExpression") return;
+
+        // `modules[id](...)` or `modules[id].call(...)`
+        const object =
+          callee.object.type === "MemberExpression"
+            ? callee.object.object
+            : callee.object;
+
+        if (object.type === "Identifier") {
+          lastCallIndexes.set(object.name, index);
+        }
+      },
+    });
+  }
+
+  return lastCallIndexes;
 }
 
 /**
  * @param {{ body: (import("acorn").Statement | import("acorn").ModuleDeclaration)[] }} body block or program body
  * @param {boolean} isTopLevel is top-level
- * @returns {Webpack5IIFECandidate[]} module map candidates, in source order
+ * @returns {Generator<Webpack5IIFECandidate>} module map candidates, in source order
  */
-function getWebpack5ModulesCandidates(body, isTopLevel) {
-  /** @type {Webpack5IIFECandidate[]} */
-  const candidates = [];
+function* getWebpack5ModulesCandidates(body, isTopLevel) {
+  // Walk the body once, on the first candidate, so many candidates stay linear
+  /** @type {Map<string, number> | undefined} */
+  let lastCallIndexes;
 
   // The module map is usually the first variable declaration, but ESM output with a
   // `node-commonjs` external declares `createRequire(import.meta.url)` before it.
-  for (const variableDeclaration of body.body) {
+  for (const [index, variableDeclaration] of body.body.entries()) {
     if (variableDeclaration.type !== "VariableDeclaration") continue;
 
     for (const declaration of variableDeclaration.declarations) {
@@ -302,22 +288,19 @@ function getWebpack5ModulesCandidates(body, isTopLevel) {
           continue;
         }
 
-        candidates.push({
+        lastCallIndexes ||= getModulesMapLastCallIndexes(body);
+
+        yield {
           locations,
+          // The runtime calls the module map after declaring it
           hasWebpackRuntime:
             declaration.id.type === "Identifier" &&
-            hasWebpackModulesRuntime(
-              body,
-              variableDeclaration,
-              declaration.id.name,
-            ),
+            (lastCallIndexes.get(declaration.id.name) ?? -1) > index,
           isTopLevel,
-        });
+        };
       }
     }
   }
-
-  return candidates;
 }
 
 /**
@@ -336,7 +319,12 @@ function getWebpack5IIFEModulesCandidate(node, isTopLevel) {
     return null;
   }
 
-  return getWebpack5ModulesCandidates(node.callee.body, isTopLevel)[0] || null;
+  const { value } = getWebpack5ModulesCandidates(
+    node.callee.body,
+    isTopLevel,
+  ).next();
+
+  return value || null;
 }
 
 /**
