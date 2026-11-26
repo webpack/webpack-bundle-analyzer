@@ -286,12 +286,12 @@ function hasWebpackModulesRuntime(
  * @returns {Webpack5IIFECandidate | null} modules candidate
  */
 function getWebpack5ModulesCandidate(body, isTopLevel) {
-  const firstVariableDeclaration = body.body.find(
-    (node) => node.type === "VariableDeclaration",
-  );
+  // The module map is usually the first variable declaration, but ESM output with a
+  // `node-commonjs` external declares `createRequire(import.meta.url)` before it.
+  for (const variableDeclaration of body.body) {
+    if (variableDeclaration.type !== "VariableDeclaration") continue;
 
-  if (firstVariableDeclaration) {
-    for (const declaration of firstVariableDeclaration.declarations) {
+    for (const declaration of variableDeclaration.declarations) {
       if (declaration.init && isModulesList(declaration.init)) {
         const locations = getModulesLocations(declaration.init);
 
@@ -305,7 +305,7 @@ function getWebpack5ModulesCandidate(body, isTopLevel) {
             declaration.id.type === "Identifier" &&
             hasWebpackModulesRuntime(
               body,
-              firstVariableDeclaration,
+              variableDeclaration,
               declaration.id.name,
             ),
           isTopLevel,
@@ -538,7 +538,7 @@ module.exports.parseBundle = function parseBundle(bundlePath, opts) {
           if (
             declaration.id.type === "Identifier" &&
             ESM_MODULES_EXPORT_NAMES.has(declaration.id.name) &&
-            isSimpleModulesList(declaration.init || null)
+            isModulesList(declaration.init || null)
           ) {
             state.locations = getModulesLocations(
               /** @type {Expression} */ (declaration.init),
